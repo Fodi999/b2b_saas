@@ -1,0 +1,217 @@
+{
+  "header": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "signIn": "Sign in",
+    "getStarted": "Get started"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "subtitle": "Welcome back! Please enter your details.",
+      "email": "Email address",
+      "password": "Password",
+      "remember": "Remember me",
+      "forgot": "Forgot password?",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Start managing your restaurant today",
+      "name": "Full name",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign up",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}!",
+    "logout": "Log out",
+    "modules": {
+      "inventory": "Inventory",
+      "recipes": "Recipes",
+      "dishes": "Dishes",
+      "menuEngineering": "Menu Engineering",
+      "aiAssistant": "AI Assistant",
+      "reports": "Reports"
+    },
+    "comingSoon": "Coming soon...",
+    "userInfo": "User Information (Mock)",
+    "aiAlerts": {
+      "title": "AI Insights",
+      "badge": "Live",
+      "negativeMargin": {
+        "title": "Negative margin detected",
+        "description": "Dish \"Pasta Carbonara\" has −8% margin. Consider price update or removal."
+      },
+      "expiring": {
+        "title": "Ingredients expiring soon",
+        "description": "3 ingredients will expire within 48 hours. Suggested recipes available."
+      },
+      "optimization": {
+        "title": "Menu optimization",
+        "description": "2 dishes fall into \"Low profit / High sales\" category."
+      }
+    }
+  },
+  "hero": {
+    "title": "Smart restaurant management.",
+    "subtitle": "Inventory, recipes, menu and profit — under AI control.",
+    "cta": {
+      "start": "Start for free",
+      "demo": "Watch demo"
+    }
+  },
+  "problems": {
+    "title": "Managing your restaurant by intuition?",
+    "subtitle": "It costs you money every day.",
+    "items": {
+      "inventory": "Inventory chaos and expired products",
+      "cost": "You don't know real food cost",
+      "menu": "Menu doesn't earn, it just exists",
+      "decisions": "You make decisions \"by eye\""
+    },
+    "solution": {
+      "title": "Solution",
+      "description": "AI platform connecting inventory, recipes, dishes and menu analysis. Shows where you're losing money and what to do about it."
+    }
+  },
+  "features": {
+    "title": "Everything you need",
+    "inventory": {
+      "title": "Inventory",
+      "description": "Expiry dates, waste, stock levels"
+    },
+    "recipes": {
+      "title": "Recipes",
+      "description": "Exact cost, ingredients, cost control"
+    },
+    "dishes": {
+      "title": "Dishes",
+      "description": "Margin, food cost %, profit per item"
+    },
+    "menuEngineering": {
+      "title": "Menu Engineering",
+      "description": "BCG Matrix, ABC analysis, ready strategies"
+    },
+    "ai": {
+      "title": "AI Assistant",
+      "description": "Explains numbers, suggests actions, warns about risks"
+    }
+  },
+  "wow": {
+    "title": "Your restaurant starts earning consciously",
+    "items": {
+      "unprofitable": {
+        "title": "Dish is popular but unprofitable",
+        "action": "AI suggests replacement"
+      },
+      "expiring": {
+        "title": "Ingredient will expire soon",
+        "action": "AI suggests recipes"
+      },
+      "dragging": {
+        "title": "Menu item drags down profit",
+        "action": "AI suggests removal"
+      }
+    }
+  },
+  "audience": {
+    "title": "Who is this platform for?",
+    "owner": {
+      "title": "Restaurant Owner",
+      "description": "See the real financial picture of your business"
+    },
+    "manager": {
+      "title": "Manager / Supervisor",
+      "description": "Make data-driven decisions, not guesses"
+    },
+    "chef": {
+      "title": "Chef",
+      "description": "Know the real cost of every dish"
+    }
+  },
+  "howItWorks": {
+    "title": "How does it work?",
+    "step1": {
+      "title": "1. Upload inventory and recipes",
+      "description": "Simple import or manual entry"
+    },
+    "step2": {
+      "title": "2. Add dishes and prices",
+      "description": "System automatically calculates costs"
+    },
+    "step3": {
+      "title": "3. AI shows where you're losing money",
+      "description": "Specific recommendations, not generalities"
+    }
+  },
+  "cta": {
+    "title": "Start managing your restaurant as a business, not by intuition",
+    "subtitle": "Join restaurateurs who make conscious decisions",
+    "buttons": {
+      "create": "Create account",
+      "demo": "Request demo"
+    }
+  },
+  "assistant": {
+    "header": {
+      "title": "AI Assistant",
+      "description": "AI analyzed your data and found where you're losing money"
+    },
+    "step1": {
+      "title": "Step 1: Detected problems",
+      "description": "AI analyzed the data and detected the following problems"
+    },
+    "step2": {
+      "title": "Step 2: Priority recommendation",
+      "description": "What's hitting your profit the hardest right now"
+    },
+    "step3": {
+      "title": "Step 3: What to do next",
+      "description": "Next steps for optimization"
+    },
+    "issues": {
+      "margin": {
+        "title": "Negative margin detected",
+        "description": "Dish \"Carbonara\" is sold with −8% margin. Cost is higher than selling price.",
+        "metric": "−8% margin"
+      },
+      "expiry": {
+        "title": "Ingredients expiring soon",
+        "description": "3 ingredients (cream, bacon, parmesan) will expire in 48 hours.",
+        "metric": "3 products"
+      },
+      "menu": {
+        "title": "Weak menu positions",
+        "description": "2 dishes in \"Low profit / High sales\" category according to BCG matrix.",
+        "metric": "2 dishes"
+      }
+    },
+    "recommendation": {
+      "title": "Raise Carbonara price or temporarily remove from menu",
+      "description": "Dish is popular (12 orders/day) but unprofitable. We recommend raising price by 15% or replacing recipe with cheaper one.",
+      "action": "Go to dish editing",
+      "expectedImpact": "+2400 PLN/month"
+    },
+    "nextActions": {
+      "checkDishes": {
+        "title": "Check remaining dishes",
+        "description": "Run full menu analysis to find hidden margin problems."
+      },
+      "useExpiring": {
+        "title": "Use expiring products",
+        "description": "See suggested recipes for cream, bacon and parmesan."
+      }
+    },
+    "demo": {
+      "note": "Demo mode: This is mock data, but scenarios are real. After connecting backend, system will analyze your data in real-time."
+    }
+  }
+}

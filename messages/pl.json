@@ -1,0 +1,217 @@
+{
+  "header": {
+    "features": "Funkcje",
+    "howItWorks": "Jak to działa",
+    "pricing": "Cennik",
+    "signIn": "Zaloguj się",
+    "getStarted": "Rozpocznij"
+  },
+  "auth": {
+    "login": {
+      "title": "Zaloguj się do konta",
+      "subtitle": "Witamy z powrotem! Wprowadź swoje dane.",
+      "email": "Adres email",
+      "password": "Hasło",
+      "remember": "Zapamiętaj mnie",
+      "forgot": "Zapomniałeś hasła?",
+      "submit": "Zaloguj się",
+      "noAccount": "Nie masz konta?",
+      "signUp": "Zarejestruj się"
+    },
+    "register": {
+      "title": "Utwórz konto",
+      "subtitle": "Rozpocznij zarządzanie restauracją już dziś",
+      "name": "Imię i nazwisko",
+      "email": "Adres email",
+      "password": "Hasło",
+      "submit": "Zarejestruj się",
+      "hasAccount": "Masz już konto?",
+      "signIn": "Zaloguj się"
+    }
+  },
+  "dashboard": {
+    "title": "Panel",
+    "welcome": "Witamy z powrotem, {name}!",
+    "logout": "Wyloguj się",
+    "modules": {
+      "inventory": "Magazyn",
+      "recipes": "Przepisy",
+      "dishes": "Dania",
+      "menuEngineering": "Menu Engineering",
+      "aiAssistant": "Asystent AI",
+      "reports": "Raporty"
+    },
+    "comingSoon": "Już wkrótce...",
+    "userInfo": "Informacje o użytkowniku (Mock)",
+    "aiAlerts": {
+      "title": "AI Insights",
+      "badge": "Na żywo",
+      "negativeMargin": {
+        "title": "Wykryto ujemną marżę",
+        "description": "Danie \"Carbonara\" ma marżę −8%. Rozważ aktualizację ceny lub usunięcie."
+      },
+      "expiring": {
+        "title": "Składniki wkrótce przeterminują się",
+        "description": "3 składniki przeterminują się w ciągu 48 godzin. Dostępne sugerowane przepisy."
+      },
+      "optimization": {
+        "title": "Optymalizacja menu",
+        "description": "2 dania w kategorii \"Niski zysk / Wysokie sprzedaże\"."
+      }
+    }
+  },
+  "hero": {
+    "title": "Inteligentne zarządzanie restauracją.",
+    "subtitle": "Magazyn, przepisy, menu i zysk — pod kontrolą AI.",
+    "cta": {
+      "start": "Rozpocznij za darmo",
+      "demo": "Zobacz demo"
+    }
+  },
+  "problems": {
+    "title": "Zarządzasz restauracją intuicyjnie?",
+    "subtitle": "To kosztuje Cię pieniądze każdego dnia.",
+    "items": {
+      "inventory": "Chaos w magazynie i przeterminowane produkty",
+      "cost": "Nie znasz rzeczywistego food cost",
+      "menu": "Menu nie zarabia, tylko istnieje",
+      "decisions": "Decyzje podejmujesz \"na oko\""
+    },
+    "solution": {
+      "title": "Rozwiązanie",
+      "description": "Platforma AI łącząca magazyn, przepisy, dania i analizę menu. Pokazuje, gdzie tracisz pieniądze i co z tym zrobić."
+    }
+  },
+  "features": {
+    "title": "Wszystko, czego potrzebujesz",
+    "inventory": {
+      "title": "Magazyn",
+      "description": "Terminy ważności, ubytki, stany magazynowe"
+    },
+    "recipes": {
+      "title": "Przepisy",
+      "description": "Dokładny koszt, składniki, kontrola kosztów"
+    },
+    "dishes": {
+      "title": "Dania",
+      "description": "Marża, food cost %, zysk z pozycji"
+    },
+    "menuEngineering": {
+      "title": "Menu Engineering",
+      "description": "Macierz BCG, analiza ABC, gotowe strategie"
+    },
+    "ai": {
+      "title": "Asystent AI",
+      "description": "Wyjaśnia liczby, proponuje działania, ostrzega przed ryzykiem"
+    }
+  },
+  "wow": {
+    "title": "Twoja restauracja zaczyna zarabiać świadomie",
+    "items": {
+      "unprofitable": {
+        "title": "Danie popularne, ale nierentowne",
+        "action": "AI proponuje zamianę"
+      },
+      "expiring": {
+        "title": "Składnik wkrótce przeterminuje się",
+        "action": "AI proponuje przepisy"
+      },
+      "dragging": {
+        "title": "Pozycja w menu obniża zysk",
+        "action": "AI proponuje usunięcie"
+      }
+    }
+  },
+  "audience": {
+    "title": "Dla kogo jest ta platforma?",
+    "owner": {
+      "title": "Właściciel restauracji",
+      "description": "Widzisz prawdziwy obraz finansowy swojego biznesu"
+    },
+    "manager": {
+      "title": "Menedżer / Kierownik",
+      "description": "Podejmujesz decyzje oparte na danych, nie domysłach"
+    },
+    "chef": {
+      "title": "Szef kuchni",
+      "description": "Znasz rzeczywisty koszt każdego dania"
+    }
+  },
+  "howItWorks": {
+    "title": "Jak to działa?",
+    "step1": {
+      "title": "1. Wgrywasz magazyn i przepisy",
+      "description": "Prosty import lub ręczne dodanie"
+    },
+    "step2": {
+      "title": "2. Dodajesz dania i ceny",
+      "description": "System automatycznie liczy koszty"
+    },
+    "step3": {
+      "title": "3. AI pokazuje, gdzie tracisz pieniądze",
+      "description": "Konkretne rekomendacje, nie ogólniki"
+    }
+  },
+  "cta": {
+    "title": "Zacznij zarządzać restauracją jak biznesem, a nie intuicją",
+    "subtitle": "Dołącz do restauratorów, którzy podejmują świadome decyzje",
+    "buttons": {
+      "create": "Utwórz konto",
+      "demo": "Zamów demo"
+    }
+  },
+  "assistant": {
+    "header": {
+      "title": "Asystent AI",
+      "description": "AI przeanalizował Twoje dane i znalazł, gdzie tracisz pieniądze"
+    },
+    "step1": {
+      "title": "Krok 1: Wykryte problemy",
+      "description": "AI przeanalizował dane i wykrył następujące problemy"
+    },
+    "step2": {
+      "title": "Krok 2: Priorytetowa rekomendacja",
+      "description": "Co najbardziej wpływa na zysk w tej chwili"
+    },
+    "step3": {
+      "title": "Krok 3: Co dalej",
+      "description": "Następne kroki do optymalizacji"
+    },
+    "issues": {
+      "margin": {
+        "title": "Wykryto ujemną marżę",
+        "description": "Danie \"Carbonara\" sprzedaje się z marżą −8%. Koszt własny jest wyższy od ceny sprzedaży.",
+        "metric": "−8% marża"
+      },
+      "expiry": {
+        "title": "Składniki wkrótce przeterminują się",
+        "description": "3 składniki (śmietana, bekon, parmezan) przeterminują się za 48 godzin.",
+        "metric": "3 produkty"
+      },
+      "menu": {
+        "title": "Słabe pozycje w menu",
+        "description": "2 dania w kategorii \"Niski zysk / Wysokie sprzedaże\" według macierzy BCG.",
+        "metric": "2 dania"
+      }
+    },
+    "recommendation": {
+      "title": "Podnieś cenę Carbonary lub tymczasowo usuń z menu",
+      "description": "Danie jest popularne (12 zamówień/dzień), ale nierentowne. Zalecamy podniesienie ceny o 15% lub zamianę przepisu na tańszy.",
+      "action": "Przejdź do edycji dania",
+      "expectedImpact": "+2400 PLN/miesiąc"
+    },
+    "nextActions": {
+      "checkDishes": {
+        "title": "Sprawdź pozostałe dania",
+        "description": "Uruchom pełną analizę menu, aby znaleźć ukryte problemy z marżą."
+      },
+      "useExpiring": {
+        "title": "Wykorzystaj przeterminowujące się produkty",
+        "description": "Zobacz proponowane przepisy dla śmietany, bekonu i parmezanu."
+      }
+    },
+    "demo": {
+      "note": "Tryb demo: To dane testowe, ale scenariusze są prawdziwe. Po podłączeniu backendu system będzie analizował Twoje dane w czasie rzeczywistym."
+    }
+  }
+}
