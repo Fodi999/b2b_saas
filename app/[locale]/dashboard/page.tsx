@@ -70,7 +70,7 @@ export default function DashboardPage() {
             </h3>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {modules.map((module) => {
-                const isActive = module.key === 'aiAssistant' || module.key === 'inventory' || module.key === 'recipes' || module.key === 'dishes';
+                const isActive = module.key === 'aiAssistant' || module.key === 'inventory' || module.key === 'recipes' || module.key === 'dishes' || module.key === 'menuEngineering' || module.key === 'reports';
                 const href = module.key === 'aiAssistant' 
                   ? `/${locale}/assistant` 
                   : module.key === 'inventory'
@@ -79,6 +79,10 @@ export default function DashboardPage() {
                   ? `/${locale}/recipes`
                   : module.key === 'dishes'
                   ? `/${locale}/dishes`
+                  : module.key === 'menuEngineering'
+                  ? `/${locale}/menu-engineering`
+                  : module.key === 'reports'
+                  ? `/${locale}/reports`
                   : '#';
                 
                 return (
