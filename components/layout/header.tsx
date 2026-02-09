@@ -11,7 +11,7 @@ import { useParams } from 'next/navigation';
 
 export default function Header() {
   const t = useTranslations('header');
-  const { user } = useAuthStore();
+  const { user, tenant } = useAuthStore();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -51,7 +51,7 @@ export default function Header() {
                 <Link href={`/${locale}/dashboard`}>
                   <Button variant="ghost" className="hidden gap-2 md:inline-flex">
                     <User className="h-4 w-4" />
-                    {user.name}
+                    {user.display_name || user.email}
                   </Button>
                 </Link>
               </>

@@ -1,26 +1,78 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuthStore } from '@/lib/stores/auth-store';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { loginUser, fetchMe } from '@/lib/api/auth';
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { ApiError } from '@/lib/api/client';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('demo@restaurant.ai');
-  const [password, setPassword] = useState('password');
-  const login = useAuthStore((s) => s.login);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const t = useTranslations('auth');
+  const setSession = useAuthStore((s) => s.setSession);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
-    router.push('/dashboard');
+    setIsLoading(true);
+    setError('');
+
+    console.log('🚀 [LOGIN] Начало процесса логина через BACKEND');
+
+    try {
+      // 1. Логин - получаем токены
+      console.log('1️⃣ [LOGIN] Вызов loginUser()...');
+      const auth = await loginUser({ email, password });
+      console.log('✅ [LOGIN] Токены получены с BACKEND:', {
+        user_id: auth.user_id,
+        tenant_id: auth.tenant_id,
+        has_access_token: !!auth.access_token,
+        has_refresh_token: !!auth.refresh_token,
+      });
+      
+      // 2. Получаем данные пользователя
+      console.log('2️⃣ [LOGIN] Вызов fetchMe()...');
+      const me = await fetchMe(auth.access_token);
+      console.log('✅ [LOGIN] Данные пользователя получены с BACKEND:', {
+        user: me.user,
+        tenant: me.tenant,
+      });
+
+      // 3. Сохраняем сессию
+      console.log('3️⃣ [LOGIN] Сохранение сессии в Zustand store...');
+      setSession({
+        accessToken: auth.access_token,
+        refreshToken: auth.refresh_token,
+        user: me.user,
+        tenant: me.tenant,
+      });
+      console.log('✅ [LOGIN] Сессия сохранена!');
+
+      // 4. Редирект на dashboard
+      console.log('4️⃣ [LOGIN] Редирект на dashboard...');
+      router.push(`/${locale}/dashboard`);
+    } catch (err) {
+      console.error('❌ [LOGIN] Ошибка:', err);
+      if (err instanceof ApiError) {
+        setError(err.message || 'Неверный email или пароль');
+      } else {
+        setError('Произошла ошибка. Попробуйте позже.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -91,9 +143,25 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full gap-2" size="lg">
-            {t('login.submit')}
-            <ArrowRight className="h-4 w-4" />
+          {/* Error message */}
+          {error && (
+            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-800 dark:text-red-200">
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full gap-2" size="lg" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Вход...
+              </>
+            ) : (
+              <>
+                {t('login.submit')}
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
 
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">

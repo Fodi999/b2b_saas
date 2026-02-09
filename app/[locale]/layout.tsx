@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/layout/header";
+import { AuthInitializer } from "@/components/auth/auth-initializer";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -51,10 +52,12 @@ export default async function LocaleLayout(props: Props) {
           enableSystem
           disableTransitionOnChange
         >
-          <NextIntlClientProvider messages={messages}>
-            <Header />
-            {props.children}
-          </NextIntlClientProvider>
+          <AuthInitializer>
+            <NextIntlClientProvider messages={messages}>
+              <Header />
+              {props.children}
+            </NextIntlClientProvider>
+          </AuthInitializer>
         </ThemeProvider>
       </body>
     </html>

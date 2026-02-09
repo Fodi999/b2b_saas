@@ -10,12 +10,13 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { user, logout } = useAuthStore();
+  const { user, tenant, logout } = useAuthStore();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations('dashboard');
 
+  // Защита роута
   useEffect(() => {
     if (!user) {
       router.push(`/${locale}/login`);
@@ -44,6 +45,26 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-6xl space-y-10">
+          {/* BACKEND CONNECTION STATUS */}
+          <div className="rounded-xl border-2 border-green-500 bg-green-50 p-6 dark:bg-green-950/30">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500">
+                <span className="text-2xl">🟢</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-green-900 dark:text-green-100">
+                  ✅ ПОДКЛЮЧЕНО К BACKEND
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Backend: <code className="rounded bg-green-100 px-2 py-1 dark:bg-green-900">https://ministerial-yetta-fodi999-c58d8823.koyeb.app</code>
+                </p>
+                <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+                  Данные загружены с реального сервера. Откройте DevTools Console для просмотра логов API запросов.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -51,8 +72,13 @@ export default function DashboardPage() {
                 {t('title')}
               </h1>
               <p className="mt-1 text-gray-600 dark:text-gray-400">
-                {t('welcome', { name: user.name })}
+                {t('welcome', { name: user.display_name || user.email })}
               </p>
+              {tenant && (
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  🏪 {tenant.name}
+                </p>
+              )}
             </div>
             <Button variant="outline" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" />
@@ -111,7 +137,7 @@ export default function DashboardPage() {
               {t('userInfo')}
             </h3>
             <pre className="mt-2 overflow-x-auto text-sm text-indigo-700 dark:text-indigo-300">
-              {JSON.stringify(user, null, 2)}
+              {JSON.stringify({ user, tenant }, null, 2)}
             </pre>
           </div>
         </div>
