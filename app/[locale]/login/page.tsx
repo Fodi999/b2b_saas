@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { loginUser, fetchMe } from '@/lib/api/auth';
+import { loginUser, fetchMe, updateUserLanguage } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { ApiError } from '@/lib/api/client';
 
@@ -44,14 +44,26 @@ export default function LoginPage() {
       
       // 2. Получаем данные пользователя
       console.log('2️⃣ [LOGIN] Вызов fetchMe()...');
-      const me = await fetchMe(auth.access_token);
+      let me = await fetchMe(auth.access_token);
       console.log('✅ [LOGIN] Данные пользователя получены с BACKEND:', {
         user: me.user,
         tenant: me.tenant,
       });
 
-      // 3. Сохраняем сессию
-      console.log('3️⃣ [LOGIN] Сохранение сессии в Zustand store...');
+      // 3. Проверяем и обновляем язык, если нужно
+      const currentLanguage = me.user.language;
+      const expectedLanguage = locale as 'pl' | 'en' | 'ru' | 'uk';
+      
+      if (currentLanguage !== expectedLanguage) {
+        console.log(`3️⃣ [LOGIN] Обновление языка: ${currentLanguage} → ${expectedLanguage}`);
+        me = await updateUserLanguage(expectedLanguage, auth.access_token);
+        console.log('✅ [LOGIN] Язык обновлен!');
+      } else {
+        console.log('3️⃣ [LOGIN] Язык уже совпадает:', currentLanguage);
+      }
+
+      // 4. Сохраняем сессию
+      console.log('4️⃣ [LOGIN] Сохранение сессии в Zustand store...');
       setSession({
         accessToken: auth.access_token,
         refreshToken: auth.refresh_token,
@@ -60,8 +72,8 @@ export default function LoginPage() {
       });
       console.log('✅ [LOGIN] Сессия сохранена!');
 
-      // 4. Редирект на dashboard
-      console.log('4️⃣ [LOGIN] Редирект на dashboard...');
+      // 5. Редирект на dashboard
+      console.log('5️⃣ [LOGIN] Редирект на dashboard...');
       router.push(`/${locale}/dashboard`);
     } catch (err) {
       console.error('❌ [LOGIN] Ошибка:', err);

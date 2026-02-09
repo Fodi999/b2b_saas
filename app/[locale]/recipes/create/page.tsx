@@ -2,6 +2,7 @@
 
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useRecipesStore } from '@/lib/stores/recipes-store'
+import { useInventoryStore, type InventoryItem } from '@/lib/stores/inventory-store'
 import { useRouter } from 'next/navigation'
 import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Sparkles, ImageIcon, Plus, X, Search, Eye, Check, Loader2, ArrowLeft } from 'lucide-react'
-import { MOCK_INVENTORY } from '@/lib/mock-data/inventory'
 
 interface DraftIngredient {
   id: string
@@ -54,6 +54,7 @@ function botEstimateCost(amount: number, inventoryItem: any): number {
 export default function CreateRecipePage() {
   const { user } = useAuthStore()
   const { addRecipe } = useRecipesStore()
+  const { items: inventoryItems } = useInventoryStore()
   const router = useRouter()
 
   const [mode, setMode] = useState<ViewMode>('edit')
@@ -196,7 +197,7 @@ export default function CreateRecipePage() {
     setTimeout(() => {
       const totalCost = validIngredients.reduce((sum, ing) => {
         const quantity = parseFloat(ing.rawAmount) || 0
-        const inventoryItem = MOCK_INVENTORY.find(item => item.id === ing.inventoryItemId)
+        const inventoryItem = inventoryItems.find((item: InventoryItem) => item.id === ing.inventoryItemId)
         return sum + botEstimateCost(quantity, inventoryItem)
       }, 0)
 
@@ -209,14 +210,14 @@ export default function CreateRecipePage() {
       // AI checks inventory status and generates warnings
       const warnings: string[] = []
       validIngredients.forEach(ing => {
-        const inventoryItem = MOCK_INVENTORY.find(item => item.id === ing.inventoryItemId)
+        const inventoryItem = inventoryItems.find((item: InventoryItem) => item.id === ing.inventoryItemId)
         if (inventoryItem) {
           if (inventoryItem.status === 'expiring') {
-            warnings.push(`${inventoryItem.productName} истекает через несколько дней`)
+            warnings.push(`${inventoryItem.product_name} истекает через несколько дней`)
           }
           const needed = parseFloat(ing.rawAmount)
           if (inventoryItem.quantity < needed) {
-            warnings.push(`Недостаточно ${inventoryItem.productName} на складе (нужно: ${needed}, есть: ${inventoryItem.quantity})`)
+            warnings.push(`Недостаточно ${inventoryItem.product_name} на складе (нужно: ${needed}, есть: ${inventoryItem.quantity})`)
           }
         }
       })
@@ -228,7 +229,7 @@ export default function CreateRecipePage() {
         difficulty: 'medium', // Estimated by AI (mock)
         ingredients: validIngredients.map((ing) => {
           const originalIndex = ingredients.indexOf(ing)
-          const inventoryItem = MOCK_INVENTORY.find(item => item.id === ing.inventoryItemId)
+          const inventoryItem = inventoryItems.find((item: InventoryItem) => item.id === ing.inventoryItemId)
           const amount = parseFloat(ing.rawAmount)
           return {
             name: ing.productName,
@@ -456,9 +457,9 @@ export default function CreateRecipePage() {
   }
 
   const searchResults = activeSearchIndex !== null 
-    ? MOCK_INVENTORY.filter(item => {
+    ? inventoryItems.filter((item: InventoryItem) => {
         const query = ingredients[activeSearchIndex]?.searchValue.toLowerCase() || ''
-        return query.length >= 2 && item.productName.toLowerCase().includes(query)
+        return query.length >= 2 && item.product_name.toLowerCase().includes(query)
       })
     : []
 
@@ -531,9 +532,9 @@ export default function CreateRecipePage() {
                         
                         {activeSearchIndex === index && searchResults.length > 0 && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
-                            {searchResults.map((item) => {
-                              const itemName = item.productName
-                              const itemUnit = item.baseUnit
+                            {searchResults.map((item: InventoryItem) => {
+                              const itemName = item.product_name
+                              const itemUnit = item.base_unit
                               const displayUnit = itemUnit === 'g' ? 'г' : itemUnit === 'ml' ? 'мл' : itemUnit === 'pcs' ? 'шт' : itemUnit
                               return (
                                 <button

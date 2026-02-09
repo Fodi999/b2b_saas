@@ -17,13 +17,13 @@ export default function RegisterPage() {
   const [tenantName, setTenantName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [language, setLanguage] = useState<'pl' | 'en' | 'ru' | 'uk'>('ru');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const language = locale as 'pl' | 'en' | 'ru' | 'uk'; // Используем locale как язык
   const t = useTranslations('auth');
   const setSession = useAuthStore((s) => s.setSession);
 
@@ -158,20 +158,13 @@ export default function RegisterPage() {
               <p className="text-xs text-muted-foreground">Минимум 8 символов</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="language">Язык интерфейса</Label>
-              <select
-                id="language"
-                name="language"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'pl' | 'en' | 'ru' | 'uk')}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="ru">🇷🇺 Русский</option>
-                <option value="pl">🇵🇱 Polski</option>
-                <option value="en">🇬🇧 English</option>
-                <option value="uk">🇺🇦 Українська</option>
-              </select>
+            {/* Язык берется автоматически из URL locale */}
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-800 dark:text-blue-200">
+              <span className="font-medium">Язык интерфейса:</span>{' '}
+              {language === 'ru' && '🇷🇺 Русский'}
+              {language === 'pl' && '🇵🇱 Polski'}
+              {language === 'en' && '🇬🇧 English'}
+              {language === 'uk' && '🇺🇦 Українська'}
             </div>
           </div>
 

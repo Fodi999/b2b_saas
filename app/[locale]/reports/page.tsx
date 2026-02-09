@@ -3,11 +3,11 @@
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useDishesStore } from '@/lib/stores/dishes-store'
 import { useRecipesStore } from '@/lib/stores/recipes-store'
+import { useInventoryStore, type InventoryItem } from '@/lib/stores/inventory-store'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Sparkles, ArrowLeft, TrendingUp, DollarSign, AlertTriangle, Download, FileText, FileSpreadsheet } from 'lucide-react'
-import { MOCK_INVENTORY } from '@/lib/mock-data/inventory'
 
 type PeriodType = 'today' | '7days' | '30days' | 'custom'
 type ModeType = 'overview' | 'profit' | 'inventory' | 'ai'
@@ -17,6 +17,7 @@ export default function ReportsPage() {
   const { user } = useAuthStore()
   const { dishes } = useDishesStore()
   const { recipes } = useRecipesStore()
+  const { items: inventoryItems } = useInventoryStore()
   const router = useRouter()
 
   const [period, setPeriod] = useState<PeriodType>('30days')
@@ -48,19 +49,19 @@ export default function ReportsPage() {
 
   // Calculate inventory metrics
   const inventoryMetrics = useMemo(() => {
-    const totalValue = MOCK_INVENTORY.reduce((sum, item) => sum + item.price, 0)
-    const expiringValue = MOCK_INVENTORY
-      .filter(item => item.status === 'expiring')
-      .reduce((sum, item) => sum + item.price, 0)
+    const totalValue = inventoryItems.reduce((sum: number, item: InventoryItem) => sum + item.price, 0)
+    const expiringValue = inventoryItems
+      .filter((item: InventoryItem) => item.status === 'expiring')
+      .reduce((sum: number, item: InventoryItem) => sum + item.price, 0)
     const potentialLoss = expiringValue * 0.43 // Mock - 43% potential loss
 
     return {
       totalValue,
       expiringValue,
       potentialLoss,
-      expiringItems: MOCK_INVENTORY.filter(item => item.status === 'expiring'),
+      expiringItems: inventoryItems.filter((item: InventoryItem) => item.status === 'expiring'),
     }
-  }, [])
+  }, [inventoryItems])
 
   // Filter dishes
   const filteredDishes = useMemo(() => {
@@ -107,7 +108,7 @@ export default function ReportsPage() {
       const topExpiring = inventoryMetrics.expiringItems[0]
       recs.push({
         type: 'use-inventory',
-        title: `Использовать ${topExpiring.productName} в 2 рецептах`,
+        title: `Использовать ${topExpiring.product_name} в 2 рецептах`,
         impact: `Сэкономить ${topExpiring.price.toFixed(0)} PLN`,
       })
     }
@@ -429,17 +430,17 @@ export default function ReportsPage() {
           {inventoryMetrics.expiringItems.length > 0 && (
             <>
               <div className="space-y-2 mb-4">
-                {inventoryMetrics.expiringItems.slice(0, 5).map(item => (
+                {inventoryMetrics.expiringItems.slice(0, 5).map((item: InventoryItem) => (
                   <div key={item.id} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                     <div className="flex-1">
-                      <div className="font-medium text-foreground">{item.productName}</div>
+                      <div className="font-medium text-foreground">{item.product_name}</div>
                       <div className="text-xs text-amber-700 dark:text-amber-300">
                         Истекает через 2-3 дня
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold text-foreground">{item.price.toFixed(0)} PLN</div>
-                      <div className="text-xs text-muted-foreground">{item.quantity} {item.baseUnit === 'g' ? 'г' : item.baseUnit === 'ml' ? 'мл' : 'шт'}</div>
+                      <div className="text-xs text-muted-foreground">{item.quantity} {item.base_unit === 'g' ? 'г' : item.base_unit === 'ml' ? 'мл' : 'шт'}</div>
                     </div>
                   </div>
                 ))}

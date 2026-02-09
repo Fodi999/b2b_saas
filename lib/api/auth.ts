@@ -90,3 +90,18 @@ export async function fetchMe(accessToken: string): Promise<MeResponse> {
     method: 'GET',
   }, accessToken);
 }
+
+/**
+ * Обновление языка пользователя
+ */
+export async function updateUserLanguage(
+  language: 'pl' | 'en' | 'ru' | 'uk',
+  accessToken: string
+): Promise<MeResponse> {
+  console.log('🌐 [AUTH] Обновление языка пользователя:', language);
+  
+  return apiFetch<MeResponse>('/api/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ language }),
+  }, accessToken);
+}

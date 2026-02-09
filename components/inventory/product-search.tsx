@@ -2,31 +2,42 @@
 
 import { useState } from 'react';
 import { Search, X } from 'lucide-react';
-import { searchCatalog, UNIT_LABELS, CATEGORIES } from '@/lib/mock-data/catalog';
-import type { CatalogProduct } from '@/lib/mock-data/catalog';
+import { searchCatalogIngredients, type CatalogIngredientDTO } from '@/lib/api/inventory';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 type ProductSearchProps = {
-  onSelect: (product: CatalogProduct) => void;
+  onSelect: (product: CatalogIngredientDTO) => void;
 };
 
 export default function ProductSearch({ onSelect }: ProductSearchProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<CatalogProduct[]>([]);
+  const [results, setResults] = useState<CatalogIngredientDTO[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = (value: string) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  const handleSearch = async (value: string) => {
     setQuery(value);
     if (value.length >= 2) {
-      const searchResults = searchCatalog(value);
-      setResults(searchResults);
-      setIsOpen(true);
+      setIsSearching(true);
+      try {
+        const searchResults = await searchCatalogIngredients(value, accessToken || undefined);
+        setResults(searchResults);
+        setIsOpen(true);
+      } catch (error) {
+        console.error('❌ Ошибка поиска в каталоге:', error);
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
     } else {
       setResults([]);
       setIsOpen(false);
     }
   };
 
-  const handleSelect = (product: CatalogProduct) => {
+  const handleSelect = (product: CatalogIngredientDTO) => {
     onSelect(product);
     setQuery('');
     setResults([]);
@@ -64,31 +75,31 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
         <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <div className="max-h-80 overflow-y-auto p-2">
             {results.map((product) => {
-              const categoryInfo = CATEGORIES[product.category as keyof typeof CATEGORIES];
+              const unitLabel =
+                product.default_unit === 'kilogram' ? 'кг' : product.default_unit === 'liter' ? 'л' : 'шт';
               return (
                 <button
                   key={product.id}
                   onClick={() => handleSelect(product)}
                   className="flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  {/* Category Icon */}
+                  {/* Product Icon */}
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl dark:bg-gray-800">
-                    {categoryInfo?.icon || '📦'}
+                    🍽️
                   </div>
-                  
+
                   {/* Product Info */}
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {product.name}
-                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {categoryInfo?.name} · Срок годности: {product.shelfLifeDays} дн.
+                      Срок годности: {product.default_shelf_life_days} дн.
+                      {product.allergens.length > 0 && ` · Аллергены: ${product.allergens.join(', ')}`}
                     </div>
                   </div>
 
                   {/* Unit Badge */}
                   <div className="shrink-0 rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    {UNIT_LABELS[product.baseUnit]}
+                    {unitLabel}
                   </div>
                 </button>
               );

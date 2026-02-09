@@ -1,15 +1,17 @@
 'use client';
 
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { useInventoryStore } from '@/lib/stores/inventory-store';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, Users, AlertCircle, TrendingUp, Package } from 'lucide-react';
 import { MOCK_RECIPES, RECIPE_CATEGORIES } from '@/lib/mock-data/recipes';
-import { MOCK_INVENTORY, formatQuantity } from '@/lib/mock-data/inventory';
+import { formatQuantity } from '@/lib/utils/format';
 import { CATEGORIES } from '@/lib/mock-data/catalog';
 
 export default function RecipeDetailPage() {
   const { user } = useAuthStore();
+  const { items: inventoryItems } = useInventoryStore();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
@@ -135,21 +137,21 @@ export default function RecipeDetailPage() {
             </h2>
             <div className="mt-4 space-y-3">
               {recipe.ingredients.map((ingredient, index) => {
-                const inventoryItem = MOCK_INVENTORY.find(
-                  item => item.catalogProductId === ingredient.catalogProductId
+                const inventoryItem = inventoryItems.find(
+                  item => item.product_name === ingredient.productName
                 );
                 const catalogCategory = inventoryItem ? CATEGORIES[inventoryItem.category as keyof typeof CATEGORIES] : null;
                 const isAvailable = inventoryItem && inventoryItem.quantity >= ingredient.quantity;
                 const isExpiring = inventoryItem?.status === 'expiring';
-                const isExpired = inventoryItem?.status === 'expired';
+                const isLowStock = inventoryItem?.status === 'low';
 
                 return (
                   <div
                     key={index}
                     className={`flex items-center justify-between rounded-lg border p-3 ${
-                      isExpired
+                      isExpiring
                         ? 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30'
-                        : isExpiring
+                        : isLowStock
                         ? 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30'
                         : !isAvailable
                         ? 'border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800'
@@ -165,19 +167,19 @@ export default function RecipeDetailPage() {
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {ingredient.quantity} {ingredient.unit}
                           {inventoryItem && (
-                            <> · На складе: {formatQuantity(inventoryItem.quantity, inventoryItem.baseUnit)}</>
+                            <> · На складе: {formatQuantity(inventoryItem.quantity, inventoryItem.base_unit)}</>
                           )}
                         </p>
                       </div>
                     </div>
                     <div>
-                      {isExpired ? (
+                      {isExpiring ? (
                         <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
-                          Просрочен
-                        </span>
-                      ) : isExpiring ? (
-                        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                           Истекает
+                        </span>
+                      ) : isLowStock ? (
+                        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                          Мало
                         </span>
                       ) : !isAvailable ? (
                         <span className="rounded-full bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">

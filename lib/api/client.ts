@@ -33,6 +33,7 @@ export async function apiFetch<T>(
     method: options.method || 'GET',
     url,
     hasAuth: !!accessToken,
+    fullUrl: url, // Добавляем полный URL для проверки
   });
 
   const res = await fetch(url, {
@@ -64,6 +65,7 @@ export async function apiFetch<T>(
   console.log('✅ [BACKEND SUCCESS]', {
     url,
     dataKeys: Object.keys(data),
+    fullData: data, // Добавляем полные данные
   });
 
   return data;
