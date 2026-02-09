@@ -7,9 +7,11 @@ export interface InventoryItem {
   quantity: number;
   base_unit: 'g' | 'ml' | 'pcs';
   price: number;
-  status: 'in-stock' | 'low' | 'expiring';
+  status: 'in-stock' | 'low' | 'expiring' | 'expired';
+  received_at?: string; // ✅ Дата поступления
   expiration_date?: string;
   warnings?: string[];
+  image_url?: string | null; // ✅ Добавляем изображение продукта
 }
 
 interface InventoryState {

@@ -15,7 +15,7 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
   accessToken?: string
-): Promise<T> {
+): Promise<T | null> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -59,6 +59,12 @@ export async function apiFetch<T>(
       res.status,
       error
     );
+  }
+
+  // Если ответ 204 No Content - возвращаем null (DELETE обычно возвращает пустое тело)
+  if (res.status === 204) {
+    console.log('✅ [BACKEND SUCCESS - NO CONTENT]', { url, status: 204 });
+    return null;
   }
 
   const data = await res.json();

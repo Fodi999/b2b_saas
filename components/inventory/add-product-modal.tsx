@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import ProductSearch from './product-search';
 import { addInventoryProduct, type CatalogIngredientDTO } from '@/lib/api/inventory';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { useInventoryStore } from '@/lib/stores/inventory-store';
+import { useInventory } from '@/lib/hooks/use-inventory';
 import { formatDate } from '@/lib/utils/format';
 
 type AddProductModalProps = {
@@ -23,7 +23,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const accessToken = useAuthStore((state) => state.accessToken);
-  const addItem = useInventoryStore((state) => state.addItem);
+  const { reloadInventory } = useInventory();
 
   if (!isOpen) return null;
 
@@ -45,43 +45,36 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     // Конвертируем данные под backend формат
     const pricePLN = parseFloat(price);
     const priceInCents = Math.round(pricePLN * 100); // PLN -> центы
-    const expiresAtISO = `${receivedAt}T23:59:59Z`; // YYYY-MM-DD -> ISO datetime
+    const receivedAtISO = `${receivedAt}T10:00:00Z`; // YYYY-MM-DD -> ISO datetime (10:00 UTC)
     
     console.log('📦 Добавляем продукт в склад (backend API):', {
       catalog_ingredient_id: selectedProduct.id,
       quantity: parseFloat(quantity),
       price_per_unit_cents: priceInCents,
-      expires_at: expiresAtISO,
+      received_at: receivedAtISO, // ✅ Отправляем дату поступления
+      // expires_at рассчитается автоматически на backend
     });
 
     try {
-      // Вызов backend API
-      const newProduct = await addInventoryProduct(
+      // 1️⃣ POST - создаем продукт на backend
+      console.log('📦 [ADD] Вызов POST /api/inventory/products...');
+      await addInventoryProduct(
         {
           catalog_ingredient_id: selectedProduct.id,
           quantity: parseFloat(quantity),
           price_per_unit_cents: priceInCents,
-          expires_at: expiresAtISO,
+          received_at: receivedAtISO, // ✅ Передаем received_at
         },
         accessToken
       );
+      console.log('✅ [ADD] Продукт создан на backend!');
 
-      console.log('✅ Продукт добавлен на склад (backend):', newProduct);
+      // 2️⃣ GET - перезагружаем весь список с backend (Query DTO)
+      console.log('🔄 [ADD] Перезагрузка склада с backend...');
+      await reloadInventory();
+      console.log('✅ [ADD] Склад обновлен! (Query DTO с joined product)');
 
-      // Обновляем локальный store
-      addItem({
-        id: newProduct.id,
-        product_name: newProduct.product_name,
-        category: newProduct.category,
-        quantity: newProduct.quantity,
-        base_unit: newProduct.base_unit,
-        price: newProduct.price,
-        status: newProduct.status,
-        expiration_date: newProduct.expiration_date,
-        warnings: newProduct.warnings,
-      });
-
-      // Reset и close
+      // 3️⃣ Закрываем модалку и сбрасываем форму
       setStep('search');
       setSelectedProduct(null);
       setPrice('');
@@ -89,7 +82,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
       setReceivedAt(new Date().toISOString().split('T')[0]);
       onClose();
     } catch (error) {
-      console.error('❌ Ошибка добавления продукта:', error);
+      console.error('❌ [ADD] Ошибка добавления продукта:', error);
       alert('Ошибка добавления продукта. Проверьте консоль.');
     } finally {
       setIsSubmitting(false);
@@ -216,13 +209,13 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
 
               {/* Превью срока годности */}
               {expiresAt && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">
-                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
                     <CheckCircle className="mr-1 inline h-4 w-4" />
-                    Примерный срок годности: <strong>{formatDate(expiresAt)}</strong>
+                    Срок годности (авто): <strong>{formatDate(expiresAt)}</strong>
                     <br />
-                    <span className="text-xs text-amber-600 dark:text-amber-400">
-                      (Backend автоматически рассчитает точный срок и статус)
+                    <span className="text-xs text-blue-600 dark:text-blue-400">
+                      (получено {formatDate(new Date(receivedAt))} + {selectedProduct?.default_shelf_life_days} дней хранения)
                     </span>
                   </p>
                 </div>

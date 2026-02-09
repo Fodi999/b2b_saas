@@ -83,9 +83,25 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
                   onClick={() => handleSelect(product)}
                   className="flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  {/* Product Icon */}
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl dark:bg-gray-800">
-                    🍽️
+                  {/* Product Image or Icon */}
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          // Fallback на эмодзи если картинка не загрузилась
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<span class="text-2xl">🍽️</span>';
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span className="text-2xl">🍽️</span>
+                    )}
                   </div>
 
                   {/* Product Info */}

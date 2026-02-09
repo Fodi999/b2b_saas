@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { fetchInventory } from '@/lib/api/inventory';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useInventoryStore } from '@/lib/stores/inventory-store';
@@ -12,6 +12,31 @@ import { useInventoryStore } from '@/lib/stores/inventory-store';
 export function useInventory() {
   const { accessToken } = useAuthStore();
   const { setItems, setLoading, clear } = useInventoryStore();
+
+  // Функция для перезагрузки инвентаря (используется после добавления/обновления)
+  const reloadInventory = useCallback(async () => {
+    if (!accessToken) {
+      console.warn('⚠️ [reloadInventory] Нет access token');
+      return;
+    }
+
+    console.log('🔄 [reloadInventory] Перезагрузка склада с BACKEND...');
+    setLoading(true);
+
+    try {
+      const items = await fetchInventory(accessToken);
+      console.log('✅ [reloadInventory] Склад перезагружен:', {
+        count: items.length,
+        items: items.map((i) => ({ name: i.product_name, status: i.status })),
+      });
+      setItems(items);
+    } catch (error) {
+      console.error('❌ [reloadInventory] Ошибка перезагрузки:', error);
+      throw error; // Пробрасываем дальше
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, setItems, setLoading]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -39,5 +64,7 @@ export function useInventory() {
       .finally(() => {
         setLoading(false);
       });
-  }, [accessToken]);
+  }, [accessToken, setItems, setLoading, clear]); // ✅ Добавляем deps
+
+  return { reloadInventory };
 }

@@ -44,10 +44,16 @@ export async function registerUser(data: {
     backend: 'https://ministerial-yetta-fodi999-c58d8823.koyeb.app',
   });
   
-  return apiFetch<AuthResponse>('/api/auth/register', {
+  const result = await apiFetch<AuthResponse>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
 }
 
 /**
@@ -62,10 +68,16 @@ export async function loginUser(data: {
     backend: 'https://ministerial-yetta-fodi999-c58d8823.koyeb.app',
   });
   
-  return apiFetch<AuthResponse>('/api/auth/login', {
+  const result = await apiFetch<AuthResponse>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
 }
 
 /**
@@ -74,10 +86,16 @@ export async function loginUser(data: {
 export async function refreshToken(refreshToken: string): Promise<RefreshResponse> {
   console.log('🔄 [AUTH] Обновление токена через BACKEND');
   
-  return apiFetch<RefreshResponse>('/api/auth/refresh', {
+  const result = await apiFetch<RefreshResponse>('/api/auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
 }
 
 /**
@@ -86,9 +104,15 @@ export async function refreshToken(refreshToken: string): Promise<RefreshRespons
 export async function fetchMe(accessToken: string): Promise<MeResponse> {
   console.log('👤 [AUTH] Получение данных пользователя с BACKEND');
   
-  return apiFetch<MeResponse>('/api/me', {
+  const result = await apiFetch<MeResponse>('/api/me', {
     method: 'GET',
   }, accessToken);
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
 }
 
 /**
@@ -100,8 +124,14 @@ export async function updateUserLanguage(
 ): Promise<MeResponse> {
   console.log('🌐 [AUTH] Обновление языка пользователя:', language);
   
-  return apiFetch<MeResponse>('/api/me', {
+  const result = await apiFetch<MeResponse>('/api/me', {
     method: 'PATCH',
     body: JSON.stringify({ language }),
   }, accessToken);
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
 }
