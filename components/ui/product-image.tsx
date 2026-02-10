@@ -1,22 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import { UtensilsCrossed } from 'lucide-react';
 
 interface ProductImageProps {
   src?: string | null;
   alt: string;
-  fallbackIcon?: string;
+  fallbackIcon?: React.ReactNode;
   className?: string;
   containerClassName?: string;
 }
 
 /**
- * Компонент для отображения изображения продукта с fallback на эмодзи
+ * Компонент для отображения изображения продукта с fallback на иконку
  */
 export default function ProductImage({
   src,
   alt,
-  fallbackIcon = '🍽️',
+  fallbackIcon = <UtensilsCrossed className="h-10 w-10 text-gray-400" />,
   className = 'h-full w-full object-cover',
   containerClassName = 'flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800',
 }: ProductImageProps) {
@@ -29,7 +30,7 @@ export default function ProductImage({
   if (!src || imageError) {
     return (
       <div className={containerClassName}>
-        <span className="text-4xl">{fallbackIcon}</span>
+        {fallbackIcon}
       </div>
     );
   }
@@ -38,7 +39,7 @@ export default function ProductImage({
     <div className={`${containerClassName} relative`}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          <span className="text-2xl animate-pulse">⏳</span>
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
         </div>
       )}
       <img

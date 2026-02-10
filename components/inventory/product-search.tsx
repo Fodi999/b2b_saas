@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Folder, UtensilsCrossed } from 'lucide-react';
 import { searchCatalogIngredients, type CatalogIngredientDTO } from '@/lib/api/inventory';
 import { useAuthStore } from '@/lib/stores/auth-store';
 
@@ -100,14 +100,20 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
                         }}
                       />
                     ) : (
-                      <span className="text-2xl">🍽️</span>
+                      <UtensilsCrossed className="h-6 w-6 text-gray-400" />
                     )}
                   </div>
 
                   {/* Product Info */}
                   <div className="flex-1">
                     <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      {product.category && (
+                        <span className="flex items-center gap-1 mr-2">
+                          <Folder className="h-3 w-3" />
+                          {product.category.name}
+                        </span>
+                      )}
                       Срок годности: {product.default_shelf_life_days} дн.
                       {product.allergens.length > 0 && ` · Аллергены: ${product.allergens.join(', ')}`}
                     </div>

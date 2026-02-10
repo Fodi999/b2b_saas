@@ -1,11 +1,16 @@
 import { apiFetch } from './client';
 
+interface CategoryEmbedded {
+  id: string;
+  name: string;
+}
+
 interface ProductEmbedded {
   id: string;
   name: string;
-  category: string;
+  category: CategoryEmbedded | string; // ✅ Поддержка обоих форматов (объект или строка)
   base_unit: 'kilogram' | 'liter' | 'piece';
-  image_url?: string | null; // ✅ Добавляем image_url
+  image_url?: string | null;
 }
 
 interface InventoryProductQueryDTO {
@@ -13,8 +18,8 @@ interface InventoryProductQueryDTO {
   product: ProductEmbedded;
   quantity: number;
   price_per_unit_cents: number;
-  received_at: string | null; // ✅ Может быть null
-  expires_at: string | null;  // ✅ Может быть null
+  received_at: string | null;
+  expires_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +27,7 @@ interface InventoryProductQueryDTO {
 export interface CatalogIngredientDTO {
   id: string;
   category_id: string;
+  category?: CategoryEmbedded; // ✅ Категория из каталога (опционально)
   name: string;
   default_unit: 'kilogram' | 'liter' | 'piece';
   default_shelf_life_days: number;
@@ -34,15 +40,16 @@ export interface CatalogIngredientDTO {
 export interface InventoryProduct {
   id: string;
   product_name: string;
-  category: string;
+  category: string;           // ✅ Название категории для отображения
+  category_id?: string;       // ✅ ID категории (если нужен)
   quantity: number;
   base_unit: 'g' | 'ml' | 'pcs';
   price: number;
   status: 'in-stock' | 'low' | 'expiring' | 'expired';
-  received_at?: string; // ✅ Дата поступления (для UI)
+  received_at?: string;
   expiration_date?: string;
   warnings?: string[];
-  image_url?: string | null; // ✅ Добавляем изображение продукта
+  image_url?: string | null;
 }
 
 export interface AddInventoryProductRequest {
@@ -111,27 +118,31 @@ function convertToFrontend(dto: InventoryProductQueryDTO): InventoryProduct {
     );
   }
 
-  console.log('🔄 [convertToFrontend]', {
-    productName: dto.product.name,
-    hasImageUrl: !!dto.product.image_url,
-    imageUrl: dto.product.image_url,
-  });
-
   const baseUnit = convertUnit(dto.product.base_unit);
   const { status, warnings } = calculateStatus(dto.expires_at, dto.quantity);
+
+  // ✅ Обработка категории: объект или строка
+  const categoryName = typeof dto.product.category === 'string' 
+    ? dto.product.category 
+    : dto.product.category.name;
+  
+  const categoryId = typeof dto.product.category === 'object' && dto.product.category !== null
+    ? dto.product.category.id 
+    : undefined;
 
   return {
     id: dto.id,
     product_name: dto.product.name,
-    category: dto.product.category,
+    category: categoryName,           // ✅ Название категории (строка или из объекта)
+    category_id: categoryId,          // ✅ ID категории (если есть)
     quantity: dto.quantity,
     base_unit: baseUnit,
     price: dto.price_per_unit_cents / 100,
     status,
-    received_at: dto.received_at ? dto.received_at.split('T')[0] : undefined, // ✅ YYYY-MM-DD или undefined
-    expiration_date: dto.expires_at ? dto.expires_at.split('T')[0] : undefined, // ✅ YYYY-MM-DD или undefined
+    received_at: dto.received_at ? dto.received_at.split('T')[0] : undefined,
+    expiration_date: dto.expires_at ? dto.expires_at.split('T')[0] : undefined,
     warnings: warnings.length > 0 ? warnings : undefined,
-    image_url: dto.product.image_url, // ✅ Передаём image_url из каталога
+    image_url: dto.product.image_url,
   };
 }
 
@@ -156,7 +167,6 @@ export async function fetchInventory(accessToken: string): Promise<InventoryProd
   const dtos = await apiFetch<InventoryProductQueryDTO[]>('/api/inventory/products', {}, accessToken);
   if (!dtos) return [];
   console.log('✅ [INVENTORY] Получено:', dtos.length);
-  console.log('🔍 [INVENTORY] Первый продукт (полный):', JSON.stringify(dtos[0], null, 2));
   return dtos.map(convertToFrontend);
 }
 

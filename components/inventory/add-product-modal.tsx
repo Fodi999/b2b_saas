@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Package, Calendar, DollarSign, Scale, CheckCircle } from 'lucide-react';
+import { X, Package, Calendar, DollarSign, Scale, CheckCircle, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductSearch from './product-search';
 import { addInventoryProduct, type CatalogIngredientDTO } from '@/lib/api/inventory';
@@ -140,9 +140,15 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
               {/* Выбранный продукт */}
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium text-gray-900 dark:text-white">{selectedProduct?.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedProduct?.category && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                        <Folder className="h-3 w-3" />
+                        Категория: <span className="font-medium">{selectedProduct.category.name}</span>
+                      </p>
+                    )}
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                       {getUnitLabel(selectedProduct?.default_unit || 'piece')} • Срок хранения: {selectedProduct?.default_shelf_life_days} дн.
                     </p>
                   </div>
