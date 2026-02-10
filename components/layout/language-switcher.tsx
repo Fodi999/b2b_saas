@@ -14,11 +14,11 @@ import { Globe } from 'lucide-react';
 
 type Locale = 'pl' | 'en' | 'uk' | 'ru';
 
-const languages: Record<Locale, { name: string; flag: string }> = {
-  pl: { name: 'Polski', flag: '🇵🇱' },
-  en: { name: 'English', flag: '🇬🇧' },
-  uk: { name: 'Українська', flag: '🇺🇦' },
-  ru: { name: 'Русский', flag: '🇷🇺' },
+const languages: Record<Locale, string> = {
+  pl: 'Polski',
+  en: 'English',
+  uk: 'Українська',
+  ru: 'Русский',
 };
 
 export default function LanguageSwitcher() {
@@ -42,7 +42,7 @@ export default function LanguageSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2" disabled={isPending}>
           <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline">{languages[currentLocale].flag}</span>
+          <span className="hidden sm:inline">{languages[currentLocale]}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -52,8 +52,7 @@ export default function LanguageSwitcher() {
             onClick={() => switchLocale(locale)}
             className="cursor-pointer"
           >
-            <span className="mr-2">{languages[locale].flag}</span>
-            {languages[locale].name}
+            {languages[locale]}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
