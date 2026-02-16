@@ -238,6 +238,32 @@
       "title": "Склад",
       "subtitle": "Управління запасами та AI-прогнозування"
     },
+    "analytics": {
+      "health": {
+        "title": "Здоров'я складу",
+        "score": "Health Score",
+        "desc": "Загальний показник ефективності управління запасами",
+        "excellent": "Відмінно",
+        "good": "Добре",
+        "warning": "Увага",
+        "critical": "Критично",
+        "metrics": {
+          "critical": "Критично",
+          "warning": "Попереджень",
+          "expired": "Прострочено",
+          "lowStock": "Закінчується"
+        }
+      },
+      "waste": {
+        "title": "Аналітика втрат",
+        "wasteKpi": "Waste KPI",
+        "totalLoss": "Всього втрат",
+        "period": "За останні 30 днів",
+        "cleanup": "Очистити прострочення",
+        "cleanupSuccess": "Списано {count} прострочених партій",
+        "cleanButton": "Запустити FIFO клінінг"
+      }
+    },
     "actions": {
       "smartAdd": "Smart Add",
       "closeAI": "Закрити AI",
@@ -293,6 +319,19 @@
         "l": "л",
         "pcs": "шт"
       }
+    },
+    "categories": {
+      "Dairy": "Молочні продукти та яйця",
+      "Vegetables": "Овочі",
+      "Meat": "М'ясо",
+      "Fish": "Риба",
+      "Fruits": "Фрукти",
+      "Grains": "Зернові",
+      "Spices": "Спеції",
+      "Beverages": "Напої",
+      "Nuts and seeds": "Горіхи та насіння",
+      "Other": "Інше",
+      "all": "Всі"
     }
   },
   "recipes": {

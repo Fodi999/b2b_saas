@@ -2,50 +2,43 @@
 
 import { useTranslations } from 'next-intl';
 import { InsightCard } from './insight-card';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertTriangle, AlertCircle, Info } from 'lucide-react';
 import { useInventoryStore } from '@/lib/stores/inventory-store';
 import { useDishesStore } from '@/lib/stores/dishes-store';
-import { useInventory } from '@/lib/hooks/use-inventory';
+import { useInventoryAnalytics } from '@/lib/hooks/use-inventory-analytics';
 import { useEffect, useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AIAlerts() {
   const t = useTranslations('dashboard.aiAlerts');
-  const { items: inventoryItems, loading: inventoryLoading } = useInventoryStore();
   const { dishes } = useDishesStore();
-  const { reloadInventory } = useInventory();
-
-  // Загружаем актуальные данные при монтировании
-  useEffect(() => {
-    reloadInventory().catch(() => {});
-  }, [reloadInventory]);
+  const { alerts: backendAlerts, loading: analyticsLoading } = useInventoryAnalytics();
 
   const alerts = useMemo(() => {
     const list = [];
 
-    // 🔴 Проверка на убыточные блюда
+    // 1. � Real Backend Alerts (V3 Integration)
+    backendAlerts.forEach(alert => {
+      list.push({
+        variant: alert.severity === 'critical' ? 'danger' as const : 'warning' as const,
+        title: alert.product_name,
+        description: alert.message,
+      });
+    });
+
+    // 2. � Business Logic: Unprofitable Dishes (Static logic for now)
     const lossDishes = dishes.filter(d => d.status === 'loss');
     if (lossDishes.length > 0) {
       list.push({
         variant: 'danger' as const,
         title: t('negativeMargin.title'),
-        description: `${lossDishes.length} ${lossDishes.length === 1 ? 'блюдо имеет' : 'блюда имеют'} отрицательную или критически низкую маржу. Требуется корректировка цен.`,
+        description: `${lossDishes.length} ${lossDishes.length === 1 ? 'блюдо имеет' : 'блюда имеют'} отрицательную маржу.`,
       });
     }
 
-    // 🟡 Проверка на истекающие сроки
-    const expiringItems = inventoryItems.filter(i => i.status === 'expiring' || i.status === 'expired');
-    if (expiringItems.length > 0) {
-      list.push({
-        variant: 'warning' as const,
-        title: t('expiring.title'),
-        description: `${expiringItems.length} ${expiringItems.length === 1 ? 'продукт требует' : 'продукта требуют'} срочного использования. Истекают в ближайшее время.`,
-      });
-    }
-
-    // 🔵 Оптимизация (Placeholder logic based on dishes)
-    if (dishes.length > 0) {
+    // 3. 🔵 Optimization Placeholder
+    if (list.length < 3 && dishes.length > 0) {
       list.push({
         variant: 'info' as const,
         title: t('optimization.title'),
@@ -53,43 +46,37 @@ export default function AIAlerts() {
       });
     }
 
-    // Если данных мало, показываем дефолтные подсказки
-    if (list.length === 0) {
-      list.push({
-        variant: 'info' as const,
-        title: "Данные анализируются",
-        description: "Добавьте больше продуктов и рецептов, чтобы AI смог сформировать рекомендации по прибыли.",
-      });
-    }
-
     return list;
-  }, [inventoryItems, dishes, t]);
+  }, [backendAlerts, dishes, t]);
 
-  if (inventoryLoading && inventoryItems.length === 0) {
+  if (analyticsLoading && alerts.length === 0) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          <Skeleton key={i} className="h-32 w-full rounded-[2rem]" />
         ))}
       </div>
     );
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600">
-          <Sparkles className="h-4 w-4" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 shadow-sm">
+          <Sparkles className="h-5 w-5" />
         </div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-          {t('title')}
-        </h3>
-        <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border-indigo-100 dark:border-indigo-900 px-2.5 py-0.5 font-bold text-[10px] uppercase">
-          {t('badge')}
+        <div>
+          <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-1">
+            {t('title')}
+          </h3>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Neural Intelligence Feed</p>
+        </div>
+        <Badge variant="secondary" className="ml-2 bg-indigo-500 text-white border-none px-3 py-1 font-black text-[9px] uppercase tracking-widest animate-pulse">
+           Live
         </Badge>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {alerts.map((alert, index) => (
           <InsightCard
             key={index}

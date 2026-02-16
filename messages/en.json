@@ -58,6 +58,63 @@
       "resources": "Management Resources",
       "metrics": "System Metrics"
     },
+    "v3": {
+      "healthTitle": "Inventory",
+      "healthSub": "Health",
+      "healthStatus": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "warning": "Warning",
+        "critical": "Critical"
+      },
+      "healthDesc": {
+        "good": "Your inventory management is performing at peak efficiency.",
+        "issues": "Detected issues require attention to minimize financial waste."
+      },
+      "metrics": {
+        "risks": "Risks",
+        "stockouts": "Stockouts",
+        "critical": "Critical",
+        "expired": "Expired",
+        "lowStock": "Low Stock"
+      },
+      "optimizeBtn": "Review & Optimize",
+      "predictiveTitle": "Predictive Analytics",
+      "stockoutTitle": "Stockout Risks",
+      "stockoutDesc": "Predictive AI needs 7-14 days of sales history to calculate consumption rates.",
+      "analysisPending": "Analysis Pending",
+      "expiryTitle": "Expiry Risks",
+      "allSecure": "All Secure",
+      "allSecureDesc": "No products are expiring within the next 72 hours. Everything is fresh.",
+      "consumption": "Cons: {value} units/day",
+      "remaining": "Remaining",
+      "noSalesData": "No sales data",
+      "warehouseValue": "Warehouse Value",
+      "totalStock": "Total Stock",
+      "warehouseDesc": "Total investment in stock based on your purchase prices (calculated as cents/100 for precision).",
+      "inventoryLoss": "Inventory Loss",
+      "wasteKpi": "Waste KPI",
+      "totalLoss": "Total Loss",
+      "percentage": "Percentage",
+      "analyzeDetails": "Analyze Details",
+      "predictiveOffline": "Predictive Service Offline",
+      "predictiveOfflineDesc": "Detailed insights and predictions are currently unavailable due to a database sync issue. Core metrics remain active while we reconnect.",
+      "infinityDays": "∞ days",
+      "daysCaps": "DAYS",
+      "qualityControl": "Quality Control",
+      "inBatch": "In Batch",
+      "status": {
+        "expired": "Expired",
+        "warning": "Warning"
+      },
+      "neuralTitle": "Neural Core Status",
+      "uptime": "Uptime",
+      "latency": "AI Latency",
+      "systemMetrics": "System Metrics",
+      "serverLabel": "Server",
+      "dataEnvLabel": "Data Env",
+      "storageLabel": "Storage"
+    },
     "comingSoon": "Coming soon...",
     "userInfo": "User Information (Mock)",
     "aiAlerts": {
@@ -236,7 +293,33 @@
     },
     "header": {
       "title": "Inventory",
-      "subtitle": "Stock management and AI forecasting"
+      "subtitle": "Stock management and AI-forecasting"
+    },
+    "analytics": {
+      "health": {
+        "title": "Inventory Health",
+        "score": "Health Score",
+        "desc": "Overall stock management efficiency index",
+        "excellent": "Excellent",
+        "good": "Good",
+        "warning": "Warning",
+        "critical": "Critical",
+        "metrics": {
+          "critical": "Critical",
+          "warning": "Warnings",
+          "expired": "Expired",
+          "lowStock": "Low Stock"
+        }
+      },
+      "waste": {
+        "title": "Loss Analytics",
+        "wasteKpi": "Waste KPI",
+        "totalLoss": "Total Loss",
+        "period": "Last 30 days",
+        "cleanup": "Clear Expired",
+        "cleanupSuccess": "Processed {count} expired batches",
+        "cleanButton": "Run FIFO Cleanup"
+      }
     },
     "actions": {
       "smartAdd": "Smart Add",
@@ -293,6 +376,19 @@
         "l": "l",
         "pcs": "pcs"
       }
+    },
+    "categories": {
+      "Dairy": "Dairy",
+      "Vegetables": "Vegetables",
+      "Meat": "Meat",
+      "Fish": "Fish",
+      "Fruits": "Fruits",
+      "Grains": "Grains",
+      "Spices": "Spices",
+      "Beverages": "Beverages",
+      "Nuts and seeds": "Nuts and seeds",
+      "Other": "Other",
+      "all": "All"
     }
   },
   "recipes": {

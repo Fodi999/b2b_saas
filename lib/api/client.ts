@@ -20,11 +20,8 @@ export async function apiFetch<T>(
     'Content-Type': 'application/json',
   };
 
-  // 🧪 ТЕСТ: Проверяем localStorage как fallback
-  const token = accessToken || localStorage.getItem('access_token');
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
   if (options.headers) {
@@ -54,10 +51,10 @@ export async function apiFetch<T>(
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
     
-    // Не логируем 401 как ошибку в консоль, так как это может быть ожидаемым случаем 
-    // для истекшего токена, который будет обработан логикой refresh
+    // Не логируем 401 как ошибку, так как это штатная ситуация для проверки токена
     if (res.status === 401) {
-      console.warn('[BACKEND AUTH 401]', { url, status: res.status });
+      // Тихий лог для дебага
+      console.debug('[BACKEND AUTH 401]', { url });
     } else {
       console.error('[BACKEND ERROR]', JSON.stringify({
         url,

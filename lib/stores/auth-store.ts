@@ -5,6 +5,7 @@ export interface User {
   id: string;
   email: string;
   display_name: string | null;
+  avatar_url: string | null;
   language: 'pl' | 'en' | 'ru' | 'uk';
   role: string;
   tenant_id: string;
@@ -27,6 +28,8 @@ interface AuthState {
     user: User;
     tenant: Tenant;
   }) => void;
+
+  updateUser: (userData: Partial<User>) => void;
 
   refreshAccessToken: () => Promise<boolean>;
 
@@ -62,6 +65,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       user,
       tenant,
     });
+  },
+
+  updateUser: (userData) => {
+    const currentUser = get().user;
+    if (currentUser) {
+      set({
+        user: { ...currentUser, ...userData }
+      });
+    }
   },
 
   refreshAccessToken: async () => {

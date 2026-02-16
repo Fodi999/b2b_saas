@@ -31,15 +31,24 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import AIAlerts from '@/components/dashboard/ai-alerts';
+import { useInventoryAnalytics } from '@/lib/hooks/use-inventory-analytics';
+import Link from 'next/link';
 
 type PeriodType = 'today' | '7days' | '30days' | 'custom'
 type ModeType = 'overview' | 'profit' | 'inventory' | 'ai'
 type DishFilterType = 'all' | 'star' | 'problem' | 'low-margin' | 'risk'
 
 export default function ReportsPage() {
-  const { user } = useAuthStore()
+  const { user, accessToken } = useAuthStore()
   const { dishes } = useDishesStore()
   const { items: inventoryItems } = useInventoryStore()
+  const { 
+    health: inventoryHealth, 
+    lossReport: inventoryLoss, 
+    loading: analyticsLoading 
+  } = useInventoryAnalytics();
+
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as string
@@ -70,18 +79,23 @@ export default function ReportsPage() {
   // Calculate inventory metrics
   const inventoryMetrics = useMemo(() => {
     const totalValue = inventoryItems.reduce((sum: number, item: InventoryItem) => sum + (item.price || 0), 0)
+    
+    // 🔥 V3 implementation: use real loss from report or fallback to local calc
+    const totalLoss = inventoryLoss ? (inventoryLoss.total_loss_cents / 100) : 0;
+    const wastePercent = inventoryLoss ? inventoryLoss.waste_percentage : 0;
+    
     const expiringValue = inventoryItems
       .filter((item: InventoryItem) => item.status === 'expiring')
       .reduce((sum: number, item: InventoryItem) => sum + (item.price || 0), 0)
-    const potentialLoss = expiringValue * 0.43 
 
     return {
       totalValue,
       expiringValue,
-      potentialLoss,
+      totalLoss,
+      wastePercent,
       expiringItems: inventoryItems.filter((item: InventoryItem) => item.status === 'expiring'),
     }
-  }, [inventoryItems])
+  }, [inventoryItems, inventoryLoss])
 
   // Filter dishes
   const filteredDishes = useMemo(() => {
@@ -101,6 +115,16 @@ export default function ReportsPage() {
     if (lowMarginDish) recs.push({ id: '1', title: `${lowMarginDish.name} (маржа ${lowMarginDish.marginPercent.toFixed(1)}%)`, impact: '+180 PLN/мес' })
     const priceIncreaseDish = dishes.find(d => d.foodCostPercent > 35 && d.foodCostPercent < 50)
     if (priceIncreaseDish) recs.push({ id: '2', title: `Поднять цену на ${priceIncreaseDish.name}`, impact: '+180 PLN/мес' })
+    
+    // 🔥 V3 logic: Recommend based on real waste percentage
+    if (inventoryMetrics.wastePercent > 5) {
+      recs.push({ 
+        id: 'waste-optimization', 
+        title: `Оптимизировать Waste (текущий: ${inventoryMetrics.wastePercent.toFixed(1)}%)`, 
+        impact: `Сэкономить ${ (inventoryMetrics.totalLoss * 0.3).toFixed(0) } PLN` 
+      })
+    }
+
     if (inventoryMetrics.expiringItems.length > 0) {
       const topExpiring = inventoryMetrics.expiringItems[0]
       recs.push({ id: '3', title: `Использовать ${topExpiring.product_name} в 2 рецептах`, impact: `Сэкономить ${topExpiring.price.toFixed(0)} PLN` })
@@ -233,7 +257,7 @@ export default function ReportsPage() {
                     <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-rose-500/40 transition-all">
                        <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.losses')}</p>
                        <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-black text-rose-500 italic">–{inventoryMetrics.potentialLoss.toFixed(0)}</p>
+                        <p className="text-3xl font-black text-rose-500 italic">–{inventoryMetrics.totalLoss.toFixed(0)}</p>
                         <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
                       </div>
                     </div>

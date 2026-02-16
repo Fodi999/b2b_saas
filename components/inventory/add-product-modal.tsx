@@ -24,9 +24,10 @@ import { formatDate } from '@/lib/utils/format';
 type AddProductModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 };
 
-export default function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
+export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalProps) {
   const t = useTranslations('inventory.modal');
   const [step, setStep] = useState<'search' | 'details'>('search');
   const [selectedProduct, setSelectedProduct] = useState<CatalogIngredientDTO | null>(null);
@@ -67,6 +68,12 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     const priceInCents = Math.round(pricePLN * 100); 
     const receivedAtISO = `${receivedAt}T10:00:00Z`;
     
+    // В V3 expires_at обязателен, рассчитываем его если не задан явно
+    // Мы берем расчетное значение из UI логики
+    const estimatedShelfLifeDays = selectedProduct.default_shelf_life_days || 30;
+    const expirationDate = new Date(new Date(receivedAt).getTime() + estimatedShelfLifeDays * 24 * 60 * 60 * 1000);
+    const expiresAtISO = expirationDate.toISOString();
+
     try {
       await addInventoryProduct(
         {
@@ -74,10 +81,12 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
           quantity: parseFloat(quantity),
           price_per_unit_cents: priceInCents,
           received_at: receivedAtISO,
+          expires_at: expiresAtISO,
         },
         accessToken
       );
       await reloadInventory();
+      if (onSuccess) onSuccess();
       handleClose();
     } catch (error) {
       console.error('❌ [ADD] Ошибка добавления продукта:', error);

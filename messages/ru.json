@@ -58,6 +58,63 @@
       "resources": "Ресурсы управления",
       "metrics": "Системные метрики"
     },
+    "v3": {
+      "healthTitle": "Статус",
+      "healthSub": "Склада",
+      "healthStatus": {
+        "excellent": "Отлично",
+        "good": "Хорошо",
+        "warning": "Внимание",
+        "critical": "Критично"
+      },
+      "healthDesc": {
+        "good": "Ваше управление запасами работает с максимальной эффективностью.",
+        "issues": "Обнаруженные проблемы требуют внимания для минимизации убытков."
+      },
+      "metrics": {
+        "risks": "Риски",
+        "stockouts": "Нехватка",
+        "critical": "Критические",
+        "expired": "Просрочка",
+        "lowStock": "Мало"
+      },
+      "optimizeBtn": "Анализ и оптимизация",
+      "predictiveTitle": "Предиктивная аналитика",
+      "stockoutTitle": "Риски нехватки",
+      "stockoutDesc": "AI нужно 7-14 дней истории продаж для расчета скорости потребления.",
+      "analysisPending": "Ожидание данных",
+      "expiryTitle": "Сроки годности",
+      "allSecure": "Безопасно",
+      "allSecureDesc": "Нет товаров с истекающим сроком в ближайшие 72 часа. Всё свежее.",
+      "consumption": "Расход: {value} ед/день",
+      "remaining": "Осталось",
+      "noSalesData": "Нет данных",
+      "warehouseValue": "Ценность склада",
+      "totalStock": "Остатки",
+      "warehouseDesc": "Инвестиции в склад на основе закупочных цен (расчет в центах для точности).",
+      "inventoryLoss": "Потери склада",
+      "wasteKpi": "Waste KPI",
+      "totalLoss": "Итого потерь",
+      "percentage": "Процент",
+      "analyzeDetails": "Подробный Анализ",
+      "predictiveOffline": "Предиктивный сервис не в сети",
+      "predictiveOfflineDesc": "Детальные прогнозы временно недоступны из-за синхронизации базы данных. Основные показатели остаются активными.",
+      "infinityDays": "∞ дней",
+      "daysCaps": "ДНЕЙ",
+      "qualityControl": "Контроль Качества",
+      "inBatch": "В партии",
+      "status": {
+        "expired": "Просрочено",
+        "warning": "Внимание"
+      },
+      "neuralTitle": "Статус нейронного ядра",
+      "uptime": "Аптайм",
+      "latency": "Задержка ИИ",
+      "systemMetrics": "Системные метрики",
+      "serverLabel": "Сервер",
+      "dataEnvLabel": "Среда данных",
+      "storageLabel": "Хранилище"
+    },
     "comingSoon": "Скоро...",
     "userInfo": "Информация о пользователе (Mock)",
     "aiAlerts": {
@@ -238,6 +295,32 @@
       "title": "Склад",
       "subtitle": "Управление запасами и AI-прогнозирование"
     },
+    "analytics": {
+      "health": {
+        "title": "Здоровье склада",
+        "score": "Health Score",
+        "desc": "Общий показатель эффективности управления запасами",
+        "excellent": "Отлично",
+        "good": "Хорошо",
+        "warning": "Внимание",
+        "critical": "Критично",
+        "metrics": {
+          "critical": "Критично",
+          "warning": "Предупреждений",
+          "expired": "Просрочено",
+          "lowStock": "Заканчивается"
+        }
+      },
+      "waste": {
+        "title": "Аналитика потерь",
+        "wasteKpi": "Waste KPI",
+        "totalLoss": "Всего потерь",
+        "period": "За последние 30 дней",
+        "cleanup": "Очистить просрочку",
+        "cleanupSuccess": "Списано {count} просроченных партий",
+        "cleanButton": "Запустить FIFO клининг"
+      }
+    },
     "actions": {
       "smartAdd": "Smart Add",
       "closeAI": "Закрыть AI",
@@ -293,6 +376,19 @@
         "l": "л",
         "pcs": "шт"
       }
+    },
+    "categories": {
+      "Dairy": "Молочные продукты и яйца",
+      "Vegetables": "Овощи",
+      "Meat": "Мясо",
+      "Fish": "Рыба",
+      "Fruits": "Фрукты",
+      "Grains": "Зерновые",
+      "Spices": "Специи",
+      "Beverages": "Напитки",
+      "Nuts and seeds": "Орехи и семена",
+      "Other": "Другое",
+      "all": "Все"
     }
   },
   "recipes": {

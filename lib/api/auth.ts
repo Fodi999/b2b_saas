@@ -14,6 +14,7 @@ interface MeResponse {
     id: string;
     email: string;
     display_name: string | null;
+    avatar_url: string | null;
     language: 'pl' | 'en' | 'ru' | 'uk';
     role: string;
     tenant_id: string;
@@ -22,6 +23,11 @@ interface MeResponse {
     id: string;
     name: string;
   };
+}
+
+interface AvatarUploadUrlResponse {
+  upload_url: string;
+  public_url: string;
 }
 
 interface RefreshResponse {
@@ -137,6 +143,48 @@ export async function updateUserLanguage(
   const result = await apiFetch<MeResponse>('/api/me', {
     method: 'PATCH',
     body: JSON.stringify({ language }),
+  }, accessToken);
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
+}
+
+/**
+ * Получение URL для загрузки аватарки в хранилище R2
+ */
+export async function getAvatarUploadUrl(
+  accessToken: string,
+  contentType: string = 'image/jpeg'
+): Promise<AvatarUploadUrlResponse> {
+  console.log('📎 [AUTH] Запрос URL для загрузки аватара:', contentType);
+  
+  const result = await apiFetch<AvatarUploadUrlResponse>('/api/profile/avatar/upload-url', {
+    method: 'POST',
+    body: JSON.stringify({ content_type: contentType }),
+  }, accessToken);
+  
+  if (!result) {
+    throw new Error('Empty response from server');
+  }
+  
+  return result;
+}
+
+/**
+ * Обновление ссылки на аватар в профиле пользователя
+ */
+export async function updateAvatar(
+  publicUrl: string,
+  accessToken: string
+): Promise<MeResponse> {
+  console.log('🖼️ [AUTH] Сохранение новой аватарки в БД:', publicUrl);
+  
+  const result = await apiFetch<MeResponse>('/api/profile/avatar', {
+    method: 'PUT',
+    body: JSON.stringify({ avatar_url: publicUrl }),
   }, accessToken);
   
   if (!result) {

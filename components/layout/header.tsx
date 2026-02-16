@@ -10,6 +10,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { UserAvatar } from '@/components/auth/user-avatar';
 
 export default function Header() {
   const t = useTranslations('header');
@@ -80,17 +81,13 @@ export default function Header() {
             
             {user ? (
               <div className="flex items-center gap-4">
-                <Link href={`/${locale}/dashboard`}>
-                   <div className="flex items-center gap-3 pl-1 pr-3 py-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-200 transition-colors group">
-                      <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                         <User className="h-5 w-5" />
-                      </div>
-                      <div className="hidden md:flex flex-col text-left">
-                         <span className="text-xs font-black text-slate-900 dark:text-white max-w-[120px] truncate leading-none mb-0.5">{user.display_name || user.email}</span>
-                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Verified User</span>
-                      </div>
-                   </div>
-                </Link>
+                 <div className="flex items-center gap-3 pl-1 pr-3 py-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-200 transition-colors group">
+                    <UserAvatar size="sm" editable className="h-9 w-9 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform" />
+                    <Link href={`/${locale}/dashboard`} className="hidden md:flex flex-col text-left">
+                       <span className="text-xs font-black text-slate-900 dark:text-white max-w-[120px] truncate leading-none mb-0.5">{user.display_name || user.email}</span>
+                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Verified User</span>
+                    </Link>
+                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">

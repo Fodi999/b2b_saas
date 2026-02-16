@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useInventoryStore } from '@/lib/stores/inventory-store';
 import { useInventory } from '@/lib/hooks/use-inventory';
+import { useInventoryAnalytics } from '@/lib/hooks/use-inventory-analytics';
 import { deleteInventoryProduct } from '@/lib/api/inventory';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,10 @@ import {
   Clock,
   Circle,
   Database,
-  Cpu
+  Cpu,
+  TrendingDown,
+  ShieldCheck,
+  Zap as ZapIcon
 } from 'lucide-react';
 import AddProductModal from '@/components/inventory/add-product-modal';
 import ProductFormUnified from '@/components/inventory/product-form-unified';
@@ -74,6 +78,14 @@ import { useTranslations } from 'next-intl';
 export default function InventoryPage() {
   const { user, accessToken } = useAuthStore();
   const { items, loading } = useInventoryStore();
+  const { 
+    health, 
+    lossReport, 
+    isProcessing, 
+    runCleanup,
+    refresh: refreshAnalytics 
+  } = useInventoryAnalytics();
+  
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
@@ -88,6 +100,22 @@ export default function InventoryPage() {
   // Загружаем склад с backend
   const { reloadInventory } = useInventory();
 
+  // Общий рефреш данных (склад + аналитика)
+  const refreshAllData = useCallback(async () => {
+    await reloadInventory();
+    refreshAnalytics();
+  }, [reloadInventory, refreshAnalytics]);
+
+  // Обработчик FIFO очистки
+  const handleCleanup = async () => {
+    if (!accessToken) return;
+    const count = await runCleanup();
+    if (count > 0) {
+      alert(t('analytics.waste.cleanupSuccess', { count }));
+      await reloadInventory();
+    }
+  };
+
   // Редирект если нет юзера
   useEffect(() => {
     if (!user) {
@@ -100,13 +128,13 @@ export default function InventoryPage() {
     setProductToDelete({ id, name });
   };
 
-  const confirmDelete = async () => {
+  const confirmingDelete = async () => {
     if (!productToDelete || !accessToken) return;
     
     try {
       setDeletingId(productToDelete.id);
       await deleteInventoryProduct(productToDelete.id, accessToken);
-      await reloadInventory();
+      await refreshAllData();
       setProductToDelete(null);
     } catch (error) {
       console.error('Ошибка удаления продукта:', error);
@@ -146,6 +174,37 @@ export default function InventoryPage() {
     }
   };
 
+  const tCat = useTranslations('inventory.categories');
+
+  const translateCategory = (category: string) => {
+    // Mapping backend strings (hardcoded or English) to translation keys
+    const mapping: Record<string, string> = {
+      'Dairy': 'Dairy',
+      'Молочные продукты и яйця': 'Dairy',
+      'Vegetables': 'Vegetables',
+      'Овощи': 'Vegetables',
+      'Meat': 'Meat',
+      'Мясо': 'Meat',
+      'Fish': 'Fish',
+      'Рыба': 'Fish',
+      'Fruits': 'Fruits',
+      'Фрукты': 'Fruits',
+      'Grains': 'Grains',
+      'Зерновые': 'Grains',
+      'Spices': 'Spices',
+      'Специи': 'Spices',
+      'Beverages': 'Beverages',
+      'Напитки': 'Beverages',
+      'Nuts and seeds': 'Nuts and seeds',
+      'Орехи и семена': 'Nuts and seeds',
+      'Other': 'Other',
+      'Другое': 'Other'
+    };
+
+    const key = mapping[category];
+    return key ? tCat(key as any) : category;
+  };
+
   const getCategoryIcon = (category: string, size: 'sm' | 'md' | 'lg' = 'sm') => {
     const sizeClasses = {
       sm: 'h-4 w-4',
@@ -156,25 +215,25 @@ export default function InventoryPage() {
     const iconSize = sizeClasses[size];
     
     const iconMap: Record<string, React.ReactNode> = {
-      // English
       'Dairy': <Milk className={iconSize} />,
-      'Vegetables': <Carrot className={iconSize} />,
-      'Meat': <Beef className={iconSize} />,
-      'Fish': <Fish className={iconSize} />,
-      'Fruits': <Apple className={iconSize} />,
-      'Grains': <Wheat className={iconSize} />,
-      'Spices': <Soup className={iconSize} />,
-      'Beverages': <Coffee className={iconSize} />,
-      'Other': <Package className={iconSize} />,
-      // Русский
       'Молочные продукты и яйця': <Milk className={iconSize} />,
+      'Vegetables': <Carrot className={iconSize} />,
       'Овощи': <Carrot className={iconSize} />,
+      'Meat': <Beef className={iconSize} />,
       'Мясо': <Beef className={iconSize} />,
+      'Fish': <Fish className={iconSize} />,
       'Рыба': <Fish className={iconSize} />,
+      'Fruits': <Apple className={iconSize} />,
       'Фрукты': <Apple className={iconSize} />,
+      'Grains': <Wheat className={iconSize} />,
       'Зерновые': <Wheat className={iconSize} />,
+      'Spices': <Soup className={iconSize} />,
       'Специи': <Soup className={iconSize} />,
+      'Beverages': <Coffee className={iconSize} />,
       'Напитки': <Coffee className={iconSize} />,
+      'Nuts and seeds': <Package className={iconSize} />,
+      'Орехи и семена': <Package className={iconSize} />,
+      'Other': <Package className={iconSize} />,
       'Другое': <Package className={iconSize} />,
     };
     return iconMap[category] || <Package className={iconSize} />;
@@ -203,26 +262,54 @@ export default function InventoryPage() {
     return days;
   };
 
+  const getHealthColor = (status: string) => {
+    switch (status) {
+      case 'Excellent': return 'text-emerald-500';
+      case 'Good': return 'text-indigo-500';
+      case 'Warning': return 'text-amber-500';
+      case 'Critical': return 'text-rose-500';
+      default: return 'text-slate-500';
+    }
+  };
+
+  const getHealthBg = (status: string) => {
+    switch (status) {
+      case 'Excellent': return 'bg-emerald-500/10 border-emerald-500/20';
+      case 'Good': return 'bg-indigo-500/10 border-indigo-500/20';
+      case 'Warning': return 'bg-amber-500/10 border-amber-500/20';
+      case 'Critical': return 'bg-rose-500/10 border-rose-500/20';
+      default: return 'bg-slate-500/10 border-slate-500/20';
+    }
+  };
+
   // Получаем уникальные категории и группируем продукты
   const categories = useMemo(() => {
+    // Используем мапу для группировки по категориям
+    // Нам важно сохранить ОРИГИНАЛЬНОЕ название (ключ) из бекенда для фильтрации, 
+    // но если несколько ключей мапятся на одно и то же отображаемое имя, мы можем их объединить.
+    // Однако в текущей логике фильтрации filteredItems использует activeTab === item.category.
+    // Поэтому лучше оставить их раздельно, но красиво отображать.
+    
     const categoryMap = new Map<string, { name: string; count: number }>();
     
     items.forEach(item => {
-      if (item.category) {
-        const existing = categoryMap.get(item.category);
-        if (existing) {
-          existing.count++;
-        } else {
-          categoryMap.set(item.category, {
-            name: item.category,
-            count: 1
-          });
-        }
+      const catKey = item.category || 'Other';
+      const existing = categoryMap.get(catKey);
+      if (existing) {
+        existing.count++;
+      } else {
+        categoryMap.set(catKey, {
+          name: catKey,
+          count: 1
+        });
       }
     });
 
-    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-  }, [items]);
+    // Сортируем по переведенному названию
+    return Array.from(categoryMap.values()).sort((a, b) => 
+      translateCategory(a.name).localeCompare(translateCategory(b.name), locale === 'ru' ? 'ru' : locale === 'pl' ? 'pl' : 'en')
+    );
+  }, [items, translateCategory, locale]);
 
   // Фильтруем продукты по выбранной категории
   const filteredItems = useMemo(() => {
@@ -322,12 +409,106 @@ export default function InventoryPage() {
               <ProductFormUnified 
                 onSuccess={() => {
                   setTimeout(() => {
-                    reloadInventory();
+                    refreshAllData();
                   }, 1500);
                 }} 
               />
             </div>
           )}
+
+          {/* 🔥 V3: Analytics Summary Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Inventory Health Score */}
+            <Card className="rounded-[2.5rem] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <ShieldCheck className="h-32 w-32" />
+              </div>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-6">
+                  <div className={`h-24 w-24 rounded-full border-8 flex flex-col items-center justify-center transition-all duration-1000 ${getHealthBg(health?.status || 'Good').split(' ')[1]} ${getHealthColor(health?.status || 'Good')}`}>
+                    <span className="text-3xl font-black">{health?.health_score ?? '--'}</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">%</span>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                        {t('analytics.health.title')}
+                      </h3>
+                      <Badge variant="outline" className={`font-black uppercase text-[10px] ${getHealthBg(health?.status || 'Good')}`}>
+                        {health?.status ? t(`analytics.health.${health.status.toLowerCase()}`) : '--'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-500 font-medium leading-tight">
+                      {t('analytics.health.desc')}
+                    </p>
+                    <div className="flex gap-4 pt-2">
+                      <div className="text-center">
+                        <p className="text-[10px] font-black uppercase text-rose-500">{t('analytics.health.metrics.expired')}</p>
+                        <p className="text-lg font-black">{health?.expired ?? 0}</p>
+                      </div>
+                      <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
+                      <div className="text-center">
+                        <p className="text-[10px] font-black uppercase text-amber-500">{t('analytics.health.metrics.lowStock')}</p>
+                        <p className="text-lg font-black">{health?.low_stock ?? 0}</p>
+                      </div>
+                      <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
+                      <div className="text-center">
+                        <p className="text-[10px] font-black uppercase text-indigo-500">{t('analytics.health.metrics.warning')}</p>
+                        <p className="text-lg font-black">{health?.warning ?? 0}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Waste KPI & Loss Analytics */}
+            <Card className="rounded-[2.5rem] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                <TrendingDown className="h-32 w-32" />
+              </div>
+              <CardContent className="p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                      {t('analytics.waste.title')}
+                    </h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      {t('analytics.waste.period')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-4xl font-black italic tracking-tighter ${(lossReport?.waste_percentage ?? 0) > 5 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {lossReport?.waste_percentage ?? '0.0'}%
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('analytics.waste.wasteKpi')}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                      <ZapIcon className="h-5 w-5 text-rose-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-500">{t('analytics.waste.totalLoss')}</p>
+                      <p className="text-lg font-black">{( (lossReport?.total_loss_cents ?? 0) / 100).toFixed(2)} PLN</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isProcessing || (health?.expired ?? 0) === 0}
+                    onClick={handleCleanup}
+                    className="rounded-xl border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[9px] tracking-widest gap-2"
+                  >
+                    {isProcessing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                    {t('analytics.waste.cleanButton')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Alerts */}
           {hasAlerts && (
@@ -345,10 +526,10 @@ export default function InventoryPage() {
           <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
             <div className="flex items-center justify-between mb-4">
               <TabsList>
-                <TabsTrigger value="all">Все ({items.length})</TabsTrigger>
+                <TabsTrigger value="all">{tCat('all')} ({items.length})</TabsTrigger>
                 {categories.map((cat) => (
                   <TabsTrigger key={cat.name} value={cat.name}>
-                    {cat.name} ({cat.count})
+                    {translateCategory(cat.name)} ({cat.count})
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -406,7 +587,7 @@ export default function InventoryPage() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 {getCategoryIcon(item.category || 'Other')}
-                                <span className="text-xs">{item.category || 'Другое'}</span>
+                                <span className="text-xs">{translateCategory(item.category || 'Other')}</span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -485,7 +666,7 @@ export default function InventoryPage() {
             <Button
               type="button"
               variant="destructive"
-              onClick={confirmDelete}
+              onClick={confirmingDelete}
               className="flex-1"
               disabled={!!deletingId}
             >
@@ -499,6 +680,7 @@ export default function InventoryPage() {
           <AddProductModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
+            onSuccess={refreshAllData}
           />
         </div>
       </div>

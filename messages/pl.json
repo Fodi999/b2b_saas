@@ -238,6 +238,32 @@
       "title": "Magazyn",
       "subtitle": "Zarządzanie zapasami i prognozowanie AI"
     },
+    "analytics": {
+      "health": {
+        "title": "Kondycja magazynu",
+        "score": "Health Score",
+        "desc": "Ogólny indeks efektywności zarządzania zapasami",
+        "excellent": "Świetnie",
+        "good": "Dobrze",
+        "warning": "Ostrzeżenie",
+        "critical": "Krytyczne",
+        "metrics": {
+          "critical": "Krytyczne",
+          "warning": "Ostrzeżenia",
+          "expired": "Przeterminowane",
+          "lowStock": "Mało na stanie"
+        }
+      },
+      "waste": {
+        "title": "Analityka strat",
+        "wasteKpi": "Waste KPI",
+        "totalLoss": "Suma strat",
+        "period": "Ostatnie 30 dni",
+        "cleanup": "Wyczyść przeterminowane",
+        "cleanupSuccess": "Wycofano {count} przeterminowanych partii",
+        "cleanButton": "Uruchom czyszczenie FIFO"
+      }
+    },
     "actions": {
       "smartAdd": "Smart Add",
       "closeAI": "Zamknij AI",
@@ -293,6 +319,19 @@
         "l": "l",
         "pcs": "szt"
       }
+    },
+    "categories": {
+      "Dairy": "Nabiał i jajka",
+      "Vegetables": "Warzywa",
+      "Meat": "Mięso",
+      "Fish": "Ryba",
+      "Fruits": "Owoce",
+      "Grains": "Zboża",
+      "Spices": "Przyprawy",
+      "Beverages": "Napoje",
+      "Nuts and seeds": "Orzechy i nasiona",
+      "Other": "Inne",
+      "all": "Wszystkie"
     }
   },
   "recipes": {
