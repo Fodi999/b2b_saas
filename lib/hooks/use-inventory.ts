@@ -16,22 +16,22 @@ export function useInventory() {
   // Функция для перезагрузки инвентаря (используется после добавления/обновления)
   const reloadInventory = useCallback(async () => {
     if (!accessToken) {
-      console.warn('⚠️ [reloadInventory] Нет access token');
+      console.warn('[reloadInventory] Нет access token');
       return;
     }
 
-    console.log('🔄 [reloadInventory] Перезагрузка склада с BACKEND...');
+    console.log('[reloadInventory] Перезагрузка склада с BACKEND...');
     setLoading(true);
 
     try {
       const items = await fetchInventory(accessToken);
-      console.log('✅ [reloadInventory] Склад перезагружен:', {
+      console.log('[reloadInventory] Склад перезагружен:', {
         count: items.length,
         items: items.map((i) => ({ name: i.product_name, status: i.status })),
       });
       setItems(items);
     } catch (error) {
-      console.error('❌ [reloadInventory] Ошибка перезагрузки:', error);
+      console.error('[reloadInventory] Ошибка перезагрузки:', error);
       throw error; // Пробрасываем дальше
     } finally {
       setLoading(false);
@@ -40,24 +40,24 @@ export function useInventory() {
 
   useEffect(() => {
     if (!accessToken) {
-      console.log('⚠️ [useInventory] Нет access token, очищаем склад');
+      console.log('[useInventory] Нет access token, очищаем склад');
       clear();
       return;
     }
 
-    console.log('🔄 [useInventory] Загрузка склада с BACKEND (Query DTO)...');
+    console.log('[useInventory] Загрузка склада с BACKEND (Query DTO)...');
     setLoading(true);
 
     fetchInventory(accessToken)
       .then((items) => {
-        console.log('✅ [useInventory] Склад загружен С BACKEND:', {
+        console.log('[useInventory] Склад загружен С BACKEND:', {
           count: items.length,
           items: items.map((i) => ({ name: i.product_name, status: i.status })),
         });
         setItems(items);
       })
       .catch((error) => {
-        console.error('❌ [useInventory] Ошибка загрузки склада:', error);
+        console.error('[useInventory] Ошибка загрузки склада:', error);
         // Очищаем при ошибке
         clear();
       })

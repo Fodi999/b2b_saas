@@ -42,6 +42,7 @@ export interface InventoryProduct {
   product_name: string;
   category: string;           // ✅ Название категории для отображения
   category_id?: string;       // ✅ ID категории (если нужен)
+  catalog_ingredient_id?: string; // ✅ ID из каталога для создания рецептов
   quantity: number;
   base_unit: 'g' | 'ml' | 'pcs';
   price: number;
@@ -84,7 +85,7 @@ function calculateStatus(
       warnings.push(`Просрочен на ${Math.abs(days)} ${Math.abs(days) === 1 ? 'день' : 'дней'}`);
     } else if (days === 0) {
       status = 'expiring';
-      warnings.push('⚠️ Истекает сегодня!');
+      warnings.push('Истекает сегодня!');
     } else if (days === 1) {
       status = 'expiring';
       warnings.push('Истекает завтра');
@@ -110,10 +111,10 @@ function calculateStatus(
 }
 
 function convertToFrontend(dto: InventoryProductQueryDTO): InventoryProduct {
-  // 🛡️ Защита: проверяем, что получили enriched объект (Query DTO)
+  // Защита: проверяем, что получили enriched объект (Query DTO)
   if (!dto.product || !dto.product.name) {
     throw new Error(
-      '❌ Inventory DTO without product — use GET /api/inventory/products for enriched data. ' +
+      'Inventory DTO without product — use GET /api/inventory/products for enriched data. ' +
       'POST response contains raw entity without joined relations!'
     );
   }
@@ -135,6 +136,7 @@ function convertToFrontend(dto: InventoryProductQueryDTO): InventoryProduct {
     product_name: dto.product.name,
     category: categoryName,           // ✅ Название категории (строка или из объекта)
     category_id: categoryId,          // ✅ ID категории (если есть)
+    catalog_ingredient_id: dto.product.id, // ✅ ID из каталога для создания рецептов
     quantity: dto.quantity,
     base_unit: baseUnit,
     price: dto.price_per_unit_cents / 100,
@@ -150,23 +152,23 @@ export async function searchCatalogIngredients(
   query: string,
   accessToken?: string
 ): Promise<CatalogIngredientDTO[]> {
-  console.log('🔍 [CATALOG] Поиск:', query);
-  console.log('🔑 [CATALOG] Токен (первые 50 символов):', accessToken?.substring(0, 50));
+  console.log('[CATALOG] Поиск:', query);
+  console.log('[CATALOG] Токен (первые 50 символов):', accessToken?.substring(0, 50));
   const res = await apiFetch<{ ingredients: CatalogIngredientDTO[] }>(
     `/api/catalog/ingredients?q=${encodeURIComponent(query)}`,
     {},
     accessToken
   );
-  console.log('✅ [CATALOG] Полный ответ от backend:', JSON.stringify(res, null, 2));
-  console.log('✅ [CATALOG] Найдено:', res?.ingredients?.length || 0);
+  console.log('[CATALOG] Полный ответ от backend:', JSON.stringify(res, null, 2));
+  console.log('[CATALOG] Найдено:', res?.ingredients?.length || 0);
   return res?.ingredients || [];
 }
 
 export async function fetchInventory(accessToken: string): Promise<InventoryProduct[]> {
-  console.log('📦 [INVENTORY] Загрузка (Query DTO)...');
+  console.log('[INVENTORY] Загрузка (Query DTO)...');
   const dtos = await apiFetch<InventoryProductQueryDTO[]>('/api/inventory/products', {}, accessToken);
   if (!dtos) return [];
-  console.log('✅ [INVENTORY] Получено:', dtos.length);
+  console.log('[INVENTORY] Получено:', dtos.length);
   return dtos.map(convertToFrontend);
 }
 
@@ -174,7 +176,7 @@ export async function addInventoryProduct(
   data: AddInventoryProductRequest,
   accessToken: string
 ): Promise<void> {
-  console.log('📦 [INVENTORY] POST - создание продукта:', data);
+  console.log('[INVENTORY] POST - создание продукта:', data);
   
   // POST создает raw entity, БЕЗ joined product
   // ❗ НЕ используем response для UI - он не содержит enriched данных!
@@ -184,8 +186,8 @@ export async function addInventoryProduct(
     accessToken
   );
   
-  console.log('✅ [INVENTORY] Продукт создан на backend (raw entity)');
-  console.log('🔄 Frontend должен вызвать GET для получения enriched данных');
+  console.log('[INVENTORY] Продукт создан на backend (raw entity)');
+  console.log('Frontend должен вызвать GET для получения enriched данных');
 }
 
 export async function updateInventoryProduct(
@@ -193,13 +195,35 @@ export async function updateInventoryProduct(
   data: Partial<{ quantity: number; price_per_unit_cents: number; expires_at: string }>,
   accessToken: string
 ): Promise<void> {
-  console.log('📦 [INVENTORY] Обновление:', id);
+  console.log('[INVENTORY] Обновление:', id);
   await apiFetch(`/api/inventory/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }, accessToken);
-  console.log('✅ [INVENTORY] Обновлено');
+  console.log('[INVENTORY] Обновлено');
 }
 
 export async function deleteInventoryProduct(id: string, accessToken: string): Promise<void> {
-  console.log('📦 [INVENTORY] Удаление:', id);
+  console.log('[INVENTORY] Удаление:', id);
   await apiFetch(`/api/inventory/products/${id}`, { method: 'DELETE' }, accessToken);
-  console.log('✅ [INVENTORY] Удалено');
+  console.log('[INVENTORY] Удалено');
+}
+
+/**
+ * Smart Add: Создать продукт через AI (один шаг)
+ * Анализирует текст, переводит на все языки, определяет категорию и добавляет в инвентарь
+ */
+export async function createProductUnified(
+  rawText: string,
+  accessToken: string
+): Promise<any> {
+  console.log('[INVENTORY] Smart Add:', rawText);
+  return await apiFetch(
+    '/api/admin/products',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        raw_text: rawText,
+        auto_translate: true
+      })
+    },
+    accessToken
+  );
 }

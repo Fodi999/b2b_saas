@@ -23,9 +23,53 @@ import {
   Wheat,
   Soup,
   Coffee,
-  Folder
+  Folder,
+  Sparkles as SparklesIcon,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Circle,
+  Database,
+  Cpu
 } from 'lucide-react';
 import AddProductModal from '@/components/inventory/add-product-modal';
+import ProductFormUnified from '@/components/inventory/product-form-unified';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent 
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useTranslations } from 'next-intl';
 
 export default function InventoryPage() {
   const { user, accessToken } = useAuthStore();
@@ -33,9 +77,12 @@ export default function InventoryPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations('inventory');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAIFormOpen, setIsAIFormOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<{id: string, name: string} | null>(null);
   const [activeTab, setActiveTab] = useState<string>('all');
 
   // Загружаем склад с backend
@@ -49,43 +96,53 @@ export default function InventoryPage() {
   }, [user, router, locale]);
 
   // Обработчик удаления продукта
-  const handleDelete = async (id: string, name: string) => {
-    if (!accessToken) return;
-    
-    if (!confirm(`Удалить "${name}"?`)) {
-      return;
-    }
+  const handleDeleteClick = (id: string, name: string) => {
+    setProductToDelete({ id, name });
+  };
 
+  const confirmDelete = async () => {
+    if (!productToDelete || !accessToken) return;
+    
     try {
-      setDeletingId(id);
-      await deleteInventoryProduct(id, accessToken);
+      setDeletingId(productToDelete.id);
+      await deleteInventoryProduct(productToDelete.id, accessToken);
       await reloadInventory();
+      setProductToDelete(null);
     } catch (error) {
       console.error('Ошибка удаления продукта:', error);
-      alert('Не удалось удалить продукт');
     } finally {
       setDeletingId(null);
     }
   };
 
-  if (!user) {
-    return null;
-  }
-
-  const getStatusBadge = (status: string) => {
-    const baseClasses = "rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:px-2 sm:py-1 sm:text-xs";
-    
+  const getStatusBadge = (status: string) => {    
     switch (status) {
       case 'in-stock':
-        return <span className={`${baseClasses} bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300`}>🟢 <span className="hidden sm:inline">В норме</span></span>;
+        return (
+          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20 gap-1.5 font-bold uppercase text-[10px]">
+            <CheckCircle2 className="h-3 w-3" /> {t('status.inStock')}
+          </Badge>
+        );
       case 'low':
-        return <span className={`${baseClasses} bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300`}>🟡 <span className="hidden sm:inline">Мало</span></span>;
+        return (
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20 gap-1.5 font-bold uppercase text-[10px]">
+            <AlertCircle className="h-3 w-3" /> {t('status.low')}
+          </Badge>
+        );
       case 'expiring':
-        return <span className={`${baseClasses} bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300`}>🟠 <span className="hidden sm:inline">Истекает</span></span>;
+        return (
+          <Badge variant="outline" className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 border-orange-500/20 gap-1.5 font-bold uppercase text-[10px]">
+            <Clock className="h-3 w-3" /> {t('status.expiring')}
+          </Badge>
+        );
       case 'expired':
-        return <span className={`${baseClasses} bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300`}>🔴 <span className="hidden sm:inline">Просрочен</span></span>;
+        return (
+          <Badge variant="destructive" className="gap-1.5 font-bold uppercase text-[10px]">
+             <AlertTriangle className="h-3 w-3" /> {t('status.expired')}
+          </Badge>
+        );
       default:
-        return <span className={`${baseClasses} bg-gray-100 text-gray-700 dark:bg-gray-950 dark:text-gray-300`}>{status}</span>;
+        return <Badge variant="secondary" className="font-bold uppercase text-[10px]">{status}</Badge>;
     }
   };
 
@@ -125,15 +182,17 @@ export default function InventoryPage() {
 
   const formatQuantity = (quantity: number, unit: string) => {
     // Конвертируем base_unit в читаемый формат
+    const t = (val: string) => val; // Placeholder for logic
     if (unit === 'g') return `${quantity} кг`;
     if (unit === 'ml') return `${quantity} л`;
     if (unit === 'pcs') return `${quantity} шт`;
     return `${quantity} ${unit}`;
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string, localeCode?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('ru-RU');
+    // Use the locale from params
+    return new Date(dateString).toLocaleDateString(localeCode === 'ru' ? 'ru-RU' : localeCode === 'pl' ? 'pl-PL' : localeCode === 'uk' ? 'uk-UA' : 'en-US');
   };
 
   const getDaysRemaining = (expirationDate?: string) => {
@@ -177,297 +236,272 @@ export default function InventoryPage() {
   const lowStockCount = items.filter(item => item.status === 'low').length;
   const hasAlerts = expiringCount > 0 || lowStockCount > 0;
 
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-8">
-        <div className="mx-auto max-w-6xl space-y-4 sm:space-y-6">
-          {/* BACKEND CONNECTION STATUS - скрываем на мобильных */}
-          <div className="hidden rounded-xl border-2 border-green-500 bg-green-50 p-4 dark:bg-green-950/30 sm:block">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in duration-700">
+        <div className="space-y-10">
+          {/* Neural Core Status Banner */}
+          <div className="relative overflow-hidden group rounded-[3rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-xl shadow-slate-200/50 dark:shadow-none">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
+              <div className="flex items-center gap-6">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-500">
+                  <Database className="h-10 w-10" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                     <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                        {t('core.title')}
+                     </h3>
+                     <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[10px] font-black uppercase tracking-widest px-3">{t('core.status')}</Badge>
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium">
+                    {t('core.description')}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-8 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-4">
+                  <Cpu className="h-6 w-6 text-indigo-500" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Memory Engine</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white">v2.4 Neural</p>
+                  </div>
+                </div>
+                <div className="h-10 w-px bg-slate-200 dark:bg-slate-700" />
+                <div className="text-right">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Latency</p>
+                  <p className="text-lg font-black text-emerald-500">0.4ms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Header Controls */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => router.push(`/${locale}/dashboard`)}
+                className="h-12 w-12 rounded-2xl border border-slate-100 dark:border-slate-800 hover:bg-white transition-all shadow-sm"
+              >
+                <ArrowLeft className="h-5 w-5 text-slate-400" />
+              </Button>
+              <div>
+                <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{t('header.title')}</h1>
+                <p className="text-sm font-medium text-slate-500">{t('header.subtitle')}</p>
+              </div>
+            </div>
+
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
-                <span className="text-xl">🟢</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-green-900 dark:text-green-100">
-                  ✅ СКЛАД ЗАГРУЖЕН С BACKEND (Query DTO)
-                </h3>
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  Product данные приходят joined - нет N+1 запросов! Статусы и warnings рассчитываются на frontend.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Header */}
-          <div className="space-y-3 sm:space-y-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.push(`/${locale}/dashboard`)}
-              className="gap-2"
-              size="sm"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-              <span className="sm:hidden">Назад</span>
-            </Button>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-950/50 sm:h-12 sm:w-12">
-                  <Package className="h-5 w-5 text-indigo-600 dark:text-indigo-400 sm:h-6 sm:w-6" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-                    Склад
-                  </h1>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
-                    {loading ? 'Загрузка...' : `${items.length} позиций на складе`}
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={() => setIsModalOpen(true)} className="w-full gap-2 sm:w-auto" size="sm">
-                <Plus className="h-4 w-4" />
-                <span className="sm:inline">Добавить</span>
+              <Button
+                variant="outline"
+                onClick={() => setIsAIFormOpen(!isAIFormOpen)}
+                className={`h-12 px-6 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${isAIFormOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20' : 'border-slate-100 dark:border-slate-800 hover:bg-white'}`}
+              >
+                <SparklesIcon className="h-4 w-4 mr-2" />
+                {isAIFormOpen ? t('actions.closeAI') : t('actions.smartAdd')}
+              </Button>
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                className="h-12 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t('actions.create')}
               </Button>
             </div>
           </div>
 
-          {/* Alerts - показываем только если есть warnings с backend */}
+          {/* AI Smart Form section */}
+          {isAIFormOpen && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+              <ProductFormUnified 
+                onSuccess={() => {
+                  setTimeout(() => {
+                    reloadInventory();
+                  }, 1500);
+                }} 
+              />
+            </div>
+          )}
+
+          {/* Alerts */}
           {hasAlerts && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30 sm:p-4">
-              <div className="flex items-start gap-2 sm:gap-3">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 sm:h-5 sm:w-5" />
-                <div>
-                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100 sm:text-base">
-                    Внимание! Требуется проверка
-                  </p>
-                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100 sm:text-base">
-                    Внимание! Требуется проверка
-                  </p>
-                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300 sm:text-sm">
-                    {expiringCount > 0 && `${expiringCount} продуктов истекают в ближайшее время. `}
-                    {lowStockCount > 0 && `${lowStockCount} продуктов заканчиваются.`}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Alert variant="destructive" className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-100">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Внимание! Требуется проверка</AlertTitle>
+              <AlertDescription>
+                {expiringCount > 0 && `${expiringCount} продуктов истекают в ближайшее время. `}
+                {lowStockCount > 0 && `${lowStockCount} продуктов заканчиваются.`}
+              </AlertDescription>
+            </Alert>
           )}
 
-          {/* Вкладки категорий */}
-          {!loading && items.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-1.5 dark:border-gray-800 dark:bg-gray-900 sm:p-2">
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {/* Вкладка "Все" */}
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${
-                    activeTab === 'all'
-                      ? 'bg-indigo-600 text-white shadow-md dark:bg-indigo-500'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span>Все</span>
-                  <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold sm:ml-1 sm:px-2 ${
-                    activeTab === 'all'
-                      ? 'bg-white/20 text-white'
-                      : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                  }`}>
-                    {items.length}
-                  </span>
-                </button>
-
-                {/* Вкладки категорий */}
-                {categories.map((category) => (
-                  <button
-                    key={category.name}
-                    onClick={() => setActiveTab(category.name)}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${
-                      activeTab === category.name
-                        ? 'bg-indigo-600 text-white shadow-md dark:bg-indigo-500'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="flex-shrink-0">{getCategoryIcon(category.name)}</span>
-                    <span className="whitespace-nowrap">{category.name}</span>
-                    <span className={`ml-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold sm:ml-1 sm:px-2 ${
-                      activeTab === category.name
-                        ? 'bg-white/20 text-white'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                    }`}>
-                      {category.count}
-                    </span>
-                  </button>
+          {/* Catalog & Inventory Table */}
+          <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="all">Все ({items.length})</TabsTrigger>
+                {categories.map((cat) => (
+                  <TabsTrigger key={cat.name} value={cat.name}>
+                    {cat.name} ({cat.count})
+                  </TabsTrigger>
                 ))}
-              </div>
+              </TabsList>
             </div>
-          )}
 
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-8 sm:py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-indigo-600 sm:h-8 sm:w-8" />
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 sm:ml-3 sm:text-base">
-                Загрузка склада...
-              </span>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!loading && items.length === 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-gray-900 sm:p-12">
-              <Package className="mx-auto h-12 w-12 text-gray-400 sm:h-16 sm:w-16" />
-              <h3 className="mt-3 text-base font-semibold text-gray-900 dark:text-white sm:mt-4 sm:text-lg">
-                Склад пуст
-              </h3>
-              <p className="mt-1.5 text-xs text-gray-600 dark:text-gray-400 sm:mt-2 sm:text-sm">
-                Добавьте первый продукт чтобы начать учёт
-              </p>
-              <Button onClick={() => setIsModalOpen(true)} className="mt-3 gap-2 sm:mt-4" size="sm">
-                <Plus className="h-4 w-4" />
-                Добавить продукт
-              </Button>
-            </div>
-          )}
-
-          {/* Inventory Cards (вместо таблицы) */}
-          {!loading && filteredItems.length > 0 && (
-            <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900 sm:p-5"
-                >
-                  {/* 1️⃣ Верх - изображение + идентификация */}
-                  <div className="flex gap-3 sm:gap-4">
-                    {/* Изображение продукта с fallback на иконку категории */}
-                    <ProductImage
-                      src={item.image_url}
-                      alt={item.product_name}
-                      fallbackIcon={getCategoryIcon(item.category, 'lg')}
-                      containerClassName="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0 sm:h-20 sm:w-20"
-                      className="h-full w-full object-cover"
-                    />
-
-                    {/* Информация о продукте */}
-                    <div className="flex flex-1 flex-col">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-white sm:text-base">
-                            {item.product_name}
-                          </h3>
-                          <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 sm:mt-1 sm:text-sm">
-                            <Folder className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{item.category}</span>
-                          </p>
-                        </div>
-
-                        {/* Статус бейдж */}
-                        <div className="shrink-0">
-                          {getStatusBadge(item.status)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 3️⃣ Средний блок - цифры (одна строка) */}
-                  <div className="mt-3 flex flex-wrap gap-3 text-xs sm:mt-4 sm:gap-4 sm:text-sm">
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      {formatQuantity(item.quantity, item.base_unit)}
-                    </span>
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      💰 {item.price.toFixed(2)} PLN
-                    </span>
-                  </div>
-
-                  {/* 3️⃣.5 Даты - вторая строка */}
-                  <div className="mt-2 flex flex-col gap-1 text-[10px] sm:mt-2 sm:flex-row sm:flex-wrap sm:gap-3 sm:text-xs">
-                    {item.received_at && (
-                      <span className="text-gray-500 dark:text-gray-400">
-                        📥 Получено: {formatDate(item.received_at)}
-                      </span>
-                    )}
-                    <span className={`flex items-center gap-1 ${
-                      item.status === 'expired' ? 'text-red-600 dark:text-red-400 font-medium' :
-                      item.status === 'expiring' ? 'text-orange-600 dark:text-orange-400 font-medium' :
-                      'text-gray-500 dark:text-gray-400'
-                    }`}>
-                      ⏳ Годен до: {formatDate(item.expiration_date)}
-                      {(() => {
-                        const days = getDaysRemaining(item.expiration_date);
-                        if (days === null) return null;
-                        if (days < 0) return <span className="ml-1">(просрочен)</span>;
-                        if (days === 0) return <span className="ml-1">(сегодня!)</span>;
-                        if (days === 1) return <span className="ml-1">(завтра)</span>;
-                        if (days <= 7) return <span className="ml-1">({days}д)</span>;
-                        return null;
-                      })()}
-                    </span>
-                  </div>
-
-                  {/* 4️⃣ Warnings - СКРЫТЫ по умолчанию (показываем только если есть) */}
-                  {item.warnings && item.warnings.length > 0 && (
-                    <details className="mt-2 sm:mt-3">
-                      <summary className="cursor-pointer text-[10px] text-amber-600 hover:text-amber-700 dark:text-amber-400 sm:text-xs">
-                        ⚠️ {item.warnings.length} {item.warnings.length === 1 ? 'предупреждение' : 'предупреждения'}
-                      </summary>
-                      <ul className="mt-1.5 space-y-0.5 pl-4 text-[10px] text-gray-600 dark:text-gray-400 sm:mt-2 sm:space-y-1 sm:pl-5 sm:text-xs">
-                        {item.warnings.map((warning, idx) => (
-                          <li key={idx}>• {warning}</li>
-                        ))}
-                      </ul>
-                    </details>
-                  )}
-
-                  {/* 5️⃣ Футер - кнопка удаления */}
-                  <div className="mt-3 flex justify-end border-t border-gray-100 pt-2 dark:border-gray-800 sm:mt-4 sm:pt-3">
-                    <button
-                      onClick={() => handleDelete(item.id, item.product_name)}
-                      disabled={deletingId === item.id}
-                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-950 dark:hover:text-red-400 sm:gap-2 sm:px-3 sm:text-sm"
-                      title="Удалить продукт"
-                    >
-                      {deletingId === item.id ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">Удаление...</span>
-                          <span className="sm:hidden">...</span>
-                        </>
+            <TabsContent value={activeTab}>
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[80px]">{t('table.photo')}</TableHead>
+                        <TableHead>{t('table.name')}</TableHead>
+                        <TableHead>{t('table.category')}</TableHead>
+                        <TableHead>{t('table.quantity')}</TableHead>
+                        <TableHead>{t('table.price')}</TableHead>
+                        <TableHead>{t('table.expiry')}</TableHead>
+                        <TableHead>{t('table.status')}</TableHead>
+                        <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell><Skeleton className="h-10 w-10 rounded" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        ))
+                      ) : items.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                            {t('empty.description')}
+                          </TableCell>
+                        </TableRow>
                       ) : (
-                        <>
-                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span>Удалить</span>
-                        </>
+                        filteredItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <ProductImage
+                                src={item.image_url}
+                                alt={item.product_name}
+                                containerClassName="h-10 w-10 rounded border bg-muted flex items-center justify-center overflow-hidden"
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {item.product_name}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {getCategoryIcon(item.category || 'Other')}
+                                <span className="text-xs">{item.category || 'Другое'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {formatQuantity(item.quantity, item.base_unit)}
+                            </TableCell>
+                            <TableCell>
+                              {item.price ? `${item.price.toFixed(2)} PLN` : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="text-sm">{formatDate(item.expiration_date, locale)}</span>
+                                {(() => {
+                                  const days = getDaysRemaining(item.expiration_date);
+                                  if (days === null) return null;
+                                  return (
+                                    <span className={`text-[10px] ${
+                                      days < 3 ? 'text-red-500 font-bold' : 'text-muted-foreground'
+                                    }`}>
+                                      {days <= 0 
+                                        ? t('expiry.expired') 
+                                        : t('expiry.daysLeft', { days })}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {getStatusBadge(item.status)}
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem 
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={() => handleDeleteClick(item.id, item.product_name)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('delete.button')}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
                       )}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
-          {/* Empty State для выбранной категории */}
-          {!loading && items.length > 0 && filteredItems.length === 0 && activeTab !== 'all' && (
-            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-gray-900 sm:p-12">
-              <Package className="mx-auto h-12 w-12 text-gray-400 sm:h-16 sm:w-16" />
-              <h3 className="mt-3 text-base font-semibold text-gray-900 dark:text-white sm:mt-4 sm:text-lg">
-                В категории "{activeTab}" нет продуктов
-              </h3>
-              <p className="mt-1.5 text-xs text-gray-600 dark:text-gray-400 sm:mt-2 sm:text-sm">
-                Выберите другую категорию или добавьте новый продукт
-              </p>
-            </div>
-          )}
+          {/* Delete Confirmation Dialog */}
+      <Dialog open={!!productToDelete} onOpenChange={(open: boolean) => !open && setProductToDelete(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Удалить продукт?</DialogTitle>
+            <DialogDescription>
+              Вы собираетесь удалить &quot;{productToDelete?.name}&quot; из складского учета. Это действие нельзя отменить.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex sm:justify-between gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setProductToDelete(null)}
+              className="flex-1"
+            >
+              Отмена
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmDelete}
+              className="flex-1"
+              disabled={!!deletingId}
+            >
+              {deletingId ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Удалить'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+          {/* Add Product Modal */}
+          <AddProductModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          />
         </div>
       </div>
-
-      {/* Add Product Modal */}
-      <AddProductModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
     </div>
   );
 }

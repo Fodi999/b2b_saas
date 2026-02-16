@@ -1,4 +1,5 @@
 import { LightbulbIcon } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 
 export function NextAction({
   title,
@@ -8,20 +9,28 @@ export function NextAction({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-gray-800 dark:bg-gray-900">
-      <div className="flex gap-4">
-        <div className="flex-shrink-0">
-          <div className="rounded-lg bg-indigo-100 p-2 dark:bg-indigo-950/50">
-            <LightbulbIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+    <Card className="border-none bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
+      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
+        <LightbulbIcon className="h-16 w-16 text-indigo-500" />
+      </div>
+      
+      <CardContent className="p-8">
+        <div className="flex gap-6 items-start relative z-10">
+          <div className="flex-shrink-0">
+            <div className="h-14 w-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-inner">
+              <LightbulbIcon className="h-6 w-6" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">
+              {title}
+            </h4>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+              {description}
+            </p>
           </div>
         </div>
-        <div>
-          <h4 className="font-semibold text-gray-900 dark:text-white">{title}</h4>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {description}
-          </p>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

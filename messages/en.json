@@ -3,8 +3,15 @@
     "features": "Features",
     "howItWorks": "How it works",
     "pricing": "Pricing",
-    "signIn": "Sign in",
-    "getStarted": "Get started"
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "nav": {
+      "dashboard": "Dashboard",
+      "inventory": "Inventory",
+      "recipes": "Recipes",
+      "dishes": "Dishes",
+      "reports": "Reports"
+    }
   },
   "auth": {
     "login": {
@@ -32,14 +39,24 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back, {name}!",
-    "logout": "Log out",
+    "logout": "Logout",
     "modules": {
       "inventory": "Inventory",
+      "inventoryDesc": "Stock and procurement",
       "recipes": "Recipes",
+      "recipesDesc": "Recipes and costing",
       "dishes": "Dishes",
+      "dishesDesc": "Menu and sales",
       "menuEngineering": "Menu Engineering",
+      "menuEngineeringDesc": "Profitability analysis",
       "aiAssistant": "AI Assistant",
-      "reports": "Reports"
+      "aiAssistantDesc": "Chef's AI Assistant",
+      "reports": "Reports",
+      "reportsDesc": "Reports and KPI"
+    },
+    "sections": {
+      "resources": "Management Resources",
+      "metrics": "System Metrics"
     },
     "comingSoon": "Coming soon...",
     "userInfo": "User Information (Mock)",
@@ -138,27 +155,24 @@
     }
   },
   "howItWorks": {
-    "title": "How does it work?",
+    "title": "How it works?",
     "step1": {
-      "title": "1. Upload inventory and recipes",
-      "description": "Simple import or manual entry"
+      "title": "Upload Data",
+      "description": "One-click import of inventory and tech cards"
     },
     "step2": {
-      "title": "2. Add dishes and prices",
-      "description": "System automatically calculates costs"
+      "title": "Configure Menu",
+      "description": "AI calculates real food cost instantly"
     },
     "step3": {
-      "title": "3. AI shows where you're losing money",
-      "description": "Specific recommendations, not generalities"
+      "title": "Scale Profit",
+      "description": "Precise insights to optimize every menu item"
     }
   },
   "cta": {
-    "title": "Start managing your restaurant as a business, not by intuition",
-    "subtitle": "Join restaurateurs who make conscious decisions",
-    "buttons": {
-      "create": "Create account",
-      "demo": "Request demo"
-    }
+    "title": "Switch your restaurant to profit autopilot",
+    "description": "Join the new management standard RestoAI OS 2026 today.",
+    "button": "Start for free"
   },
   "assistant": {
     "header": {
@@ -212,6 +226,355 @@
     },
     "demo": {
       "note": "Demo mode: This is mock data, but scenarios are real. After connecting backend, system will analyze your data in real-time."
+    }
+  },
+  "inventory": {
+    "core": {
+      "title": "Inventory Synchronized",
+      "status": "System Active",
+      "description": "Query DTO data loaded. Joined request optimization active."
+    },
+    "header": {
+      "title": "Inventory",
+      "subtitle": "Stock management and AI forecasting"
+    },
+    "actions": {
+      "smartAdd": "Smart Add",
+      "closeAI": "Close AI",
+      "create": "Create Product"
+    },
+    "status": {
+      "inStock": "In Stock",
+      "low": "Low",
+      "expiring": "Expiring",
+      "expired": "Expired"
+    },
+    "empty": {
+      "title": "Inventory is empty",
+      "description": "Add your first product manually or with AI",
+      "button": "Add Product"
+    },
+    "table": {
+      "photo": "Photo",
+      "name": "Name",
+      "category": "Category",
+      "quantity": "Quantity",
+      "price": "Avg Price",
+      "expiry": "Expiry Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "expiry": {
+      "expired": "Expired",
+      "daysLeft": "{days} days left"
+    },
+    "delete": {
+      "button": "Delete"
+    },
+    "modal": {
+      "title": "Add Product",
+      "subtitle": "Adding goods to Core v2.4 storage",
+      "stepSearch": "Search in catalog",
+      "stepDetails": "Lot parameters",
+      "searchPlaceholder": "Start typing name...",
+      "priceLabel": "Price per unit (PLN)",
+      "quantityLabel": "Quantity",
+      "dateLabel": "Received at",
+      "submit": "Accept to storage",
+      "back": "Back",
+      "expiryNote": "Estimated shelf life: {days} days (until {date})",
+      "success": "Product added successfully"
+    },
+    "search": {
+      "placeholder": "Start typing product name...",
+      "notFound": "Nothing found.",
+      "units": {
+        "kg": "kg",
+        "l": "l",
+        "pcs": "pcs"
+      }
+    }
+  },
+  "recipes": {
+    "header": {
+      "title": "Recipe Core",
+      "subtitle": "Your culinary database with AI costing analytics",
+      "sync": "Sync Active"
+    },
+    "actions": {
+      "create": "Create Recipe"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "status": {
+      "fullStock": "All ingredients in stock",
+      "warnings": "{count} warning",
+      "warningsPlural": "{count} warnings"
+    },
+    "card": {
+      "servings": "{count} servings",
+      "prepTime": "{count} min",
+      "totalCost": "Food Cost",
+      "perServing": "Per serving",
+      "edit": "Edit"
+    },
+    "insights": {
+      "title": "AI Success Score",
+      "purity": {
+        "perfect": "Perfect Recipe",
+        "balanced": "Balanced Recipe",
+        "needsWork": "Needs Work",
+        "risky": "Risky Composition",
+        "critical": "Critical Issue"
+      },
+      "details": {
+        "title": "Analysis Details",
+        "difficulty": "Difficulty",
+        "aiTime": "AI Prep",
+        "steps": "Steps",
+        "checked": "Allergen Cleared"
+      },
+      "sections": {
+        "market": {
+          "title": "Safety & Quality"
+        }
+      }
+    },
+    "metrics": {
+      "title": "Business Metrics",
+      "subtitle": "Economic KPIs & Risk Assessment",
+      "cost": {
+        "title": "Cost Analysis",
+        "perPortion": "per {count} portions",
+        "efficiency": "Procurement efficiency: High"
+      },
+      "margin": {
+        "title": "Profit Margin",
+        "target": "Target: > 70%",
+        "excellent": "Excellent",
+        "good": "Good",
+        "low": "Low"
+      },
+      "risk": {
+        "title": "HACCP Risk",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "description": "Critical Point Control"
+      }
+    },
+    "create": {
+      "steps": {
+        "step1": "STP 01 / EDIT",
+        "step2": "STP 02 / PREVIEW",
+        "step3": "STP 03 / ANALYZING",
+        "step4": "STP 04 / INSIGHTS"
+      },
+      "actions": {
+        "back": "Back",
+        "preview": "Generate Preview",
+        "analyze": "AI Analysis",
+        "save": "Save Recipe"
+      },
+      "sections": {
+        "general": {
+          "title": "General Info",
+          "name_label": "Recipe Name",
+          "name_placeholder": "e.g. Signature Truffle Burger",
+          "image_label": "Recipe Image",
+          "image_upload": "Upload Recipe Photo"
+        },
+        "instructions": {
+          "title": "Cooking Instructions",
+          "placeholder": "Describe the process step by step..."
+        },
+        "ingredients": {
+          "title": "Ingredients",
+          "search_placeholder": "Search products in inventory...",
+          "add_button": "Add Ingredient",
+          "not_found": "Product not found in inventory",
+          "out_of_stock": "Out of stock"
+        },
+        "preview": {
+          "servings": "Servings",
+          "time": "Prep Time",
+          "weight": "Total Weight",
+          "cost_analysis": "Cost Analysis",
+          "cost_per_serving": "Cost per Serving",
+          "instructions": "Instructions Preview"
+        }
+      },
+      "analyzing": {
+        "title": "Neural Analysis",
+        "subtitle": "Processing recipe composition and economic metrics",
+        "phase_1": "Analyzing Tech",
+        "phase_2": "Calculating Logic"
+      }
+    }
+  },
+  "dishes": {
+    "header": {
+      "title": "Menu",
+      "core": "Dishes",
+      "sync": "Sync Active",
+      "subtitle": "Your menu under AI-powered margin analytics control"
+    },
+    "actions": {
+      "create": "Create Dish"
+    },
+    "empty": {
+      "title": "No dishes yet",
+      "subtitle": "Build your first dish from ready recipes. AI will calculate Food Cost and margin in real-time.",
+      "button": "Create first dish"
+    },
+    "status": {
+      "profit": "High Profit",
+      "warning": "Low Margin",
+      "loss": "Loss Making"
+    },
+    "card": {
+      "recipes": "{count} {count, plural, one {recipe} other {recipes}}",
+      "servings": "{count} serv.",
+      "foodCost": "Food Cost",
+      "salePrice": "Sale Price",
+      "grossProfit": "Gross Profit",
+      "fc": "FC",
+      "warnings": "{count} {count, plural, one {warning} other {warnings}}",
+      "edit": "Edit"
+    },
+    "delete": {
+      "title": "Delete dish?",
+      "description": "This action cannot be undone. The dish will be removed from your menu.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "create": {
+      "title": "New Dish",
+      "core": "Neural",
+      "subtitle": "Recipe composition assembly v2.4",
+      "nameLabel": "Dish Name *",
+      "namePlaceholder": "e.g. Signature Truffle Burger",
+      "components": {
+        "title": "Composition (1 portion each) *",
+        "add": "Add",
+        "searchPlaceholder": "Search recipe (min. 2 chars)...",
+        "notFound": "Recipe not found",
+        "notFoundAction": "Create the recipe first in 'Recipes' section",
+        "selectedPortion": "1 portion",
+        "costNote": "AI uses food cost of 1 portion"
+      },
+      "pricing": {
+        "title": "Pricing Strategy",
+        "label": "Sale Price * (PLN)",
+        "placeholder": "0.00"
+      },
+      "analyze": "Analyze Dish",
+      "analyzing": "AI Analysis...",
+      "back": "Back to menu",
+      "save": "Save Dish",
+      "preview": {
+        "title": "AI Structural Analysis",
+        "subtitle": "Profitability summary & recommendations",
+        "kpi": {
+          "totalCost": "TOTAL COST",
+          "margin": "MARGIN (PLN)",
+          "recommended": "AI PRICE"
+        }
+      }
+    }
+  },
+  "reports": {
+    "header": {
+      "title": "Neural",
+      "core": "Stats",
+      "sync": "Analytics Active",
+      "subtitle": "Deep analytics and profit forecasting"
+    },
+    "actions": {
+      "export": "Export Data"
+    },
+    "periods": {
+      "today": "Today",
+      "7days": "7 days",
+      "30days": "30 days",
+      "custom": "Custom"
+    },
+    "modes": {
+      "overview": "Overview",
+      "profit": "Profit",
+      "inventory": "Inventory",
+      "ai": "AI Analysis"
+    },
+    "aiSummary": {
+      "badge": "AI Summary",
+      "title": "Menu optimized by {percent}%",
+      "profit": "Profit",
+      "losses": "Losses",
+      "growth": "Growth"
+    },
+    "kpi": {
+      "revenue": "REVENUE",
+      "foodCost": "FOOD COST",
+      "revenueGrowth": "+12% vs last period",
+      "foodCostTarget": "Target: < 30%"
+    },
+    "profitAnalysis": {
+      "title": "Dish Profitability Analysis",
+      "subtitle": "Sales and margin for the period",
+      "filters": {
+        "all": "All",
+        "star": "Star",
+        "problem": "Problem",
+        "lowMargin": "Low Margin"
+      },
+      "card": {
+        "margin": "Margin",
+        "fc": "FC"
+      }
+    },
+    "inventoryRisks": {
+      "title": "INVENTORY RISKS",
+      "expiring": "Expiring in 7 days"
+    },
+    "aiPlan": {
+      "title": "AI Action Plan",
+      "apply": "Apply",
+      "effect": "Effect"
+    }
+  },
+  "menuEngineering": {
+    "header": {
+      "title": "Menu",
+      "core": "Engine",
+      "sync": "Optimized",
+      "subtitle": "Profitability and popularity analysis by BCG matrix"
+    },
+    "actions": {
+      "strategy": "AI Strategy"
+    },
+    "kpi": {
+      "margin": "Total Margin",
+      "avgFoodCost": "Average Food Cost",
+      "problemDishes": "Problem Items",
+      "potential": "Growth Potential"
+    },
+    "filters": {
+      "all": "Full Menu",
+      "problems": "Problems",
+      "highMargin": "High Margin"
+    },
+    "card": {
+      "price": "Price",
+      "foodCost": "Food Cost",
+      "margin": "Net Margin / Dish"
+    },
+    "recommendations": {
+      "title": "AI Recommendations",
+      "priceIncrease": "Increase price for problem items",
+      "markup": "Recommended markup"
     }
   }
 }

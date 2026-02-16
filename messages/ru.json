@@ -4,7 +4,14 @@
     "howItWorks": "Как это работает",
     "pricing": "Цены",
     "signIn": "Войти",
-    "getStarted": "Начать"
+    "getStarted": "Начать",
+    "nav": {
+      "dashboard": "Панель",
+      "inventory": "Склад",
+      "recipes": "Рецепты",
+      "dishes": "Блюда",
+      "reports": "Отчеты"
+    }
   },
   "auth": {
     "login": {
@@ -35,11 +42,21 @@
     "logout": "Выйти",
     "modules": {
       "inventory": "Склад",
+      "inventoryDesc": "Склад и закупки",
       "recipes": "Рецепты",
+      "recipesDesc": "Рецепты и калькуляция",
       "dishes": "Блюда",
+      "dishesDesc": "Меню и продажи",
       "menuEngineering": "Menu Engineering",
+      "menuEngineeringDesc": "Анализ прибыльности",
       "aiAssistant": "AI Ассистент",
-      "reports": "Отчёты"
+      "aiAssistantDesc": "AI Ассистент Шефа",
+      "reports": "Отчёты",
+      "reportsDesc": "Отчеты и KPI"
+    },
+    "sections": {
+      "resources": "Ресурсы управления",
+      "metrics": "Системные метрики"
     },
     "comingSoon": "Скоро...",
     "userInfo": "Информация о пользователе (Mock)",
@@ -140,25 +157,22 @@
   "howItWorks": {
     "title": "Как это работает?",
     "step1": {
-      "title": "1. Загружаете склад и рецепты",
-      "description": "Простой импорт или ручное добавление"
+      "title": "Загрузите данные",
+      "description": "Импорт склада и технологических карт в один клик"
     },
     "step2": {
-      "title": "2. Добавляете блюда и цены",
-      "description": "Система автоматически считает затраты"
+      "title": "Настройте меню",
+      "description": "AI мгновенно рассчитает реальную себестоимость"
     },
     "step3": {
-      "title": "3. AI показывает, где вы теряете деньги",
-      "description": "Конкретные рекомендации, а не общие фразы"
+      "title": "Получите прибыль",
+      "description": "Точные инсайты по оптимизации каждой позиции"
     }
   },
   "cta": {
-    "title": "Начните управлять рестораном как бизнесом, а не интуицией",
-    "subtitle": "Присоединяйтесь к рестораторам, которые принимают осознанные решения",
-    "buttons": {
-      "create": "Создать аккаунт",
-      "demo": "Запросить демо"
-    }
+    "title": "Переведите ресторан на автопилот прибыли",
+    "description": "Присоединяйтесь к новому стандарту управления RestoAI OS 2026 уже сегодня.",
+    "button": "Начать бесплатно"
   },
   "assistant": {
     "header": {
@@ -212,6 +226,355 @@
     },
     "demo": {
       "note": "Demo режим: Это mock-данные, но сценарии реальные. После подключения backend система будет анализировать ваши данные в реальном времени."
+    }
+  },
+  "inventory": {
+    "core": {
+      "title": "Склад синхронизирован",
+      "status": "System Active",
+      "description": "Данные Query DTO загружены. Оптимизация joined-запросов активна."
+    },
+    "header": {
+      "title": "Склад",
+      "subtitle": "Управление запасами и AI-прогнозирование"
+    },
+    "actions": {
+      "smartAdd": "Smart Add",
+      "closeAI": "Закрыть AI",
+      "create": "Создать продукт"
+    },
+    "status": {
+      "inStock": "В норме",
+      "low": "Мало",
+      "expiring": "Истекает",
+      "expired": "Просрочен"
+    },
+    "empty": {
+      "title": "Склад пуст",
+      "description": "Добавьте первый продукт вручную или с помощью AI",
+      "button": "Добавить продукт"
+    },
+    "table": {
+      "photo": "Фото",
+      "name": "Наименование",
+      "category": "Категория",
+      "quantity": "Количество",
+      "price": "Средняя цена",
+      "expiry": "Срок годности",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "expiry": {
+      "expired": "Просрочено",
+      "daysLeft": "Осталось {days} дн."
+    },
+    "delete": {
+      "button": "Удалить"
+    },
+    "modal": {
+      "title": "Добавление",
+      "subtitle": "Оприходование товара на склад Core v2.4",
+      "stepSearch": "Поиск в каталоге",
+      "stepDetails": "Параметры лота",
+      "searchPlaceholder": "Начните вводить название...",
+      "priceLabel": "Цена за единицу (PLN)",
+      "quantityLabel": "Количество",
+      "dateLabel": "Дата получения",
+      "submit": "Принять на склад",
+      "back": "Назад",
+      "expiryNote": "Предполагаемый срок годности: {days} дн. (до {date})",
+      "success": "Товар успешно добавлен"
+    },
+    "search": {
+      "placeholder": "Начните вводить название продукта...",
+      "notFound": "Ничего не найдено.",
+      "units": {
+        "kg": "кг",
+        "l": "л",
+        "pcs": "шт"
+      }
+    }
+  },
+  "recipes": {
+    "header": {
+      "title": "Recipe Core",
+      "subtitle": "Ваша кулинарная база с AI-аналитикой себестоимости",
+      "sync": "Sync Active"
+    },
+    "actions": {
+      "create": "Создать рецепт"
+    },
+    "difficulty": {
+      "easy": "Легко",
+      "medium": "Средне",
+      "hard": "Сложно"
+    },
+    "status": {
+      "fullStock": "Все ингредиенты в наличии",
+      "warnings": "{count} предупреждение",
+      "warningsPlural": "{count} предупреждения"
+    },
+    "card": {
+      "servings": "{count} порций",
+      "prepTime": "{count} мин",
+      "totalCost": "Себестоимость",
+      "perServing": "За порцию",
+      "edit": "Редактировать"
+    },
+    "insights": {
+      "title": "AI Коэффициент Успеха",
+      "purity": {
+        "perfect": "Безупречный рецепт",
+        "balanced": "Сбалансированный рецепт",
+        "needsWork": "Требует доработки",
+        "risky": "Рискованный состав",
+        "critical": "Критическое нарушение"
+      },
+      "details": {
+        "title": "Детализация анализа",
+        "difficulty": "Сложность",
+        "aiTime": "Время AI",
+        "steps": "Шагов",
+        "checked": "Проверено на аллергены"
+      },
+      "sections": {
+        "market": {
+          "title": "Безопасность и Качество"
+        }
+      }
+    },
+    "metrics": {
+      "title": "Бизнес-метрики",
+      "subtitle": "Экономические показатели и оценка рисков",
+      "cost": {
+        "title": "Себестоимость",
+        "perPortion": "на {count} порций",
+        "efficiency": "Эффективность закупок: высокая"
+      },
+      "margin": {
+        "title": "Маржинальность",
+        "target": "Целевой показатель: > 70%",
+        "excellent": "Превосходно",
+        "good": "Хорошо",
+        "low": "Низкая"
+      },
+      "risk": {
+        "title": "Риск HACCP",
+        "low": "Низкий",
+        "medium": "Средний",
+        "high": "Высокий",
+        "description": "Контроль критических точек"
+      }
+    },
+    "create": {
+      "steps": {
+        "step1": "ЭТАП 01 / EDIT",
+        "step2": "ЭТАП 02 / PREVIEW",
+        "step3": "ЭТАП 03 / ANALYZING",
+        "step4": "ЭТАП 04 / INSIGHTS"
+      },
+      "actions": {
+        "back": "Назад",
+        "preview": "Предпросмотр",
+        "analyze": "AI Анализ",
+        "save": "Сохранить рецепт"
+      },
+      "sections": {
+        "general": {
+          "title": "Общая информация",
+          "name_label": "Название рецепта",
+          "name_placeholder": "Например: Фирменный Бургер",
+          "image_label": "Фото рецепта",
+          "image_upload": "Загрузить фото"
+        },
+        "instructions": {
+          "title": "Технология приготовления",
+          "placeholder": "Опишите процесс пошагово..."
+        },
+        "ingredients": {
+          "title": "Ингредиенты",
+          "search_placeholder": "Поиск продуктов на складе...",
+          "add_button": "Добавить ингредиент",
+          "not_found": "Продукт не найден на складе",
+          "out_of_stock": "Нет в наличии"
+        },
+        "preview": {
+          "servings": "Порции",
+          "time": "Время",
+          "weight": "Общий вес",
+          "cost_analysis": "Анализ себестоимости",
+          "cost_per_serving": "Себестоимость порции",
+          "instructions": "Превью процесса"
+        }
+      },
+      "analyzing": {
+        "title": "Нейронный анализ",
+        "subtitle": "Обработка состава рецепта и экономических метрик",
+        "phase_1": "Анализ технологии",
+        "phase_2": "Расчет логики"
+      }
+    }
+  },
+  "dishes": {
+    "header": {
+      "title": "Меню",
+      "core": "Блюда",
+      "sync": "Синхронизация",
+      "subtitle": "Ваше меню под контролем AI-аналитики маржинальности"
+    },
+    "actions": {
+      "create": "Создать блюдо"
+    },
+    "empty": {
+      "title": "Блюд пока нет",
+      "subtitle": "Соберите свое первое блюдо из готовых рецептов. AI рассчитает Food Cost и маржу в реальном времени.",
+      "button": "Создать первое блюдо"
+    },
+    "status": {
+      "profit": "Высокая прибыль",
+      "warning": "Низкая маржа",
+      "loss": "Убыточное"
+    },
+    "card": {
+      "recipes": "{count} {count, plural, one {рецепт} few {рецепта} other {рецептов}}",
+      "servings": "{count} порц.",
+      "foodCost": "Food Cost",
+      "salePrice": "Sale Price",
+      "grossProfit": "Gross Profit",
+      "fc": "FC",
+      "warnings": "{count} {count, plural, one {предупреждение} few {предупреждения} other {предупреждений}}",
+      "edit": "Редактировать"
+    },
+    "delete": {
+      "title": "Удалить блюдо?",
+      "description": "Это действие нельзя отменить. Блюдо будет полностью удалено из меню.",
+      "cancel": "Отмена",
+      "confirm": "Удалить"
+    },
+    "create": {
+      "title": "Новое блюдо",
+      "core": "Neural",
+      "subtitle": "Сборка композиции из рецептов v2.4",
+      "nameLabel": "Название блюда *",
+      "namePlaceholder": "Например: Фирменный Бургер с трюфельным айоли",
+      "components": {
+        "title": "Состав блюда (по 1 порции каждого) *",
+        "add": "Добавить",
+        "searchPlaceholder": "Поиск рецепта (мин. 2 символа)...",
+        "notFound": "Рецепт не найден",
+        "notFoundAction": "Создайте рецепт сначала в разделе 'Рецепты'",
+        "selectedPortion": "1 порция",
+        "costNote": "AI использует себестоимость 1 порции"
+      },
+      "pricing": {
+        "title": "Ценообразование",
+        "label": "Цена продажи * (PLN)",
+        "placeholder": "0.00"
+      },
+      "analyze": "Анализировать блюдо",
+      "analyzing": "AI Анализ...",
+      "back": "Назад к меню",
+      "save": "Сохранить блюдо",
+      "preview": {
+        "title": "AI Анализ структуры",
+        "subtitle": "Резюме прибыльности и рекомендации",
+        "kpi": {
+          "totalCost": "СЕБЕСТОИМОСТЬ",
+          "margin": "МАРЖА (PLN)",
+          "recommended": "AI ЦЕНА"
+        }
+      }
+    }
+  },
+  "reports": {
+    "header": {
+      "title": "Neural",
+      "core": "Stats",
+      "sync": "Аналитика активна",
+      "subtitle": "Глубокая аналитика и прогнозирование прибыли"
+    },
+    "actions": {
+      "export": "Экспорт данных"
+    },
+    "periods": {
+      "today": "За сегодня",
+      "7days": "7 дней",
+      "30days": "30 дней",
+      "custom": "Свой"
+    },
+    "modes": {
+      "overview": "Обзор",
+      "profit": "Прибыль",
+      "inventory": "Склад",
+      "ai": "AI Анализ"
+    },
+    "aiSummary": {
+      "badge": "AI Резюме",
+      "title": "Меню оптимизировано на {percent}%",
+      "profit": "Прибыль",
+      "losses": "Потери",
+      "growth": "Рост"
+    },
+    "kpi": {
+      "revenue": "ВЫРУЧКА",
+      "foodCost": "FOOD COST",
+      "revenueGrowth": "+12% vs прошлый период",
+      "foodCostTarget": "Норма: < 30%"
+    },
+    "profitAnalysis": {
+      "title": "Анализ прибыльности блюд",
+      "subtitle": "Продажи и маржинальность за период",
+      "filters": {
+        "all": "Все",
+        "star": "Star",
+        "problem": "Problem",
+        "lowMargin": "Low Margin"
+      },
+      "card": {
+        "margin": "Маржа",
+        "fc": "FC"
+      }
+    },
+    "inventoryRisks": {
+      "title": "РИСКИ СКЛАДА",
+      "expiring": "Истекают в 7 дней"
+    },
+    "aiPlan": {
+      "title": "AI План действий",
+      "apply": "Применить",
+      "effect": "Эффект"
+    }
+  },
+  "menuEngineering": {
+    "header": {
+      "title": "Menu",
+      "core": "Engine",
+      "sync": "Оптимизировано",
+      "subtitle": "Анализ прибыльности и популярности по матрице BCG"
+    },
+    "actions": {
+      "strategy": "AI Стратегия"
+    },
+    "kpi": {
+      "margin": "Общая маржинальность",
+      "avgFoodCost": "Средний Food Cost",
+      "problemDishes": "Проблемные позиции",
+      "potential": "Потенциал роста"
+    },
+    "filters": {
+      "all": "Все меню",
+      "problems": "Проблемы",
+      "highMargin": "High Margin"
+    },
+    "card": {
+      "price": "Цена",
+      "foodCost": "Food Cost",
+      "margin": "Чистая Маржа / Блюдо"
+    },
+    "recommendations": {
+      "title": "AI Рекомендации",
+      "priceIncrease": "Увеличьте цену на проблемные позиции",
+      "markup": "Рекомендуемая наценка"
     }
   }
 }

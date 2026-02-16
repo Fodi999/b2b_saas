@@ -1,25 +1,25 @@
 import { AlertTriangle, Info, XCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Variant = 'danger' | 'warning' | 'info';
 
 const variants = {
   danger: {
-    container: 'border-red-500/30 bg-red-500/10 dark:border-red-900/50 dark:bg-red-950/30',
-    icon: 'text-red-600 dark:text-red-400',
-    title: 'text-red-900 dark:text-red-100',
-    IconComponent: XCircle,
+    variant: 'destructive' as const,
+    icon: XCircle,
+    colorClass: 'text-destructive',
   },
   warning: {
-    container: 'border-yellow-500/30 bg-yellow-500/10 dark:border-yellow-900/50 dark:bg-yellow-950/30',
-    icon: 'text-yellow-600 dark:text-yellow-400',
-    title: 'text-yellow-900 dark:text-yellow-100',
-    IconComponent: AlertTriangle,
+    variant: 'default' as const,
+    icon: AlertTriangle,
+    colorClass: 'text-amber-500',
+    className: 'bg-amber-500/5 border-amber-500/20',
   },
   info: {
-    container: 'border-blue-500/30 bg-blue-500/10 dark:border-blue-900/50 dark:bg-blue-950/30',
-    icon: 'text-blue-600 dark:text-blue-400',
-    title: 'text-blue-900 dark:text-blue-100',
-    IconComponent: Info,
+    variant: 'default' as const,
+    icon: Info,
+    colorClass: 'text-blue-500',
+    className: 'bg-blue-500/5 border-blue-500/20',
   },
 };
 
@@ -32,22 +32,19 @@ export function InsightCard({
   description: string;
   variant?: Variant;
 }) {
-  const style = variants[variant];
-  const Icon = style.IconComponent;
+  const config = variants[variant];
+  const Icon = config.icon;
 
   return (
-    <div className={`rounded-xl border p-4 transition-all hover:shadow-md ${style.container}`}>
-      <div className="flex gap-3">
-        <div className="flex-shrink-0">
-          <Icon className={`h-5 w-5 ${style.icon}`} />
-        </div>
-        <div className="flex-1">
-          <h4 className={`font-semibold ${style.title}`}>{title}</h4>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {description}
-          </p>
-        </div>
-      </div>
-    </div>
+    <Alert 
+      variant={config.variant} 
+      className={`transition-all hover:shadow-sm ${'className' in config ? config.className : ''}`}
+    >
+      <Icon className={`h-4 w-4 ${config.colorClass}`} />
+      <AlertTitle className="font-bold tracking-tight">{title}</AlertTitle>
+      <AlertDescription className="mt-1 text-xs opacity-80 leading-relaxed">
+        {description}
+      </AlertDescription>
+    </Alert>
   );
 }

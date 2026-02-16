@@ -54,23 +54,22 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-5xl space-y-10">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in duration-700">
+        <div className="space-y-12">
           {/* Header */}
           <AssistantHeader />
 
           {/* Шаг 1: Обнаруженные проблемы */}
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {t('step1.title')}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {t('step1.description')}
-              </p>
+          <section className="space-y-6">
+            <div className="flex items-center gap-4">
+               <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+               <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-400">
+                 {t('step1.title')}
+               </h2>
+               <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {issues.map((issue, index) => (
                 <IssueCard key={index} {...issue} />
               ))}
@@ -78,26 +77,21 @@ export default function AssistantPage() {
           </section>
 
           {/* Шаг 2: Приоритет и Рекомендация */}
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {t('step2.title')}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {t('step2.description')}
-              </p>
+          <section className="space-y-6">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 text-center">
+              {t('step2.title')}
+            </h2>
+            <div className="max-w-3xl mx-auto">
+               <RecommendationCard {...recommendation} />
             </div>
-            <RecommendationCard {...recommendation} />
           </section>
 
           {/* Шаг 3: Следующие действия */}
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {t('step3.title')}
-              </h2>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
+          <section className="space-y-6 pb-20">
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 text-center">
+              {t('step3.title')}
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
               <NextAction
                 title={t('nextActions.checkDishes.title')}
                 description={t('nextActions.checkDishes.description')}

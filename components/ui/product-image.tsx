@@ -24,10 +24,18 @@ export default function ProductImage({
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('🖼️ [ProductImage]', { src, alt, hasImage: !!src, imageError });
+  console.log('[ProductImage] Render:', { 
+    src, 
+    alt, 
+    hasImage: !!src, 
+    imageError,
+    isLoading,
+    srcType: typeof src 
+  });
 
   // Если нет URL или произошла ошибка - показываем fallback
   if (!src || imageError) {
+    console.log('[ProductImage] Showing fallback for:', alt);
     return (
       <div className={containerClassName}>
         {fallbackIcon}

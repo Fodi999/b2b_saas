@@ -40,16 +40,11 @@ interface MenuStoreState {
 }
 
 // Helper: calculate category based on food cost
-function calculateCategory(foodCost: number): MenuCategory {
-  if (foodCost < 30) return 'star'
-  if (foodCost >= 30 && foodCost < 40) return 'cash-cow'
-  if (foodCost >= 40 && foodCost < 55) return 'question'
-  return 'dog' // > 55%
-}
+// ... (omitted if unused)
 
 export const useMenuStore = create<MenuStoreState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       dishes: [],
       analytics: null,
       recommendations: [],

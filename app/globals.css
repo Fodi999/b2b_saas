@@ -45,6 +45,29 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  
+  /* RestoAI OS 2026 Extensions */
+  --color-indigo-600: oklch(0.585 0.233 277.117);
+  --color-violet-600: oklch(0.606 0.25 292.917);
+  --color-emerald-500: oklch(0.699 0.188 165.1);
+}
+
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .glass-portal {
+    @apply backdrop-blur-xl bg-white/50 dark:bg-slate-950/50 border border-slate-200/50 dark:border-slate-800/50;
+  }
+  
+  .text-neural {
+    @apply font-black uppercase tracking-tight;
+  }
+  
+  .badge-neural {
+    @apply text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full;
+  }
 }
 
 :root {

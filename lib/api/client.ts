@@ -4,7 +4,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
-    public data?: any
+    public data?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -20,8 +20,11 @@ export async function apiFetch<T>(
     'Content-Type': 'application/json',
   };
 
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
+  // 🧪 ТЕСТ: Проверяем localStorage как fallback
+  const token = accessToken || localStorage.getItem('access_token');
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   if (options.headers) {
@@ -29,7 +32,7 @@ export async function apiFetch<T>(
   }
 
   const url = `${API_URL}${path}`;
-  console.log('🌐 [BACKEND REQUEST]', {
+  console.log('[BACKEND REQUEST]', {
     method: options.method || 'GET',
     url,
     hasAuth: !!accessToken,
@@ -39,9 +42,10 @@ export async function apiFetch<T>(
   const res = await fetch(url, {
     ...options,
     headers,
+    // ⏳ credentials: 'include' - включить ПОСЛЕ настройки CORS на backend
   });
 
-  console.log('📦 [BACKEND RESPONSE]', {
+  console.log('[BACKEND RESPONSE]', {
     url,
     status: res.status,
     ok: res.ok,
@@ -49,11 +53,19 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    console.error('❌ [BACKEND ERROR]', {
-      url,
-      status: res.status,
-      error,
-    });
+    
+    // Не логируем 401 как ошибку в консоль, так как это может быть ожидаемым случаем 
+    // для истекшего токена, который будет обработан логикой refresh
+    if (res.status === 401) {
+      console.warn('[BACKEND AUTH 401]', { url, status: res.status });
+    } else {
+      console.error('[BACKEND ERROR]', JSON.stringify({
+        url,
+        status: res.status,
+        error,
+      }, null, 2));
+    }
+
     throw new ApiError(
       error.details || error.message || 'API request failed',
       res.status,

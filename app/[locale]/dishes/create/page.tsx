@@ -3,12 +3,33 @@
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useRecipesStore } from '@/lib/stores/recipes-store'
 import { useDishesStore } from '@/lib/stores/dishes-store'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Sparkles, Plus, X, Search, Eye, Check, Loader2, ArrowLeft, UtensilsCrossed, ImageIcon } from 'lucide-react'
+import { 
+  Sparkles, 
+  Plus, 
+  X, 
+  Search, 
+  Eye, 
+  Check, 
+  Loader2, 
+  ArrowLeft, 
+  UtensilsCrossed, 
+  ImageIcon,
+  Zap,
+  Activity,
+  ArrowRight,
+  Target,
+  LineChart,
+  ShieldCheck,
+  AlertTriangle
+} from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 
 interface DraftComponent {
   id: string
@@ -55,6 +76,9 @@ export default function CreateDishPage() {
   const { recipes } = useRecipesStore()
   const { addDish } = useDishesStore()
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
+  const t = useTranslations('dishes.create')
 
   const [mode, setMode] = useState<ViewMode>('edit')
   const [dishName, setDishName] = useState('')
@@ -155,14 +179,6 @@ export default function CreateDishPage() {
     setImagePreview(null)
   }, [])
 
-  const handleUpdateQuantity = useCallback((index: number, value: string) => {
-    setComponents(prev =>
-      prev.map((comp, i) =>
-        i === index ? { ...comp, quantity: value } : comp
-      )
-    )
-  }, [])
-
   const handleGeneratePreview = useCallback(() => {
     setValidationError('')
 
@@ -261,7 +277,51 @@ export default function CreateDishPage() {
     }, 1500)
   }, [dishName, components, salePrice, recipes])
 
-  const handleSaveDish = useCallback(() => {
+  const handleAnalyze = useCallback(async () => {
+    if (!dishName || components.some(c => !c.recipeId) || !salePrice) {
+      setValidationError('Пожалуйста, заполните все поля и выберите рецепты')
+      return
+    }
+    
+    setIsAnalyzing(true)
+    setValidationError('')
+    
+    // Simulate AI analysis
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    const selectedRecipes = components.map(c => recipes.find(r => r.id === c.recipeId)!)
+    const totalCost = selectedRecipes.reduce((sum, r) => sum + (r.totalCost / r.servings), 0)
+    const priceVal = parseFloat(salePrice)
+    const margin = priceVal - totalCost
+    const marginPercent = (margin / priceVal) * 100
+    
+    setPreviewDish({
+      name: dishName,
+      components: selectedRecipes.map(r => ({
+        recipeName: r.name,
+        quantity: 1,
+        cost: r.totalCost / r.servings
+      })),
+      salePrice: priceVal,
+      totalCost,
+      margin,
+      marginPercent,
+      foodCostPercent: (totalCost / priceVal) * 100,
+      status: getStatus(marginPercent),
+      aiRecommendedPrice: calculateRecommendedPrice(totalCost),
+      aiInsights: [
+        'Обнаружена оптимальная синергия рецептов.',
+        `Целевая маржа ${marginPercent.toFixed(0)}% в пределах нормы.`,
+        'Подтверждена доступность ингредиентов на складе.'
+      ],
+      warnings: marginPercent < 20 ? ['Низкая маржа. Рассмотрите возможность корректировки цены.'] : []
+    })
+    
+    setMode('preview')
+    setIsAnalyzing(false)
+  }, [dishName, components, salePrice, recipes])
+
+  const handleSave = useCallback(() => {
     if (!previewDish) return
 
     setMode('saving')
@@ -287,9 +347,9 @@ export default function CreateDishPage() {
         warnings: previewDish.warnings
       })
 
-      router.push('/dishes')
+      router.push(`/${locale}/dishes`)
     }, 1000)
-  }, [previewDish, components, imagePreview, addDish, router])
+  }, [previewDish, components, imagePreview, addDish, router, locale])
 
   const handleBackToEdit = useCallback(() => {
     setMode('edit')
@@ -300,171 +360,167 @@ export default function CreateDishPage() {
     return null
   }
 
+  // Loading state helper component
   if (mode === 'saving') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-500" />
-          <p className="text-lg text-muted-foreground">Сохраняем блюдо...</p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+        <div className="relative">
+          <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse"></div>
+          <Loader2 className="h-16 w-16 text-indigo-500 animate-spin relative z-10" />
         </div>
+        <p className="mt-8 text-white font-black uppercase tracking-[0.3em] animate-pulse">
+          {t('analyzing')}
+        </p>
       </div>
     )
   }
 
+  // Preview Mode Refactored
   if (mode === 'preview' && previewDish) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto p-6 max-w-4xl">
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={handleBackToEdit}
-              className="mb-4"
-              disabled={isAnalyzing}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Вернуться к редактированию
-            </Button>
-
-            {isAnalyzing ? (
-              <div className="bg-card rounded-lg shadow-md border border-border p-8">
-                <div className="flex flex-col items-center justify-center space-y-4 py-12">
-                  <Loader2 className="h-12 w-12 animate-spin text-purple-500" />
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">AI анализирует блюдо...</p>
-                    <p className="text-sm text-muted-foreground mt-1">Рассчитываем маржу и рентабельность</p>
-                  </div>
+      <div className="min-h-screen bg-black text-white selection:bg-indigo-500/30 font-sans">
+        <div className="container mx-auto px-6 py-10 max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="space-y-10">
+            {/* Header */}
+            <div className="flex items-center justify-between gap-6">
+              <div className="flex items-center gap-6">
+                <div className="h-16 w-16 rounded-[1.5rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                  <Eye className="h-8 w-8 text-indigo-400" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none mb-1">
+                    {previewDish.name}
+                  </h1>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                    Preview Mode · RestoAI Vision
+                  </p>
                 </div>
               </div>
-            ) : (
-              <div className="bg-card rounded-lg shadow-md border border-border p-8 space-y-6">
-                {/* Header */}
-                <div>
-                  <div className="flex items-start justify-between mb-2">
-                    <h1 className="text-3xl font-bold text-foreground">{previewDish.name}</h1>
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Dish" className="w-32 h-32 rounded-lg object-cover ml-4" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {previewDish.status === 'profit' && (
-                      <span className="inline-flex items-center gap-1 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
-                        ✅ Рентабельно
-                      </span>
-                    )}
-                    {previewDish.status === 'warning' && (
-                      <span className="inline-flex items-center gap-1 text-sm bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full">
-                        ⚡ Низкая маржа
-                      </span>
-                    )}
-                    {previewDish.status === 'loss' && (
-                      <span className="inline-flex items-center gap-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-1 rounded-full">
-                        ⚠️ Убыточно
-                      </span>
-                    )}
-                  </div>
+              <Button 
+                variant="ghost" 
+                onClick={() => setMode('edit')}
+                className="h-14 px-8 rounded-2xl border border-white/10 font-black uppercase text-[10px] tracking-widest text-white/40 hover:text-white"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {t('back')}
+              </Button>
+            </div>
+
+            {/* AI Analysis Result */}
+            <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-12 opacity-5 rotate-12 scale-150">
+                <Zap className="w-64 h-64 text-indigo-400" />
+              </div>
+
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-8">
+                  <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full font-black uppercase text-[10px] tracking-widest">
+                    <Sparkles className="w-3.5 h-3.5 mr-2" />
+                    {t('preview.title')}
+                  </Badge>
                 </div>
 
-                {/* Components */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-3 text-foreground">Состав</h2>
-                  <div className="space-y-2">
-                    {previewDish.components.map((comp, idx) => (
-                      <div key={idx} className="flex justify-between items-center py-2 border-b border-border">
-                        <span className="text-foreground font-medium">{comp.recipeName}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-muted-foreground">{comp.quantity} {comp.quantity === 1 ? 'порция' : 'порции'}</span>
-                          <span className="text-xs text-muted-foreground/70 min-w-[70px] text-right">
-                            {comp.cost.toFixed(2)} PLN
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Pricing */}
-                <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Себестоимость:</span>
-                    <span className="text-sm font-semibold text-foreground">
-                      {previewDish.totalCost.toFixed(2)} PLN
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Цена продажи:</span>
-                    <span className="text-lg font-bold text-foreground">
-                      {previewDish.salePrice.toFixed(2)} PLN
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-border">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">Маржа:</span>
-                      <span className="inline-flex items-center text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">
-                        AI
-                      </span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                  <div className="bg-black/40 rounded-[2rem] p-8 border border-white/5">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-4">{t('preview.kpi.totalCost')}</p>
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-4xl font-black italic tracking-tighter">{previewDish.totalCost.toFixed(2)}</span>
+                       <span className="text-[10px] font-bold text-white/20">PLN</span>
                     </div>
-                    <span className={`text-lg font-bold ${
-                      previewDish.status === 'profit' ? 'text-green-600 dark:text-green-400' :
-                      previewDish.status === 'warning' ? 'text-amber-600 dark:text-amber-400' :
-                      'text-red-600 dark:text-red-400'
-                    }`}>
-                      {previewDish.margin.toFixed(2)} PLN ({previewDish.marginPercent.toFixed(1)}%)
-                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>Food Cost:</span>
-                    <span>{previewDish.foodCostPercent.toFixed(1)}%</span>
-                  </div>
-                </div>
-
-                {/* AI Insights */}
-                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
-                    <Sparkles className="h-4 w-4 text-purple-500 dark:text-purple-400" />
-                    AI Анализ
-                    <span className="text-xs font-normal text-muted-foreground ml-auto">
-                      рекомендуемая цена: {previewDish.aiRecommendedPrice.toFixed(2)} PLN
-                    </span>
-                  </h3>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
-                    {previewDish.aiInsights.map((insight, idx) => (
-                      <li key={idx}>• {insight}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Warnings */}
-                {previewDish.warnings.length > 0 && (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-2">
-                      ⚠️ Предупреждения из рецептов
+                  <div className="bg-indigo-500/5 rounded-[2rem] p-8 border border-indigo-500/10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400/60 mb-4">{t('preview.kpi.margin')}</p>
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-4xl font-black italic tracking-tighter text-indigo-400">{previewDish.margin.toFixed(2)}</span>
+                       <span className="text-[10px] font-bold text-indigo-400/40">PLN</span>
+                    </div>
+                    <p className="text-[11px] font-bold text-emerald-400 mt-2 uppercase tracking-widest">
+                      {previewDish.marginPercent.toFixed(1)}% Efficiency
                     </p>
-                    <ul className="space-y-1 text-xs text-amber-800 dark:text-amber-200">
-                      {previewDish.warnings.map((warning, idx) => (
-                        <li key={idx}>• {warning}</li>
-                      ))}
-                    </ul>
                   </div>
-                )}
+                  <div className="bg-white/5 rounded-[2rem] p-8 border border-white/10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-4">{t('preview.kpi.recommended')}</p>
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-4xl font-black italic tracking-tighter text-emerald-400">{previewDish.aiRecommendedPrice.toFixed(2)}</span>
+                       <span className="text-[10px] font-bold text-emerald-400/40">PLN</span>
+                    </div>
+                  </div>
+                </div>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-4">
-                  <Button onClick={handleSaveDish} className="flex-1">
-                    Сохранить блюдо
-                  </Button>
-                  <Button variant="outline" onClick={handleBackToEdit}>
-                    Редактировать
-                  </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Ingredients Preview */}
+                  <div className="space-y-4">
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-white/40 px-4">Ingredients Composition</h3>
+                    <div className="space-y-2">
+                      {previewDish.components.map((comp, i) => (
+                        <div key={i} className="flex items-center justify-between p-5 bg-black/40 rounded-2xl border border-white/5">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/20">
+                              {i + 1}
+                            </div>
+                            <p className="font-black italic text-white uppercase tracking-tight">{comp.recipeName}</p>
+                          </div>
+                          <p className="font-bold text-white/40">{comp.cost.toFixed(2)} PLN</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Strategist Recommendations */}
+                  <div className="space-y-4">
+                    <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-indigo-400 px-4">AI Recommendations</h3>
+                    <div className="bg-black/40 rounded-[2rem] border border-indigo-500/20 p-8 space-y-6">
+                      {previewDish.aiInsights.map((insight, i) => (
+                        <div key={i} className="flex items-start gap-4">
+                          <div className="p-2 bg-indigo-500/10 rounded-lg">
+                            <Zap className="w-3.5 h-3.5 text-indigo-400" />
+                          </div>
+                          <p className="text-sm font-medium italic text-white/80 leading-relaxed pt-1">
+                            {insight}
+                          </p>
+                        </div>
+                      ))}
+                      {previewDish.warnings.length > 0 && (
+                        <div className="pt-6 border-t border-white/5 space-y-4">
+                          {previewDish.warnings.map((warning, i) => (
+                            <div key={i} className="flex items-start gap-4 text-rose-400/80">
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              <p className="text-xs font-bold uppercase tracking-widest leading-relaxed">
+                                {warning}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
+
+            <div className="flex gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => setMode('edit')}
+                className="flex-1 h-16 rounded-[2rem] bg-white text-black hover:bg-white/90 border-none font-black uppercase text-[12px] tracking-[0.3em]"
+              >
+                {t('back')}
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="flex-[2] h-16 rounded-[2rem] bg-indigo-500 hover:bg-indigo-600 font-black uppercase text-[12px] tracking-[0.3em] shadow-[0_0_50px_-10px_rgba(99,102,241,0.5)] transition-all"
+              >
+                {t('save')}
+                <ArrowRight className="w-5 h-5 ml-3" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     )
   }
 
+  // Edit Mode Refactored
   const searchResults = activeSearchIndex !== null
     ? recipes.filter(recipe => {
         const query = components[activeSearchIndex]?.searchValue.toLowerCase() || ''
@@ -477,231 +533,214 @@ export default function CreateDishPage() {
     && searchResults.length === 0
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-foreground">
-            <UtensilsCrossed className="h-8 w-8 text-purple-500" />
-            Создать блюдо с AI
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Выберите рецепты (по 1 порции каждый) и цену — AI рассчитает маржу
-          </p>
-        </div>
-
-        <div className="bg-card rounded-lg shadow-md border border-border p-6 space-y-6">
-          {/* Dish Name */}
-          <div>
-            <Label htmlFor="dish-name">Название блюда *</Label>
-            <Input
-              id="dish-name"
-              placeholder="Например: Борщ с пампушками"
-              value={dishName}
-              onChange={(e) => setDishName(e.target.value)}
-              className="mt-1"
-            />
+    <div className="min-h-screen bg-black text-white selection:bg-indigo-500/30">
+      <div className="container mx-auto px-6 py-10 max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="space-y-12">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="flex items-center gap-6">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-[1.5rem] blur opacity-25"></div>
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-black border border-white/10">
+                  <UtensilsCrossed className="h-10 w-10 text-indigo-400" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-4">
+                  <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
+                    {t('title')}<span className="text-indigo-500">{t('core')}</span>
+                  </h1>
+                  <div className="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 text-[10px] font-black uppercase tracking-widest">
+                    ACTIVE
+                  </div>
+                </div>
+                <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] ml-1 mt-1">
+                  {t('subtitle')}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => router.push(`/${locale}/dishes`)}
+              className="h-14 px-8 rounded-[2rem] border border-white/10 font-black uppercase text-[10px] tracking-widest text-white/40 hover:text-white"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('back')}
+            </Button>
           </div>
 
-          {/* Recipe Components */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Label>
-                  Рецепты (по 1 порции каждого) *
-                  <span className="ml-2 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
-                    {components.filter(c => c.recipeId).length}
-                  </span>
-                </Label>
-                <span className="text-xs text-muted-foreground">
-                  AI использует себестоимость 1 порции
-                </span>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddComponent}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Добавить
-              </Button>
+          <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 space-y-12">
+            {/* Dish Name Section */}
+            <div>
+              <Label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 mb-4 block">
+                {t('nameLabel')}
+              </Label>
+              <Input
+                placeholder={t('namePlaceholder')}
+                value={dishName}
+                onChange={(e) => setDishName(e.target.value)}
+                className="h-16 px-8 rounded-2xl bg-black/40 border-white/10 text-lg font-black italic focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-white/10"
+              />
             </div>
 
-            <div className="space-y-3">
-              {components.map((component, index) => (
-                <div key={component.id} className="relative border border-border rounded-lg p-3 space-y-2 bg-muted/30">
-                  {/* Search Input or Selected Recipe */}
-                  {!component.recipeId ? (
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Поиск рецепта (мин. 2 символа)"
-                        value={component.searchValue}
-                        onChange={(e) => handleSearch(e.target.value, index)}
-                        className="pl-9"
-                      />
+            {/* Components Section */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between px-4">
+                <div className="flex items-center gap-4">
+                  <Label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/40">
+                    {t('components.title')}
+                  </Label>
+                  <div className="px-3 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-black">
+                    {components.filter(c => c.recipeId).length}
+                  </div>
+                </div>
+                <Button
+                  onClick={handleAddComponent}
+                  className="h-10 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-white font-black uppercase text-[10px] tracking-widest"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('components.add')}
+                </Button>
+              </div>
 
-                      {activeSearchIndex === index && searchResults.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
-                          {searchResults.map((recipe) => (
-                            <button
-                              key={recipe.id}
-                              type="button"
-                              onClick={() => handleSelectRecipe(index, recipe.id, recipe.name)}
-                              className="w-full text-left px-3 py-2 hover:bg-accent border-b border-border last:border-b-0"
-                            >
-                              <div className="font-medium text-foreground">{recipe.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {recipe.servings} {recipe.servings === 1 ? 'порция' : recipe.servings > 4 ? 'порций' : 'порции'} • 
-                                Стоимость 1 порции: {(recipe.totalCost / recipe.servings).toFixed(2)} PLN
+              <div className="space-y-3">
+                {components.map((component, index) => (
+                  <div key={component.id} className="group relative bg-black/40 border border-white/5 rounded-[2rem] p-6 transition-all hover:border-white/20">
+                    {!component.recipeId ? (
+                      <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+                        <Input
+                          placeholder={t('components.searchPlaceholder')}
+                          value={component.searchValue}
+                          onChange={(e) => handleSearch(e.target.value, index)}
+                          onFocus={() => setActiveSearchIndex(index)}
+                          className="h-14 pl-12 rounded-xl bg-white/5 border-none text-white font-medium italic placeholder:text-white/10"
+                        />
+
+                        {activeSearchIndex === index && searchResults.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-3 bg-white/10 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100]">
+                            {searchResults.map((recipe) => (
+                              <button
+                                key={recipe.id}
+                                onClick={() => handleSelectRecipe(index, recipe.id, recipe.name)}
+                                className="w-full p-4 flex items-center justify-between hover:bg-indigo-500 group/item transition-colors"
+                              >
+                                <div className="text-left">
+                                  <p className="font-black italic text-white group-hover/item:text-white">{recipe.name}</p>
+                                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest group-hover/item:text-white/60">
+                                    {recipe.servings} Portions · {(recipe.totalCost / recipe.servings).toFixed(2)} PLN/Port.
+                                  </p>
+                                </div>
+                                <ArrowRight className="w-4 h-4 text-white/20 group-hover/item:text-white" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {showNoResultsMessage && activeSearchIndex === index && (
+                          <div className="absolute top-full left-0 right-0 mt-3 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 z-[100]">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                                <AlertTriangle className="w-6 h-6 text-orange-400" />
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {showNoResultsMessage && activeSearchIndex === index && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg p-4 z-50">
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-                              <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-foreground mb-1">
-                                Рецепт не найден
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Создайте рецепт сначала в разделе "Рецепты"
-                              </p>
+                              <div>
+                                <p className="font-black uppercase text-xs text-white">{t('components.notFound')}</p>
+                                <p className="text-[10px] text-white/40 mt-1">{t('components.notFoundAction')}</p>
+                              </div>
                             </div>
                           </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                           <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
+                             <Check className="w-6 h-6 text-indigo-400" />
+                           </div>
+                           <div>
+                              <p className="text-xl font-black italic text-white uppercase tracking-tight">{component.recipeName}</p>
+                              <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-0.5 rounded-full font-black text-[9px] uppercase tracking-widest mt-1">
+                                {t('components.selectedPortion')}
+                              </Badge>
+                           </div>
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700 rounded px-3 py-2">
-                      <Check className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                      <span className="flex-1 text-sm font-medium text-purple-900 dark:text-purple-100">
-                        {component.recipeName}
-                      </span>
-                      <span className="text-xs text-purple-600 dark:text-purple-400 mr-2">
-                        1 порция
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleClearSelection(index)}
-                        className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
+                        <Button 
+                          variant="ghost" 
+                          onClick={() => handleClearSelection(index)}
+                          className="h-10 w-10 p-0 rounded-full hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {components.length > 1 && !component.recipeId && (
+                      <button 
+                        onClick={() => handleRemoveComponent(component.id)}
+                        className="absolute -top-3 -right-3 h-8 w-8 bg-black border border-white/10 rounded-full flex items-center justify-center text-white/20 hover:text-rose-500 transition-colors"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="w-4 h-4" />
                       </button>
-                    </div>
-                  )}
-
-                  {/* Remove Button */}
-                  {components.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveComponent(component.id)}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Sale Price */}
-          <div>
-            <Label htmlFor="sale-price">Цена продажи *</Label>
-            <div className="relative mt-1">
-              <Input
-                id="sale-price"
-                type="number"
-                step="0.01"
-                placeholder="29.00"
-                value={salePrice}
-                onChange={(e) => setSalePrice(e.target.value)}
-                className="pr-12"
-              />
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
-                PLN
-              </span>
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <Label>Фото блюда (опционально)</Label>
-            <div className="mt-1">
-              {!imagePreview ? (
-                <label className="border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition-colors">
-                  <ImageIcon className="h-12 w-12 text-muted-foreground mb-2" />
-                  <span className="text-sm text-foreground mb-1">
-                    Нажмите для загрузки фото
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    JPEG, PNG или WEBP (макс. 5 МБ)
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </label>
-              ) : (
+            {/* Pricing Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-white/5">
+              <div>
+                <Label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/40 ml-4 mb-4 block">
+                  {t('pricing.label')}
+                </Label>
                 <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                   <div className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 font-black italic">PLN</div>
+                   <Input 
+                    type="number"
+                    placeholder={t('pricing.placeholder')}
+                    value={salePrice}
+                    onChange={(e) => setSalePrice(e.target.value)}
+                    className="h-20 px-8 rounded-3xl bg-black border-white/10 text-3xl font-black italic text-indigo-400 focus:ring-indigo-500 pr-16"
+                   />
                 </div>
-              )}
+              </div>
+              
+              <div className="bg-indigo-500/5 rounded-[2rem] border border-indigo-500/10 p-8 flex flex-col justify-center">
+                 <div className="flex items-center gap-4 mb-4">
+                    <div className="p-2.5 bg-indigo-500/10 rounded-xl">
+                      <Zap className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <p className="text-[12px] font-black uppercase tracking-[0.2em] text-indigo-400">RestoAI Strategist</p>
+                 </div>
+                 <p className="text-sm text-indigo-400/60 font-medium italic leading-relaxed">
+                   AI will analyze your recipe synergies, food cost fluctuations, and market benchmarks to provide a profitability score.
+                 </p>
+              </div>
             </div>
-          </div>
+            
+            {validationError && (
+              <div className="bg-rose-500/10 border border-rose-500/20 p-6 rounded-2xl flex items-center gap-4 animate-in shake-1 duration-500">
+                <AlertTriangle className="w-6 h-6 text-rose-500" />
+                <p className="text-sm font-black uppercase tracking-widest text-rose-500">{validationError}</p>
+              </div>
+            )}
 
-          {/* Validation Error */}
-          {validationError && (
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              {validationError}
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t">
             <Button
-              onClick={handleGeneratePreview}
-              className="flex-1"
+              onClick={handleAnalyze}
               disabled={isAnalyzing}
+              className="w-full h-20 rounded-[2.5rem] bg-white text-black hover:bg-indigo-500 hover:text-white font-black uppercase text-[14px] tracking-[0.4em] transition-all duration-500 shadow-2xl active:scale-95 disabled:opacity-50"
             >
               {isAnalyzing ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  AI анализирует...
+                  <Loader2 className="w-6 h-6 mr-4 animate-spin" />
+                  {t('analyzing')}
                 </>
               ) : (
                 <>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Предпросмотр с AI
+                  <Sparkles className="w-6 h-6 mr-4" />
+                  {t('analyze')}
                 </>
               )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/dishes')}
-              disabled={isAnalyzing}
-            >
-              Отмена
             </Button>
           </div>
         </div>

@@ -2,12 +2,35 @@
 
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useDishesStore } from '@/lib/stores/dishes-store'
-import { useRecipesStore } from '@/lib/stores/recipes-store'
 import { useInventoryStore, type InventoryItem } from '@/lib/stores/inventory-store'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Sparkles, ArrowLeft, TrendingUp, DollarSign, AlertTriangle, Download, FileText, FileSpreadsheet } from 'lucide-react'
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useTranslations } from 'next-intl';
+import { 
+  Sparkles, 
+  ArrowLeft, 
+  Download, 
+  Package2, 
+  Star, 
+  AlertCircle, 
+  BarChart3, 
+  Activity,
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  ArrowRight
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type PeriodType = 'today' | '7days' | '30days' | 'custom'
 type ModeType = 'overview' | 'profit' | 'inventory' | 'ai'
@@ -16,9 +39,11 @@ type DishFilterType = 'all' | 'star' | 'problem' | 'low-margin' | 'risk'
 export default function ReportsPage() {
   const { user } = useAuthStore()
   const { dishes } = useDishesStore()
-  const { recipes } = useRecipesStore()
   const { items: inventoryItems } = useInventoryStore()
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
+  const t = useTranslations('reports');
 
   const [period, setPeriod] = useState<PeriodType>('30days')
   const [mode, setMode] = useState<ModeType>('overview')
@@ -32,28 +57,23 @@ export default function ReportsPage() {
 
   // Calculate KPIs
   const kpis = useMemo(() => {
-    const totalRevenue = 12400 // Mock - should be from sales
-    const totalProfit = 3180 // Mock
+    const totalRevenue = 12400 
+    const totalProfit = 3180 
     const avgFoodCost = dishes.length > 0 
       ? dishes.reduce((sum, d) => sum + d.foodCostPercent, 0) / dishes.length 
       : 24
-    const potentialGrowth = 640 // Mock - from AI recommendations
+    const potentialGrowth = 640 
 
-    return {
-      revenue: totalRevenue,
-      profit: totalProfit,
-      avgFoodCost: avgFoodCost,
-      potentialGrowth: potentialGrowth,
-    }
+    return { revenue: totalRevenue, profit: totalProfit, avgFoodCost, potentialGrowth }
   }, [dishes])
 
   // Calculate inventory metrics
   const inventoryMetrics = useMemo(() => {
-    const totalValue = inventoryItems.reduce((sum: number, item: InventoryItem) => sum + item.price, 0)
+    const totalValue = inventoryItems.reduce((sum: number, item: InventoryItem) => sum + (item.price || 0), 0)
     const expiringValue = inventoryItems
       .filter((item: InventoryItem) => item.status === 'expiring')
-      .reduce((sum: number, item: InventoryItem) => sum + item.price, 0)
-    const potentialLoss = expiringValue * 0.43 // Mock - 43% potential loss
+      .reduce((sum: number, item: InventoryItem) => sum + (item.price || 0), 0)
+    const potentialLoss = expiringValue * 0.43 
 
     return {
       totalValue,
@@ -66,421 +86,345 @@ export default function ReportsPage() {
   // Filter dishes
   const filteredDishes = useMemo(() => {
     switch (dishFilter) {
-      case 'star':
-        return dishes.filter(d => d.foodCostPercent < 30)
-      case 'problem':
-        return dishes.filter(d => d.foodCostPercent >= 40)
-      case 'low-margin':
-        return dishes.filter(d => d.marginPercent < 50)
-      case 'risk':
-        return dishes.filter(d => d.warnings && d.warnings.length > 0)
-      default:
-        return dishes
+      case 'star': return dishes.filter(d => d.foodCostPercent < 30)
+      case 'problem': return dishes.filter(d => d.foodCostPercent >= 40)
+      case 'low-margin': return dishes.filter(d => d.marginPercent < 50)
+      case 'risk': return dishes.filter(d => d.warnings && d.warnings.length > 0)
+      default: return dishes
     }
   }, [dishes, dishFilter])
 
   // AI recommendations
   const aiRecommendations = useMemo(() => {
     const recs = []
-    
-    // Find low-margin dishes
     const lowMarginDish = dishes.find(d => d.marginPercent < 20)
-    if (lowMarginDish) {
-      recs.push({
-        type: 'remove-dish',
-        title: `Убрать ${lowMarginDish.name} (маржа ${lowMarginDish.marginPercent.toFixed(1)}%)`,
-        impact: '+180 PLN/мес',
-      })
-    }
-
-    // Find dishes to raise price
+    if (lowMarginDish) recs.push({ id: '1', title: `${lowMarginDish.name} (маржа ${lowMarginDish.marginPercent.toFixed(1)}%)`, impact: '+180 PLN/мес' })
     const priceIncreaseDish = dishes.find(d => d.foodCostPercent > 35 && d.foodCostPercent < 50)
-    if (priceIncreaseDish) {
-      recs.push({
-        type: 'raise-price',
-        title: `Поднять цену на ${priceIncreaseDish.name} на +2 PLN`,
-        impact: '+180 PLN/мес',
-      })
-    }
-
-    // Expiring inventory
+    if (priceIncreaseDish) recs.push({ id: '2', title: `Поднять цену на ${priceIncreaseDish.name}`, impact: '+180 PLN/мес' })
     if (inventoryMetrics.expiringItems.length > 0) {
       const topExpiring = inventoryMetrics.expiringItems[0]
-      recs.push({
-        type: 'use-inventory',
-        title: `Использовать ${topExpiring.product_name} в 2 рецептах`,
-        impact: `Сэкономить ${topExpiring.price.toFixed(0)} PLN`,
-      })
+      recs.push({ id: '3', title: `Использовать ${topExpiring.product_name} в 2 рецептах`, impact: `Сэкономить ${topExpiring.price.toFixed(0)} PLN` })
     }
-
     return recs
   }, [dishes, inventoryMetrics])
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Header */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Назад
-          </Button>
+    <div className="min-h-screen bg-black text-white selection:bg-indigo-500/30">
+      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="space-y-10">
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2 text-foreground">
-                <FileText className="h-8 w-8 text-blue-500" />
-                Отчёты
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Финансовые показатели и рекомендации AI
-              </p>
-            </div>
-
-            {/* Export Buttons */}
-            <div className="flex gap-2">
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="flex items-center gap-6">
               <div className="relative group">
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  PDF
-                </Button>
-                <div className="absolute top-full right-0 mt-1 px-2 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  Для инвестора
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-[1.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-black border border-white/10 shadow-2xl">
+                  <BarChart3 className="h-10 w-10 text-indigo-400 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
-              <div className="relative group">
-                <Button variant="outline" size="sm">
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Excel
-                </Button>
-                <div className="absolute top-full right-0 mt-1 px-2 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  Для бухгалтера
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                   <h1 className="text-5xl font-black tracking-tighter italic uppercase leading-none">
+                      {t('header.title')}<span className="text-indigo-500">{t('header.core')}</span>
+                   </h1>
+                   <div className="flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-4 py-1.5 rounded-full border border-indigo-500/20 glass-portal">
+                      <Activity className="h-3.5 w-3.5 animate-pulse" />
+                      <span className="text-[12px] font-black tracking-[0.2em] uppercase">{t('header.sync')}</span>
+                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Period & Mode Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="flex gap-2">
-            <span className="text-sm font-medium text-muted-foreground flex items-center">Период:</span>
-            <Button
-              variant={period === 'today' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPeriod('today')}
-            >
-              Сегодня
-            </Button>
-            <Button
-              variant={period === '7days' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPeriod('7days')}
-            >
-              7 дней
-            </Button>
-            <Button
-              variant={period === '30days' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPeriod('30days')}
-            >
-              30 дней
-            </Button>
-            <Button
-              variant={period === 'custom' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPeriod('custom')}
-            >
-              Произвольно
-            </Button>
-          </div>
-
-          <div className="flex gap-2">
-            <span className="text-sm font-medium text-muted-foreground flex items-center">Режим:</span>
-            <Button
-              variant={mode === 'overview' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMode('overview')}
-            >
-              Обзор
-            </Button>
-            <Button
-              variant={mode === 'profit' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMode('profit')}
-            >
-              Прибыль
-            </Button>
-            <Button
-              variant={mode === 'inventory' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMode('inventory')}
-            >
-              Склад
-            </Button>
-            <Button
-              variant={mode === 'ai' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMode('ai')}
-            >
-              AI
-            </Button>
-          </div>
-        </div>
-
-        {/* AI Executive Summary */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-foreground mb-3">🧠 AI Итог за {period === '30days' ? 'последние 30 дней' : period === '7days' ? '7 дней' : 'сегодня'}</h2>
-              <div className="space-y-2 text-foreground mb-4">
-                <p>• <strong>Чистая прибыль:</strong> <span className="text-green-600 dark:text-green-400">+{kpis.profit.toFixed(0)} PLN</span></p>
-                <p>• <strong>Потери из-за склада:</strong> <span className="text-red-600 dark:text-red-400">–{inventoryMetrics.potentialLoss.toFixed(0)} PLN</span></p>
-                <p>• <strong>{dishes.filter(d => d.marginPercent < 20).length} {dishes.filter(d => d.marginPercent < 20).length === 1 ? 'блюдо тянет' : 'блюда тянут'} прибыль вниз</strong></p>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-                <p className="font-semibold text-foreground mb-2">💡 Что делать дальше:</p>
-                <p className="text-muted-foreground text-sm">
-                  {dishes.find(d => d.marginPercent < 20) 
-                    ? `Убрать ${dishes.find(d => d.marginPercent < 20)?.name} или изменить рецепт — это повысит среднюю маржу на 4–6%`
-                    : 'Меню оптимизировано, продолжайте в том же духе'
-                  }
+                <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] ml-1">
+                  {t('header.subtitle')}
                 </p>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Financial KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="text-sm text-muted-foreground mb-1">Выручка</div>
-            <div className="text-3xl font-bold text-foreground">{kpis.revenue.toFixed(0)} PLN</div>
-            <div className="text-xs text-green-600 dark:text-green-400 mt-1">+12% vs прошлый период</div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="text-sm text-muted-foreground mb-1">Чистая прибыль</div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{kpis.profit.toFixed(0)} PLN</div>
-            <div className="text-xs text-green-600 dark:text-green-400 mt-1">+8% vs прошлый период</div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="text-sm text-muted-foreground mb-1">Средний Food Cost</div>
-            <div className={`text-3xl font-bold ${kpis.avgFoodCost < 30 ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
-              {kpis.avgFoodCost.toFixed(1)}%
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">Норма: &lt; 30%</div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
-              Потенциал роста
-              <span className="inline-flex items-center text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded">AI</span>
-            </div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">+{kpis.potentialGrowth.toFixed(0)} PLN</div>
-            <div className="text-xs text-muted-foreground mt-1">при применении AI-рекомендаций</div>
-          </div>
-        </div>
-
-        {/* Dishes Report */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">Прибыльность блюд</h2>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-4">
               <Button
-                variant={dishFilter === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setDishFilter('all')}
+                variant="ghost"
+                onClick={() => router.push(`/${locale}/dashboard`)}
+                className="h-14 px-8 rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/5 transition-all border border-white/10"
               >
-                Все ({dishes.length})
+                <ArrowLeft className="h-4 w-4 mr-3" />
+                Dashboard
               </Button>
-              <Button
-                variant={dishFilter === 'star' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setDishFilter('star')}
-              >
-                ⭐ Star
-              </Button>
-              <Button
-                variant={dishFilter === 'problem' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setDishFilter('problem')}
-              >
-                ⚠️ Problem
-              </Button>
-              <Button
-                variant={dishFilter === 'low-margin' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setDishFilter('low-margin')}
-              >
-                📉 Low margin
-              </Button>
-              <Button
-                variant={dishFilter === 'risk' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setDishFilter('risk')}
-              >
-                ⏳ Risk
+              <Button className="h-14 px-10 rounded-[2rem] bg-indigo-500 hover:bg-indigo-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95">
+                <Download className="h-4 w-4 mr-3" />
+                {t('actions.export')}
               </Button>
             </div>
           </div>
 
-          {filteredDishes.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Нет блюд с выбранным фильтром
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredDishes.map(dish => (
-                <div key={dish.id} className="border border-border rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-foreground">{dish.name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      dish.foodCostPercent < 30 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : dish.foodCostPercent < 40
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                        : dish.foodCostPercent < 55
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                    }`}>
-                      {dish.foodCostPercent < 30 ? '⭐ Star' : dish.foodCostPercent < 40 ? '💰 Cash Cow' : dish.foodCostPercent < 55 ? '❓ Question' : '☠️ Dog'}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1 text-sm mb-3">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Цена:</span>
-                      <span className="font-medium text-foreground">{dish.salePrice.toFixed(2)} PLN</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Себестоимость:</span>
-                      <span className="font-medium text-foreground">{dish.totalCost.toFixed(2)} PLN</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Маржа:</span>
-                      <span className="font-medium text-green-600 dark:text-green-400">+{dish.marginPercent.toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Food Cost:</span>
-                      <span className={`font-medium ${
-                        dish.foodCostPercent < 30 ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-                      }`}>
-                        {dish.foodCostPercent.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 text-xs">
-                      Подробнее
-                    </Button>
-                    {dish.marginPercent < 50 && (
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Изменить цену
-                      </Button>
+          {/* Filters Bar */}
+          <div className="flex flex-wrap items-center gap-8 bg-white/[0.03] backdrop-blur-xl p-4 rounded-[2.5rem] border border-white/10">
+            <div className="flex items-center gap-1 p-1.5 bg-black/40 rounded-2xl border border-white/5">
+               {(['today', '7days', '30days', 'custom'] as PeriodType[]).map((p) => (
+                  <Button 
+                    key={p} 
+                    variant="ghost"
+                    size="sm" 
+                    className={cn(
+                      "rounded-xl h-10 px-6 font-black uppercase text-[10px] tracking-widest transition-all",
+                      period === p ? "bg-indigo-500 text-white shadow-xl" : "text-white/40 hover:text-white hover:bg-white/5"
                     )}
-                  </div>
-                </div>
+                    onClick={() => setPeriod(p)}
+                  >
+                    {t(`periods.${p}`)}
+                  </Button>
+               ))}
+            </div>
+            <div className="flex items-center gap-1 p-1.5 bg-black/40 rounded-2xl border border-white/5">
+              {(['overview', 'profit', 'inventory', 'ai'] as ModeType[]).map((m) => (
+                 <Button 
+                  key={m} 
+                  variant="ghost"
+                  size="sm" 
+                  className={cn(
+                    "rounded-xl h-10 px-6 font-black uppercase text-[10px] tracking-widest transition-all",
+                    mode === m ? "bg-white text-black shadow-xl" : "text-white/40 hover:text-white hover:bg-white/5"
+                  )}
+                  onClick={() => setMode(m)}
+                >
+                   {t(`modes.${m}`)}
+                 </Button>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Inventory Report */}
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Склад и потери</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-              <div className="text-sm text-blue-700 dark:text-blue-300 mb-1">💸 Товаров на складе</div>
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {inventoryMetrics.totalValue.toFixed(0)} PLN
-              </div>
-            </div>
-
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
-              <div className="text-sm text-amber-700 dark:text-amber-300 mb-1">⏰ Истекает в 7 дней</div>
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {inventoryMetrics.expiringValue.toFixed(0)} PLN
-              </div>
-            </div>
-
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-              <div className="text-sm text-red-700 dark:text-red-300 mb-1">❌ Потенциальные потери</div>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {inventoryMetrics.potentialLoss.toFixed(0)} PLN
-              </div>
-            </div>
           </div>
 
-          {inventoryMetrics.expiringItems.length > 0 && (
-            <>
-              <div className="space-y-2 mb-4">
-                {inventoryMetrics.expiringItems.slice(0, 5).map((item: InventoryItem) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-foreground">{item.product_name}</div>
-                      <div className="text-xs text-amber-700 dark:text-amber-300">
-                        Истекает через 2-3 дня
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-foreground">{item.price.toFixed(0)} PLN</div>
-                      <div className="text-xs text-muted-foreground">{item.quantity} {item.base_unit === 'g' ? 'г' : item.base_unit === 'ml' ? 'мл' : 'шт'}</div>
+          {/* AI Vision Card */}
+          <div className="bg-gradient-to-br from-indigo-900/40 via-black to-black border border-indigo-500/30 rounded-[3rem] p-10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity duration-1000 rotate-12 scale-150">
+              <Sparkles className="h-64 w-64 text-indigo-400" />
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row items-center gap-12">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-indigo-500 blur-2xl opacity-20 animate-pulse"></div>
+                  <div className="relative flex-shrink-0 w-24 h-24 bg-black/50 backdrop-blur-3xl rounded-[2rem] flex items-center justify-center border border-indigo-500/30">
+                    <Zap className="h-12 w-12 text-indigo-400" />
+                  </div>
+                </div>
+                
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex flex-wrap items-center gap-4 mb-6 justify-center md:justify-start">
+                    <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full font-black uppercase text-[10px] tracking-[0.2em]">
+                      {t('aiSummary.badge')} · {t(`periods.${period}`)}
+                    </Badge>
+                    <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                      <Target className="w-4 h-4" />
+                      84% Accuracy
                     </div>
                   </div>
-                ))}
-              </div>
 
-              <Button variant="outline" className="w-full">
-                👉 Использовать в рецептах
-              </Button>
-            </>
-          )}
-        </div>
+                  <h2 className="text-4xl font-black mb-8 tracking-tighter italic uppercase leading-tight max-w-2xl">
+                    {t('aiSummary.title', { percent: 84 })}
+                  </h2>
 
-        {/* AI Actions */}
-        {aiRecommendations.length > 0 && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-foreground mb-4">� AI-рекомендации · на основе склада</h2>
-                <p className="text-sm text-muted-foreground mb-4">Конкретные действия с прогнозом эффекта:</p>
-
-                <div className="space-y-3">
-                  {aiRecommendations.map((rec, idx) => (
-                    <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-4 flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{rec.title}</p>
-                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">Эффект: {rec.impact}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-indigo-500/40 transition-all">
+                      <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.profit')}</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-black text-white italic">+{kpis.profit.toFixed(0)}</p>
+                        <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Применить
-                      </Button>
                     </div>
-                  ))}
+                    <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-rose-500/40 transition-all">
+                       <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.losses')}</p>
+                       <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-black text-rose-500 italic">–{inventoryMetrics.potentialLoss.toFixed(0)}</p>
+                        <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
+                      </div>
+                    </div>
+                    <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-emerald-500/40 transition-all">
+                       <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.growth')}</p>
+                       <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-black text-emerald-400 italic">+{kpis.potentialGrowth.toFixed(0)}</p>
+                        <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
+                       </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Revenue Card */}
+                <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 group hover:border-indigo-500/40 transition-all">
+                  <div className="flex items-center justify-between mb-6">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kpi.revenue')}</p>
+                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-emerald-400" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-4xl font-black text-white italic tracking-tighter">{kpis.revenue.toFixed(0)}</span>
+                    <span className="text-sm font-bold text-white/20 uppercase">PLN</span>
+                  </div>
+                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10 inline-block">
+                    {t('kpi.revenueGrowth')}
+                  </p>
+                </div>
+
+                {/* Food Cost Card */}
+                <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 group hover:border-amber-500/40 transition-all">
+                  <div className="flex items-center justify-between mb-6">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kpi.foodCost')}</p>
+                    <div className={cn("p-2 rounded-lg", kpis.avgFoodCost < 30 ? "bg-emerald-500/10" : "bg-amber-500/10")}>
+                      <TrendingDown className={cn("h-5 w-5", kpis.avgFoodCost < 30 ? "text-emerald-400" : "text-amber-400")} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className={cn("text-4xl font-black italic tracking-tighter", kpis.avgFoodCost < 30 ? "text-emerald-400" : "text-amber-400")}>
+                      {kpis.avgFoodCost.toFixed(1)}%
+                    </span>
+                  </div>
+                  <p className="text-[10px] font-black text-white/40 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10 inline-block">
+                    {t('kpi.foodCostTarget')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Profitability Analysis Table/List */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-[3rem] overflow-hidden">
+                <div className="p-10 border-b border-white/5">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                    <div>
+                      <h3 className="text-2xl font-black text-white italic uppercase tracking-tight mb-1">{t('profitAnalysis.title')}</h3>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">{t('profitAnalysis.subtitle')}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 p-1.5 bg-black/40 rounded-2xl border border-white/5">
+                      {(['all', 'star', 'problem', 'low-margin'] as DishFilterType[]).map((f) => {
+                        const filterKey = f === 'low-margin' ? 'lowMargin' : f;
+                        return (
+                          <Button 
+                            key={f} 
+                            variant="ghost" 
+                            size="sm" 
+                            className={cn(
+                              "h-9 text-[10px] font-black uppercase px-5 rounded-xl transition-all",
+                              dishFilter === f ? "bg-white text-black" : "text-white/40 hover:text-white hover:bg-white/5"
+                            )}
+                            onClick={() => setDishFilter(f)}
+                          >
+                            {f === 'all' ? t('profitAnalysis.filters.all') : t(`profitAnalysis.filters.${filterKey}`)}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {filteredDishes.map(dish => (
+                      <div key={dish.id} className="group p-6 rounded-[2rem] bg-black/40 border border-white/5 hover:border-indigo-500/40 transition-all relative overflow-hidden">
+                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10">
+                           <Star className="w-12 h-12 text-white" />
+                         </div>
+                         <div className="flex items-center justify-between mb-6">
+                            <h4 className="font-black text-white italic uppercase tracking-tight truncate pr-4">{dish.name}</h4>
+                            <Badge className={cn(
+                              "px-3 py-0.5 rounded-full font-black text-[9px] border-none uppercase tracking-widest",
+                              dish.foodCostPercent < 30 ? "bg-emerald-500/20 text-emerald-400" : 
+                              dish.foodCostPercent < 45 ? "bg-amber-500/20 text-amber-400" : "bg-rose-500/20 text-rose-400"
+                            )}>
+                              {dish.foodCostPercent < 30 ? 'High Performance' : 'Standard'}
+                            </Badge>
+                         </div>
+                         <div className="grid grid-cols-2 gap-6 relative z-10">
+                           <div>
+                             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">{t('profitAnalysis.card.margin')}</p>
+                             <p className="text-xl font-black text-white italic tracking-tighter">{dish.marginPercent.toFixed(1)}%</p>
+                           </div>
+                           <div>
+                             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">{t('profitAnalysis.card.fc')}</p>
+                             <p className={cn("text-xl font-black italic tracking-tighter", dish.foodCostPercent > 35 ? "text-rose-500" : "text-emerald-400")}>
+                               {dish.foodCostPercent.toFixed(1)}%
+                             </p>
+                           </div>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="space-y-8">
+              {/* Inventory Risks */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8">
+                 <div className="flex items-center gap-3 mb-8">
+                   <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                     <Package2 className="h-5 w-5 text-amber-400" />
+                   </div>
+                   <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-white">
+                     {t('inventoryRisks.title')}
+                   </h3>
+                 </div>
+
+                 <div className="space-y-4">
+                    <div className="p-6 rounded-[1.5rem] bg-rose-500/5 border border-rose-500/10 mb-6">
+                      <p className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest mb-1">{t('inventoryRisks.expiring')}</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-black text-rose-500 italic tracking-tighter">{inventoryMetrics.expiringValue.toFixed(0)}</p>
+                        <span className="text-[10px] font-bold text-rose-500/40 uppercase">PLN</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {inventoryMetrics.expiringItems.slice(0, 5).map(item => (
+                         <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors">
+                            <div className="min-w-0 pr-4">
+                              <p className="text-[11px] font-black text-white uppercase tracking-tight truncate">{item.product_name}</p>
+                              <p className="text-[9px] font-bold text-rose-500/60 uppercase tracking-widest mt-1">Exp: {item.status}</p>
+                            </div>
+                            <p className="font-black text-white/40 italic">-{item.price.toFixed(0)}</p>
+                         </div>
+                      ))}
+                    </div>
+                 </div>
+              </div>
+
+              {/* AI Strategic Plan */}
+              <div className="bg-black border border-indigo-500/30 rounded-[2.5rem] p-8 relative overflow-hidden shadow-[0_0_50px_-20px_rgba(99,102,241,0.3)]">
+                 <div className="absolute top-0 right-0 p-8 opacity-5">
+                   <Sparkles className="w-24 h-24 text-white" />
+                 </div>
+                 
+                 <div className="flex items-center gap-3 mb-8 relative z-10">
+                   <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                     <Zap className="h-5 w-5 text-indigo-400" />
+                   </div>
+                   <h3 className="text-[12px] font-black uppercase tracking-[0.2em] text-indigo-400">
+                     {t('aiPlan.title')}
+                   </h3>
+                 </div>
+
+                 <div className="space-y-4 relative z-10">
+                    {aiRecommendations.map((rec) => (
+                      <div key={rec.id} className="p-6 rounded-[2rem] bg-white/[0.03] border border-white/10 space-y-4 group hover:bg-white/[0.05] transition-all">
+                         <div>
+                            <p className="text-sm font-black text-white leading-tight italic mb-2">{rec.title}</p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{t('aiPlan.effect')}</span>
+                              <span className="text-[11px] font-bold text-emerald-400">{rec.impact}</span>
+                            </div>
+                         </div>
+                         <Button className="w-full h-11 bg-white text-black hover:bg-indigo-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                            {t('aiPlan.apply')}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                         </Button>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

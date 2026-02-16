@@ -4,6 +4,7 @@ export interface InventoryItem {
   id: string;
   product_name: string;
   category: string;
+  catalog_ingredient_id?: string; // ✅ ID из каталога для рецептов
   quantity: number;
   base_unit: 'g' | 'ml' | 'pcs';
   price: number;

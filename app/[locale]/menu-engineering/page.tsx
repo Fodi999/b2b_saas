@@ -2,10 +2,23 @@
 
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useDishesStore } from '@/lib/stores/dishes-store'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Sparkles, TrendingUp, AlertTriangle, DollarSign, ChevronDown, ChevronUp, X, ArrowLeft } from 'lucide-react'
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useTranslations } from 'next-intl';
+import { 
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+import { Sparkles, TrendingUp, ChevronDown, ChevronUp, X, ArrowLeft, Target, Utensils, LayoutGrid, Star, CircleDollarSign, HelpCircle, Skull, AlertTriangle, Coins } from 'lucide-react'
 
 type MenuCategory = 'star' | 'cash-cow' | 'question' | 'dog'
 type FilterType = 'all' | 'problems' | 'high-margin' | 'expiring' | 'low-price'
@@ -33,16 +46,35 @@ function calculateCategory(foodCost: number): MenuCategory {
 
 // Category config
 const categoryConfig = {
-  star: { label: '⭐ Star', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700' },
-  'cash-cow': { label: '💰 Cash Cow', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700' },
-  question: { label: '❓ Question', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700' },
-  dog: { label: '☠️ Dog', color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700' },
+  star: { 
+    label: 'Star', 
+    icon: Star,
+    color: 'bg-emerald-500/10 text-emerald-600 border-none px-3 font-black text-[10px] tracking-widest',
+  },
+  'cash-cow': { 
+    label: 'Cash Cow', 
+    icon: CircleDollarSign,
+    color: 'bg-blue-500/10 text-blue-600 border-none px-3 font-black text-[10px] tracking-widest',
+  },
+  question: { 
+    label: 'Question', 
+    icon: HelpCircle,
+    color: 'bg-amber-500/10 text-amber-600 border-none px-3 font-black text-[10px] tracking-widest',
+  },
+  dog: { 
+    label: 'Dog', 
+    icon: Skull,
+    color: 'bg-red-500/10 text-red-600 border-none px-3 font-black text-[10px] tracking-widest',
+  },
 }
 
 export default function MenuEngineeringPage() {
   const { user } = useAuthStore()
   const { dishes } = useDishesStore()
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
+  const t = useTranslations('menuEngineering');
 
   const [filter, setFilter] = useState<FilterType>('all')
   const [showRecommendations, setShowRecommendations] = useState(false)
@@ -121,470 +153,227 @@ export default function MenuEngineeringPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 max-w-7xl">
-        {/* Header */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Назад
-          </Button>
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in duration-700">
+        <div className="space-y-10">
           
-          <h1 className="text-3xl font-bold flex items-center gap-2 text-foreground">
-            <TrendingUp className="h-8 w-8 text-purple-500" />
-            Menu Engineering
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Анализ прибыльности меню и рекомендации по оптимизации
-          </p>
-        </div>
-
-        {/* Summary Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="text-sm text-muted-foreground mb-1">Общая маржа меню</div>
-            <div className="text-2xl font-bold text-foreground">{analytics.totalMarginPercent.toFixed(1)}%</div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="text-sm text-muted-foreground mb-1">Food Cost</div>
-            <div className="text-2xl font-bold text-foreground">{analytics.avgFoodCost.toFixed(1)}%</div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="text-sm text-muted-foreground mb-1">Проблемных блюд</div>
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{analytics.problemDishes}</div>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="text-sm text-muted-foreground mb-1">Потенциал роста</div>
-            {analytics.potentialGrowth > 0 ? (
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">+{analytics.potentialGrowth}%</div>
-            ) : (
-              <div className="text-sm font-medium text-green-600 dark:text-green-400 mt-1">Меню оптимизировано</div>
-            )}
-          </div>
-        </div>
-
-        {/* AI Insight */}
-        {analytics.problemDishes > 0 && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg p-6 mb-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="flex items-center gap-6">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group">
+                <Target className="h-8 w-8 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-foreground mb-2">🤖 AI Анализ меню</h3>
-                <p className="text-muted-foreground mb-1">
-                  {analytics.problemDishes} {analytics.problemDishes === 1 ? 'блюдо снижает' : 'блюда снижают'} общую маржу.
-                </p>
-                <p className="text-foreground font-semibold">
-                  Если применить рекомендации — <span className="text-green-600 dark:text-green-400">+{analytics.monthlyPotential} PLN / месяц</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                   <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                      {t('header.title')} <span className="text-indigo-600">{t('header.core')}</span>
+                   </h1>
+                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full border border-emerald-100/50">
+                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-black tracking-widest uppercase">{t('header.sync')}</span>
+                   </div>
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 font-medium italic">
+                  {t('header.subtitle')}
                 </p>
               </div>
-              <Button 
-                onClick={() => setShowRecommendations(!showRecommendations)}
-                className="flex-shrink-0"
-              >
-                {showRecommendations ? 'Скрыть' : 'Показать рекомендации'}
-              </Button>
             </div>
 
-            {/* Recommendations Panel */}
-            {showRecommendations && (
-              <div className="mt-6 pt-6 border-t border-purple-200 dark:border-purple-800 space-y-3">
-                {menuDishes
-                  .filter(d => d.category === 'dog' || d.category === 'question')
-                  .map(dish => (
-                    <div key={dish.dishId} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="font-semibold text-foreground">{dish.dishName}</div>
-                        <span className={`text-xs px-2 py-1 rounded border ${categoryConfig[dish.category].color}`}>
-                          {categoryConfig[dish.category].label}
-                        </span>
-                      </div>
-                      
-                      {/* AI Recommendations */}
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-3">
-                        <div className="flex items-start gap-2 mb-2">
-                          <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-1">
-                              🤖 AI рекомендует
-                              <span className="text-[10px] font-normal text-blue-700 dark:text-blue-300">· на основе склада</span>
-                            </p>
-                            <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                              <div>
-                                <p className="font-medium">• Повысить цену до {(dish.price + 3).toFixed(2)} PLN</p>
-                                <p className="text-xs ml-4 text-blue-700 dark:text-blue-300">
-                                  Food Cost снизится с {dish.foodCost.toFixed(1)}% до {(dish.foodCost * 0.85).toFixed(1)}%
-                                </p>
-                              </div>
-                              <div>
-                                <p className="font-medium">• Или оставить цену и продвигать блюдо</p>
-                                <p className="text-xs ml-4 text-blue-700 dark:text-blue-300">
-                                  Увеличение продаж компенсирует низкую маржу
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-blue-700 dark:text-blue-300 mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
-                          💰 <strong>Прогноз:</strong> +{(3 * 30).toFixed(0)} PLN / месяц (при 30 продажах)
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="text-xs"
-                          title={`AI предлагает цену: ${(dish.price + 3).toFixed(2)} PLN`}
-                        >
-                          🔼 Повысить цену
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-xs">
-                          🧪 Альтернатива
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-xs text-red-600 dark:text-red-400">
-                          🚫 Убрать
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => router.push(`/${locale}/dashboard`)}
+                className="h-12 px-6 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+              <Button
+                onClick={() => setShowRecommendations(true)}
+                className="h-12 px-8 rounded-2xl bg-slate-900 dark:bg-slate-800 text-white font-black uppercase text-[10px] tracking-widest shadow-xl transition-all hover:scale-105"
+              >
+                <Sparkles className="h-4 w-4 mr-2 text-indigo-400" />
+                {t('actions.strategy')}
+              </Button>
+            </div>
           </div>
-        )}
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Button
-            variant={filter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('all')}
-          >
-            Все ({menuDishes.length})
-          </Button>
-          <Button
-            variant={filter === 'problems' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('problems')}
-          >
-            Проблемные ({menuDishes.filter(d => d.category === 'dog' || d.category === 'question').length})
-          </Button>
-          <Button
-            variant={filter === 'high-margin' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('high-margin')}
-          >
-            Высокая маржа ({menuDishes.filter(d => d.marginPercent >= 70).length})
-          </Button>
-          <Button
-            variant={filter === 'expiring' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('expiring')}
-          >
-            Истекают ингредиенты ({menuDishes.filter(d => d.warnings.length > 0).length})
-          </Button>
-          <Button
-            variant={filter === 'low-price' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('low-price')}
-          >
-            Низкая цена ({menuDishes.filter(d => d.price < 25).length})
-          </Button>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+             {/* Main Dashboard section of Engineering page */}
+             <div className="lg:col-span-3 space-y-8">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                 <Card className="border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <CardContent className="p-6">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('kpi.margin')}</p>
+                      <div className="text-3xl font-black text-indigo-600">{analytics.totalMarginPercent.toFixed(1)}%</div>
+                      <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
+                         <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${analytics.totalMarginPercent}%` }} />
+                      </div>
+                    </CardContent>
+                 </Card>
+                 <Card className="border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <CardContent className="p-6">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('kpi.avgFoodCost')}</p>
+                      <div className={`text-3xl font-black ${analytics.avgFoodCost > 35 ? 'text-red-500' : 'text-emerald-500'}`}>{analytics.avgFoodCost.toFixed(1)}%</div>
+                    </CardContent>
+                 </Card>
+                 <Card className="border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <CardContent className="p-6">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('kpi.problemDishes')}</p>
+                      <div className="text-3xl font-black text-amber-500">{analytics.problemDishes}</div>
+                    </CardContent>
+                 </Card>
+                 <Card className="border-none shadow-xl shadow-indigo-500/10 bg-indigo-600 text-white">
+                    <CardContent className="p-6">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">{t('kpi.potential')}</p>
+                      <div className="text-3xl font-black text-white">+{analytics.monthlyPotential} PLN</div>
+                    </CardContent>
+                 </Card>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-6 mb-8 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                 <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                    {(['all', 'problems', 'high-margin'] as FilterType[]).map((f) => (
+                      <Button key={f} variant={filter === f ? 'default' : 'ghost'} size="sm" className="h-8 text-[11px] font-black uppercase rounded-lg px-4 transition-all" onClick={() => setFilter(f)}>
+                        {f === 'all' ? t('filters.all') : f === 'problems' ? (
+                          <span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> {t('filters.problems')}</span>
+                        ) : (
+                          <span className="flex items-center gap-1.5"><CircleDollarSign className="h-3 w-3" /> {t('filters.highMargin')}</span>
+                        )}
+                      </Button>
+                    ))}
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {menuDishes.map((dish) => (
+                    <Card key={dish.dishId} className="group overflow-hidden border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:scale-[1.02] transition-all cursor-pointer" onClick={() => setSelectedDish(dish)}>
+                      <CardHeader className="p-0 relative h-40 overflow-hidden">
+                        {dish.imageUrl ? (
+                          <img src={dish.imageUrl} alt={dish.dishName} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                            <Utensils className="h-12 w-12 text-slate-300 dark:text-slate-700" />
+                          </div>
+                        )}
+                        <div className="absolute top-3 left-3">
+                          <Badge className={categoryConfig[dish.category].color}>
+                            {(() => {
+                              const Icon = categoryConfig[dish.category].icon;
+                              return <Icon className="h-3 w-3 mr-1.5" />;
+                            })()}
+                            {categoryConfig[dish.category].label}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-5">
+                         <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 line-clamp-1">{dish.dishName}</h3>
+                         <div className="grid grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                           <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.price')}</p>
+                              <p className="text-xl font-bold">{dish.price.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">PLN</span></p>
+                           </div>
+                           <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.foodCost')}</p>
+                              <p className={`text-xl font-bold ${dish.foodCost > 35 ? 'text-red-500' : 'text-emerald-500'}`}>{dish.foodCost.toFixed(1)}%</p>
+                           </div>
+                         </div>
+                         <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.margin')}</p>
+                            <p className="text-lg font-black text-slate-900 dark:text-white">+{dish.margin.toFixed(1)} PLN</p>
+                         </div>
+                      </CardContent>
+                    </Card>
+                 ))}
+              </div>
+            </div>
+
+            {/* Recommendations & Insights section */}
+            <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-6">
+               <h2 className="text-xl font-black text-slate-900 dark:text-white mb-4">{t('recommendations.title')}</h2>
+               <div className="space-y-4">
+                 <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-700">
+                   <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-2">
+                     {t('recommendations.priceIncrease')}
+                   </p>
+                   <p className="text-slate-500 dark:text-slate-400 text-sm">
+                     {t('recommendations.markup')}: <span className="font-bold text-slate-900 dark:text-slate-200">15%</span>
+                   </p>
+                 </div>
+                 <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-700">
+                   <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">
+                     {t('recommendations.optimizeDishes')}
+                   </p>
+                   <p className="text-slate-500 dark:text-slate-400 text-sm">
+                     {t('recommendations.ingredientSubstitution')}
+                   </p>
+                 </div>
+                 <div className="p-4 bg-red-500/10 rounded-xl border border-red-100 dark:border-red-700">
+                   <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-2">
+                     {t('recommendations.reducePortions')}
+                   </p>
+                   <p className="text-slate-500 dark:text-slate-400 text-sm">
+                     {t('recommendations.recommendedReduction')}: <span className="font-bold text-slate-900 dark:text-slate-200">20%</span>
+                   </p>
+                 </div>
+               </div>
+            </div>
+          </div>
         </div>
-
-        {/* Dishes Grid */}
-        {filteredDishes.length === 0 ? (
-          <div className="bg-card border border-border rounded-lg p-12 text-center">
-            <p className="text-muted-foreground mb-4">
-              {filter === 'all' ? 'Нет блюд в меню' : 'Нет блюд с выбранным фильтром'}
-            </p>
-            {filter === 'all' && (
-              <Button onClick={() => router.push('/dishes/create')}>
-                Создать первое блюдо
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredDishes.map(dish => (
-              <div
-                key={dish.dishId}
-                className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                {/* Image or placeholder */}
-                {dish.imageUrl ? (
-                  <img src={dish.imageUrl} alt={dish.dishName} className="w-full h-32 object-cover" />
-                ) : (
-                  <div className="w-full h-32 bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/30 flex items-center justify-center">
-                    <DollarSign className="h-12 w-12 text-purple-400 dark:text-purple-600" />
-                  </div>
-                )}
-
-                <div className="p-4">
-                  {/* Title and Category */}
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-foreground text-lg">{dish.dishName}</h3>
-                    <span 
-                      className={`text-xs px-2 py-1 rounded border flex-shrink-0 ml-2 ${categoryConfig[dish.category].color}`}
-                      title={`Категория Menu Engineering: ${categoryConfig[dish.category].label}`}
-                    >
-                      {categoryConfig[dish.category].label}
-                    </span>
-                  </div>
-
-                  {/* Category Explanation */}
-                  <div className="mb-3 text-xs text-muted-foreground">
-                    Категория: <span className="font-medium">{categoryConfig[dish.category].label}</span>
-                    {dish.category === 'star' && ' (высокая маржа)'}
-                    {dish.category === 'cash-cow' && ' (стабильная маржа)'}
-                    {dish.category === 'question' && ' (требует оптимизации)'}
-                    {dish.category === 'dog' && ' (низкая прибыльность)'}
-                  </div>
-
-                  {/* Metrics */}
-                  <div className="space-y-2 text-sm mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Себестоимость:</span>
-                      <span className="font-medium text-foreground">{dish.cost.toFixed(2)} PLN</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Цена:</span>
-                      <span className="font-medium text-foreground">{dish.price.toFixed(2)} PLN</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Маржа:</span>
-                      <span className="font-medium text-green-600 dark:text-green-400">
-                        +{dish.margin.toFixed(2)} PLN ({dish.marginPercent.toFixed(1)}%)
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Food Cost:</span>
-                      <span className={`font-medium ${
-                        dish.foodCost < 30 ? 'text-green-600 dark:text-green-400' :
-                        dish.foodCost < 40 ? 'text-blue-600 dark:text-blue-400' :
-                        dish.foodCost < 55 ? 'text-yellow-600 dark:text-yellow-400' :
-                        'text-red-600 dark:text-red-400'
-                      }`}>
-                        {dish.foodCost.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Warnings */}
-                  {dish.warnings.length > 0 && (
-                    <div className="mb-4">
-                      <div className="p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs mb-2">
-                        <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 mb-1 font-semibold">
-                          <AlertTriangle className="h-3 w-3" />
-                          <span>Проблемы со складом:</span>
-                        </div>
-                        <ul className="ml-4 space-y-0.5 text-amber-800 dark:text-amber-200">
-                          {dish.warnings.slice(0, 2).map((warning, idx) => (
-                            <li key={idx}>• {warning}</li>
-                          ))}
-                          {dish.warnings.length > 2 && (
-                            <li className="text-amber-600 dark:text-amber-400">• +{dish.warnings.length - 2} ещё...</li>
-                          )}
-                        </ul>
-                      </div>
-                      
-                      {/* AI Recommendation */}
-                      {(dish.category === 'dog' || dish.category === 'question') && (
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-                          <div className="flex items-start gap-2 mb-2">
-                            <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1 flex items-center gap-1">
-                                🤖 AI рекомендует
-                                <span className="text-[10px] font-normal text-blue-700 dark:text-blue-300">· на основе склада</span>
-                              </p>
-                              <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-0.5">
-                                <li>• Повысить цену до {(dish.price + 3).toFixed(2)} PLN</li>
-                                <li>• Или оставить цену и продвигать блюдо</li>
-                              </ul>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full text-xs mt-2 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                            title={`AI предлагает цену: ${(dish.price + 3).toFixed(2)} PLN (оптимально для маржи)`}
-                          >
-                            Применить рекомендацию
-                            <span className="ml-1 text-[10px] opacity-70">+{(3).toFixed(0)} PLN</span>
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => setSelectedDish(dish)}
-                    >
-                      Подробнее
-                    </Button>
-                    
-                    {(dish.category === 'dog' || dish.category === 'question') && (
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                          title={`AI рекомендует: +2–4 PLN`}
-                        >
-                          🔼 Повысить цену
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          🧪 Альтернатива
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Detail Modal */}
-        {selectedDish && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground">{selectedDish.dishName}</h2>
-                <button
-                  onClick={() => setSelectedDish(null)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Category Badge */}
-                <div>
-                  <div className="text-sm text-muted-foreground mb-2">Категория Menu Engineering:</div>
-                  <span className={`inline-flex items-center px-3 py-1 rounded border ${categoryConfig[selectedDish.category].color}`}>
-                    {categoryConfig[selectedDish.category].label}
-                  </span>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {selectedDish.category === 'star' && '✨ Высокая маржа — продолжайте продавать'}
-                    {selectedDish.category === 'cash-cow' && '💰 Стабильная маржа — надёжное блюдо'}
-                    {selectedDish.category === 'question' && '❓ Требует оптимизации цены или рецепта'}
-                    {selectedDish.category === 'dog' && '☠️ Низкая прибыльность — требует срочных изменений'}
-                  </p>
-                </div>
-
-                {/* Economics */}
-                <div>
-                  <h3 className="font-semibold text-foreground mb-3">📊 Экономика</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between p-2 bg-muted/30 rounded">
-                      <span>Себестоимость:</span>
-                      <span className="font-medium">{selectedDish.cost.toFixed(2)} PLN</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-muted/30 rounded">
-                      <span>Цена продажи:</span>
-                      <span className="font-medium">{selectedDish.price.toFixed(2)} PLN</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                      <span>Маржа:</span>
-                      <span className="font-medium text-green-600 dark:text-green-400">
-                        +{selectedDish.margin.toFixed(2)} PLN ({selectedDish.marginPercent.toFixed(1)}%)
-                      </span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-muted/30 rounded">
-                      <span>Food Cost:</span>
-                      <span className="font-medium">{selectedDish.foodCost.toFixed(1)}%</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Problems */}
-                {selectedDish.warnings.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3">⚠️ Проблемы со складом</h3>
-                    <ul className="space-y-2 text-sm">
-                      {selectedDish.warnings.map((warning, idx) => (
-                        <li key={idx} className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded">
-                          <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-amber-900 dark:text-amber-100">{warning}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* AI Recommendations */}
-                <div>
-                  <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-purple-500" />
-                    AI Рекомендации
-                    <span className="text-xs font-normal text-muted-foreground">· на основе склада</span>
-                  </h3>
-                  <div className="space-y-3">
-                    {selectedDish.category === 'dog' || selectedDish.category === 'question' ? (
-                      <>
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-sm">
-                          <div className="font-medium mb-1">🔼 Повысить цену на +3 PLN</div>
-                          <div className="text-muted-foreground">Food Cost снизится до {(selectedDish.foodCost * 0.85).toFixed(1)}%</div>
-                        </div>
-                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded text-sm">
-                          <div className="font-medium mb-1">🔄 Оптимизировать рецепт</div>
-                          <div className="text-muted-foreground">Возможно снижение себестоимости на 15%</div>
-                        </div>
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-sm">
-                          <div className="font-medium mb-1">🔥 Продвигать блюдо</div>
-                          <div className="text-muted-foreground">После оптимизации увеличить продажи</div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-sm">
-                        <div className="font-medium mb-1">✅ Блюдо оптимально</div>
-                        <div className="text-muted-foreground">Продолжайте продавать это блюдо</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button 
-                      className="flex items-center justify-center gap-1"
-                      title={`AI предлагает цену: ${(selectedDish.price + 3).toFixed(2)} PLN (оптимально для маржи)`}
-                    >
-                      <span>🔼</span>
-                      <span>Повысить цену</span>
-                    </Button>
-                    <Button variant="outline" className="flex items-center justify-center gap-1">
-                      <span>🧪</span>
-                      <span>Альтернатива</span>
-                    </Button>
-                  </div>
-                  <Button variant="outline" className="w-full text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-                    🚫 Временно убрать из меню
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      <Dialog open={!!selectedDish} onOpenChange={(open) => !open && setSelectedDish(null)}>
+        <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+          {selectedDish && (
+            <div className="flex flex-col">
+              <div className="h-48 bg-slate-900 relative">
+                 {selectedDish.imageUrl ? (
+                   <img src={selectedDish.imageUrl} className="w-full h-full object-cover opacity-50" />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center opacity-20"><LayoutGrid className="h-24 w-24 text-white" /></div>
+                 )}
+                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
+                 <div className="absolute bottom-6 left-6 right-6">
+                    <Badge className={categoryConfig[selectedDish.category].color + ' mb-2'}>
+                       {(() => {
+                          const Icon = categoryConfig[selectedDish.category].icon;
+                          return <Icon className="h-3 w-3 mr-1.5" />;
+                       })()}
+                       {categoryConfig[selectedDish.category].label}
+                    </Badge>
+                    <h2 className="text-2xl font-black text-white">{selectedDish.dishName}</h2>
+                 </div>
+              </div>
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Стратегия AI</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold">
+                      {selectedDish.category === 'star' ? 'Лидер меню. Сохраняйте рецептуру.' : 
+                       selectedDish.category === 'dog' ? 'Критически низкая маржа. Рекомендуется поднять цену.' :
+                       'Провести ротацию ингредиентов.'}
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-sm font-bold">
+                       <span className="text-slate-400">Маржинальность</span>
+                       <span className="text-emerald-500">{selectedDish.marginPercent.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-bold">
+                       <span className="text-slate-400">Себестоимость</span>
+                       <span>{selectedDish.cost.toFixed(1)} PLN</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex gap-3">
+                  <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold h-12">Редактировать</Button>
+                  <Button variant="outline" className="flex-1 rounded-xl font-bold h-12" onClick={() => setSelectedDish(null)}>Закрыть</Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

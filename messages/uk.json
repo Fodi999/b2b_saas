@@ -4,7 +4,14 @@
     "howItWorks": "Як це працює",
     "pricing": "Ціни",
     "signIn": "Увійти",
-    "getStarted": "Почати"
+    "getStarted": "Почати",
+    "nav": {
+      "dashboard": "Панель",
+      "inventory": "Склад",
+      "recipes": "Рецепти",
+      "dishes": "Страви",
+      "reports": "Звіти"
+    }
   },
   "auth": {
     "login": {
@@ -31,15 +38,25 @@
   },
   "dashboard": {
     "title": "Панель",
-    "welcome": "Ласкаво просимо, {name}!",
+    "welcome": "З поверненням, {name}!",
     "logout": "Вийти",
     "modules": {
       "inventory": "Склад",
+      "inventoryDesc": "Склад та закупівлі",
       "recipes": "Рецепти",
+      "recipesDesc": "Рецепти та калькуляція",
       "dishes": "Страви",
+      "dishesDesc": "Меню та продажі",
       "menuEngineering": "Menu Engineering",
+      "menuEngineeringDesc": "Аналіз прибутковості",
       "aiAssistant": "AI Асистент",
-      "reports": "Звіти"
+      "aiAssistantDesc": "AI Асистент Шефа",
+      "reports": "Звіти",
+      "reportsDesc": "Звіти та KPI"
+    },
+    "sections": {
+      "resources": "Ресурси управління",
+      "metrics": "Системні метрики"
     },
     "comingSoon": "Незабаром...",
     "userInfo": "Інформація про користувача (Mock)",
@@ -140,25 +157,22 @@
   "howItWorks": {
     "title": "Як це працює?",
     "step1": {
-      "title": "1. Завантажуєте склад і рецепти",
-      "description": "Простий імпорт або ручне додавання"
+      "title": "Завантажте дані",
+      "description": "Імпорт складу та технологічних карт в один клік"
     },
     "step2": {
-      "title": "2. Додаєте страви та ціни",
-      "description": "Система автоматично рахує витрати"
+      "title": "Налаштуйте меню",
+      "description": "AI миттєво розрахує реальну собівартість"
     },
     "step3": {
-      "title": "3. AI показує, де ви втрачаєте гроші",
-      "description": "Конкретні рекомендації, а не загальні фрази"
+      "title": "Отримайте прибуток",
+      "description": "Точні інсайти щодо оптимізації кожної позиції"
     }
   },
   "cta": {
-    "title": "Почніть керувати рестораном як бізнесом, а не інтуїцією",
-    "subtitle": "Приєднуйтесь до рестораторів, які приймають свідомі рішення",
-    "buttons": {
-      "create": "Створити акаунт",
-      "demo": "Запросити демо"
-    }
+    "title": "Переведіть ресторан на автопілот прибутку",
+    "description": "Приєднуйтесь до нового стандарту управління RestoAI OS 2026 вже сьогодні.",
+    "button": "Почати безкоштовно"
   },
   "assistant": {
     "header": {
@@ -212,6 +226,353 @@
     },
     "demo": {
       "note": "Демо режим: Це тестові дані, але сценарії реальні. Після підключення backend система аналізуватиме ваші дані в реальному часі."
+    }
+  },
+  "inventory": {
+    "core": {
+      "title": "Склад синхронізовано",
+      "status": "System Active",
+      "description": "Дані Query DTO завантажені. Оптимізація joined-запитів активна."
+    },
+    "header": {
+      "title": "Склад",
+      "subtitle": "Управління запасами та AI-прогнозування"
+    },
+    "actions": {
+      "smartAdd": "Smart Add",
+      "closeAI": "Закрити AI",
+      "create": "Створити продукт"
+    },
+    "status": {
+      "inStock": "В нормі",
+      "low": "Мало",
+      "expiring": "Закінчується",
+      "expired": "Прострочений"
+    },
+    "empty": {
+      "title": "Склад порожній",
+      "description": "Додайте перший продукт вручну або за допомогою AI",
+      "button": "Додати продукт"
+    },
+    "table": {
+      "photo": "Фото",
+      "name": "Назва",
+      "category": "Категорія",
+      "quantity": "Кількість",
+      "price": "Середня ціна",
+      "expiry": "Термін придатності",
+      "status": "Статус",
+      "actions": "Дії"
+    },
+    "expiry": {
+      "expired": "Прострочено",
+      "daysLeft": "Залишилось {days} дн."
+    },
+    "delete": {
+      "button": "Видалити"
+    },
+    "modal": {
+      "title": "Додавання",
+      "subtitle": "Оприбуткування товару на склад Core v2.4",
+      "stepSearch": "Пошук у каталозі",
+      "stepDetails": "Параметри лота",
+      "searchPlaceholder": "Почніть вводити назву...",
+      "priceLabel": "Ціна за одиницю (PLN)",
+      "quantityLabel": "Кількість",
+      "dateLabel": "Дата отримання",
+      "submit": "Прийняти на склад",
+      "back": "Назад",
+      "expiryNote": "Очікуваний термін придатності: {days} дн. (до {date})",
+      "success": "Товар успішно додано"
+    },
+    "search": {
+      "placeholder": "Почніть вводити назву продукту...",
+      "notFound": "Нічого не знайдено.",
+      "units": {
+        "kg": "кг",
+        "l": "л",
+        "pcs": "шт"
+      }
+    }
+  },
+  "recipes": {
+    "header": {
+      "title": "Recipe Core",
+      "subtitle": "Ваша кулінарна база з AI-аналітикою собівартості",
+      "sync": "Sync Active"
+    },
+    "actions": {
+      "create": "Створити рецепт"
+    },
+    "difficulty": {
+      "easy": "Легко",
+      "medium": "Середньо",
+      "hard": "Складно"
+    },
+    "status": {
+      "fullStock": "Усі інгредієнти в наявності",
+      "warnings": "{count} попередження",
+      "warningsPlural": "{count} попередження"
+    },
+    "card": {
+      "servings": "{count} порцій",
+      "prepTime": "{count} хв",
+      "totalCost": "Собівартість",
+      "perServing": "За порцію",
+      "edit": "Редагувати"
+    },
+    "insights": {
+      "title": "AI Коефіцієнт Успіху",
+      "purity": {
+        "perfect": "Бездоганний рецепт",
+        "balanced": "Збалансований рецепт",
+        "needsWork": "Потребує доопрацювання",
+        "risky": "Ризикований склад",
+        "critical": "Критичне порушення"
+      },
+      "details": {
+        "title": "Деталізація аналізу",
+        "difficulty": "Складність",
+        "aiTime": "Час AI",
+        "steps": "Кроків",
+        "checked": "Перевірено на алергени"
+      },
+      "sections": {
+        "market": {
+          "title": "Безпека та Якість"
+        }
+      }
+    },
+    "metrics": {
+      "title": "Бізнес-метрики",
+      "subtitle": "Економічні показники та оцінка ризиків",
+      "cost": {
+        "title": "Собівартість",
+        "perPortion": "на {count} порцій",
+        "efficiency": "Ефективність закупівлі: висока"
+      },
+      "margin": {
+        "title": "Маржинальність",
+        "target": "Цільовий показник: > 70%",
+        "excellent": "Чудово",
+        "good": "Добре",
+        "low": "Низька"
+      },
+      "risk": {
+        "title": "Ризик HACCP",
+        "low": "Низький",
+        "medium": "Середній",
+        "high": "Високий",
+        "description": "Контроль критичних точок"
+      }
+    },
+    "create": {
+      "steps": {
+        "step1": "ЕТАП 01 / EDIT",
+        "step2": "ЕТАП 02 / PREVIEW",
+        "step3": "ЕТАП 03 / ANALYZING",
+        "step4": "ЕТАП 04 / INSIGHTS"
+      },
+      "actions": {
+        "back": "Назад",
+        "preview": "Перегляд",
+        "analyze": "AI Аналіз",
+        "save": "Зберегти рецепт"
+      },
+      "sections": {
+        "general": {
+          "title": "Загальна інформація",
+          "name_label": "Назва рецепту",
+          "name_placeholder": "Наприклад: Фірмовий Бургер",
+          "image_label": "Фото рецепту",
+          "image_upload": "Завантажити фото"
+        },
+        "instructions": {
+          "title": "Технологія приготування",
+          "placeholder": "Опишіть процес покроково..."
+        },
+        "ingredients": {
+          "title": "Інгредієнти",
+          "search_placeholder": "Пошук продуктів...",
+          "add_button": "Додати інгредієнт"
+        },
+        "preview": {
+          "servings": "Порції",
+          "time": "Час",
+          "weight": "Загальна вага",
+          "cost_analysis": "Аналіз собівартості",
+          "cost_per_serving": "Собівартість порції",
+          "instructions": "Прев'ю процесу"
+        }
+      },
+      "analyzing": {
+        "title": "Нейронний аналіз",
+        "subtitle": "Обробка складу рецепту та економічних метрик",
+        "phase_1": "Аналіз технології",
+        "phase_2": "Розрахунок логіки"
+      }
+    }
+  },
+  "dishes": {
+    "header": {
+      "title": "Меню",
+      "core": "Страви",
+      "sync": "Синхронізація",
+      "subtitle": "Ваше меню під контролем AI-аналітики маржинальності"
+    },
+    "actions": {
+      "create": "Створити страву"
+    },
+    "empty": {
+      "title": "Страв поки немає",
+      "subtitle": "Зберіть свою першу страву з готових рецептів. AI розрахує Food Cost і маржу в реальному часі.",
+      "button": "Створити першу страву"
+    },
+    "status": {
+      "profit": "Високий прибуток",
+      "warning": "Низька маржа",
+      "loss": "Збиткове"
+    },
+    "card": {
+      "recipes": "{count} {count, plural, one {рецепт} few {рецепти} other {рецептів}}",
+      "servings": "{count} порц.",
+      "foodCost": "Food Cost",
+      "salePrice": "Sale Price",
+      "grossProfit": "Gross Profit",
+      "fc": "FC",
+      "warnings": "{count} {count, plural, one {попередження} few {попередження} other {попереджень}}",
+      "edit": "Редагувати"
+    },
+    "delete": {
+      "title": "Видалити страву?",
+      "description": "Цю дію не можна скасувати. Страву буде видалено з меню.",
+      "cancel": "Скасувати",
+      "confirm": "Видалити"
+    },
+    "create": {
+      "title": "Нова страва",
+      "core": "Neural",
+      "subtitle": "Збірка композиції з рецептів v2.4",
+      "nameLabel": "Назва страви *",
+      "namePlaceholder": "Наприклад: Фірмовий Бургер з трюфельним айолі",
+      "components": {
+        "title": "Склад страви (по 1 порції кожного) *",
+        "add": "Додати",
+        "searchPlaceholder": "Пошук рецепту (мін. 2 символи)...",
+        "notFound": "Рецепт не знайдено",
+        "notFoundAction": "Створіть спочатку рецепт у розділі 'Рецепти'",
+        "selectedPortion": "1 порція",
+        "costNote": "AI використовує собівартість 1 порції"
+      },
+      "pricing": {
+        "title": "Ціноутворення",
+        "label": "Ціна продажу * (PLN)",
+        "placeholder": "0.00"
+      },
+      "analyze": "Аналізувати страву",
+      "analyzing": "AI Аналіз...",
+      "back": "Назад до меню",
+      "save": "Зберегти страву",
+      "preview": {
+        "title": "AI Аналіз структури",
+        "subtitle": "Резюме прибутковості та рекомендації",
+        "kpi": {
+          "totalCost": "СОБІВАРТІСТЬ",
+          "margin": "МАРЖА (PLN)",
+          "recommended": "AI ЦІНА"
+        }
+      }
+    }
+  },
+  "reports": {
+    "header": {
+      "title": "Neural",
+      "core": "Stats",
+      "sync": "Аналітика активна",
+      "subtitle": "Глибока аналітика та прогнозування прибутку"
+    },
+    "actions": {
+      "export": "Експорт даних"
+    },
+    "periods": {
+      "today": "За сьогодні",
+      "7days": "7 днів",
+      "30days": "30 днів",
+      "custom": "Свій"
+    },
+    "modes": {
+      "overview": "Огляд",
+      "profit": "Прибуток",
+      "inventory": "Склад",
+      "ai": "AI Аналіз"
+    },
+    "aiSummary": {
+      "badge": "AI Резюме",
+      "title": "Меню оптимізовано на {percent}%",
+      "profit": "Прибуток",
+      "losses": "Втрати",
+      "growth": "Ріст"
+    },
+    "kpi": {
+      "revenue": "ВИРУЧКА",
+      "foodCost": "FOOD COST",
+      "revenueGrowth": "+12% vs минулий період",
+      "foodCostTarget": "Норма: < 30%"
+    },
+    "profitAnalysis": {
+      "title": "Аналіз прибутковості страв",
+      "subtitle": "Продажі та маржинальність за період",
+      "filters": {
+        "all": "Всі",
+        "star": "Star",
+        "problem": "Problem",
+        "lowMargin": "Low Margin"
+      },
+      "card": {
+        "margin": "Маржа",
+        "fc": "FC"
+      }
+    },
+    "inventoryRisks": {
+      "title": "РИЗИКИ СКЛАДУ",
+      "expiring": "Закінчуються за 7 днів"
+    },
+    "aiPlan": {
+      "title": "AI План дій",
+      "apply": "Застосувати",
+      "effect": "Ефект"
+    }
+  },
+  "menuEngineering": {
+    "header": {
+      "title": "Menu",
+      "core": "Engine",
+      "sync": "Оптимізовано",
+      "subtitle": "Аналіз прибутковості та популярності за матрицею BCG"
+    },
+    "actions": {
+      "strategy": "AI Стратегія"
+    },
+    "kpi": {
+      "margin": "Загальна маржинальність",
+      "avgFoodCost": "Середній Food Cost",
+      "problemDishes": "Проблемні позиції",
+      "potential": "Потенціал росту"
+    },
+    "filters": {
+      "all": "Все меню",
+      "problems": "Проблеми",
+      "highMargin": "High Margin"
+    },
+    "card": {
+      "price": "Ціна",
+      "foodCost": "Food Cost",
+      "margin": "Чиста Маржа / Страва"
+    },
+    "recommendations": {
+      "title": "AI Рекомендації",
+      "priceIncrease": "Збільште ціну на проблемні позиції",
+      "markup": "Рекомендована націнка"
     }
   }
 }

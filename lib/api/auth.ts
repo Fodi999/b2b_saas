@@ -41,12 +41,22 @@ export async function registerUser(data: {
   console.log('🔐 [AUTH] Регистрация на BACKEND:', {
     email: data.email,
     restaurant_name: data.restaurant_name,
+    owner_name: data.display_name,
     backend: 'https://ministerial-yetta-fodi999-c58d8823.koyeb.app',
   });
   
+  // Backend ожидает owner_name вместо display_name
+  const payload = {
+    email: data.email,
+    password: data.password,
+    owner_name: data.display_name,
+    restaurant_name: data.restaurant_name,
+    language: data.language,
+  };
+  
   const result = await apiFetch<AuthResponse>('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
   
   if (!result) {
@@ -84,7 +94,7 @@ export async function loginUser(data: {
  * Обновление access token
  */
 export async function refreshToken(refreshToken: string): Promise<RefreshResponse> {
-  console.log('🔄 [AUTH] Обновление токена через BACKEND');
+  console.log('[AUTH] Обновление токена через BACKEND');
   
   const result = await apiFetch<RefreshResponse>('/api/auth/refresh', {
     method: 'POST',

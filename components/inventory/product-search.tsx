@@ -1,26 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, X, Folder, UtensilsCrossed } from 'lucide-react';
+import { Search, Folder, UtensilsCrossed } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { searchCatalogIngredients, type CatalogIngredientDTO } from '@/lib/api/inventory';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import ProductImage from '@/components/ui/product-image';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type ProductSearchProps = {
   onSelect: (product: CatalogIngredientDTO) => void;
 };
 
 export default function ProductSearch({ onSelect }: ProductSearchProps) {
+  const t = useTranslations('inventory.search');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<CatalogIngredientDTO[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
 
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const handleSearch = async (value: string) => {
     setQuery(value);
     if (value.length >= 2) {
-      setIsSearching(true);
       try {
         const searchResults = await searchCatalogIngredients(value, accessToken || undefined);
         setResults(searchResults);
@@ -28,8 +38,6 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
       } catch (error) {
         console.error('❌ Ошибка поиска в каталоге:', error);
         setResults([]);
-      } finally {
-        setIsSearching(false);
       }
     } else {
       setResults([]);
@@ -45,99 +53,64 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
   };
 
   return (
-    <div className="relative">
-      {/* Search Input */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Начните вводить название продукта..."
-          className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-10 text-gray-900 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-400"
-        />
-        {query && (
-          <button
-            onClick={() => {
-              setQuery('');
-              setResults([]);
-              setIsOpen(false);
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        )}
-      </div>
-
-      {/* Results Dropdown */}
-      {isOpen && results.length > 0 && (
-        <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
-          <div className="max-h-80 overflow-y-auto p-2">
-            {results.map((product) => {
-              const unitLabel =
-                product.default_unit === 'kilogram' ? 'кг' : product.default_unit === 'liter' ? 'л' : 'шт';
-              return (
-                <button
-                  key={product.id}
-                  onClick={() => handleSelect(product)}
-                  className="flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  {/* Product Image or Icon */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-                    {product.image_url ? (
-                      <img
+    <div className="w-full">
+      <Popover open={isOpen && results.length > 0} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder={t('placeholder')}
+              className="flex h-14 w-full rounded-[1.25rem] border-none bg-slate-50 dark:bg-slate-800 pl-12 pr-4 py-2 text-sm ring-offset-background placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all font-bold"
+            />
+          </div>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="p-0 w-[var(--radix-popover-trigger-width)] border-none shadow-2xl rounded-2xl overflow-hidden mt-2 bg-white dark:bg-slate-900" 
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <Command>
+            <CommandList>
+              <CommandEmpty className="p-4 text-center text-slate-400 font-bold">{t('notFound')}</CommandEmpty>
+              <CommandGroup>
+                {results.map((product) => {
+                  const unitLabel =
+                    product.default_unit === 'kilogram' ? t('units.kg') : product.default_unit === 'liter' ? t('units.l') : t('units.pcs');
+                  return (
+                    <CommandItem
+                      key={product.id}
+                      onSelect={() => handleSelect(product)}
+                      className="flex items-center gap-4 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <ProductImage
                         src={product.image_url}
                         alt={product.name}
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          // Fallback на эмодзи если картинка не загрузилась
-                          e.currentTarget.style.display = 'none';
-                          const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<span class="text-2xl">🍽️</span>';
-                          }
-                        }}
+                        fallbackIcon={<UtensilsCrossed className="h-5 w-5 text-muted-foreground" />}
+                        containerClassName="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted"
                       />
-                    ) : (
-                      <UtensilsCrossed className="h-6 w-6 text-gray-400" />
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                      {product.category && (
-                        <span className="flex items-center gap-1 mr-2">
-                          <Folder className="h-3 w-3" />
-                          {product.category.name}
-                        </span>
-                      )}
-                      Срок годности: {product.default_shelf_life_days} дн.
-                      {product.allergens.length > 0 && ` · Аллергены: ${product.allergens.join(', ')}`}
-                    </div>
-                  </div>
-
-                  {/* Unit Badge */}
-                  <div className="shrink-0 rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                    {unitLabel}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* No Results */}
-      {isOpen && query.length >= 2 && results.length === 0 && (
-        <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Продукт не найден. Попробуйте другой запрос.
-          </p>
-        </div>
-      )}
+                      <div className="flex-1">
+                        <div className="font-medium">{product.name}</div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          {product.category && (
+                            <span className="flex items-center gap-1 mr-2">
+                              <Folder className="h-3 w-3" />
+                              {product.category.name}
+                            </span>
+                          )}
+                          <span>Базовая ед.: {unitLabel}</span>
+                        </div>
+                      </div>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

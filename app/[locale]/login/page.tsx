@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, Sparkles, ShieldCheck, Zap, Globe } from 'lucide-react';
 import { loginUser, fetchMe, updateUserLanguage } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { ApiError } from '@/lib/api/client';
@@ -29,54 +29,24 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    console.log('🚀 [LOGIN] Начало процесса логина через BACKEND');
-
     try {
-      // 1. Логин - получаем токены
-      console.log('1️⃣ [LOGIN] Вызов loginUser()...');
       const auth = await loginUser({ email, password });
-      console.log('✅ [LOGIN] Токены получены с BACKEND:', {
-        user_id: auth.user_id,
-        tenant_id: auth.tenant_id,
-        has_access_token: !!auth.access_token,
-        has_refresh_token: !!auth.refresh_token,
-      });
-      
-      // 2. Получаем данные пользователя
-      console.log('2️⃣ [LOGIN] Вызов fetchMe()...');
       let me = await fetchMe(auth.access_token);
-      console.log('✅ [LOGIN] Данные пользователя получены с BACKEND:', {
-        user: me.user,
-        tenant: me.tenant,
-      });
-
-      // 3. Проверяем и обновляем язык, если нужно
-      const currentLanguage = me.user.language;
       const expectedLanguage = locale as 'pl' | 'en' | 'ru' | 'uk';
       
-      if (currentLanguage !== expectedLanguage) {
-        console.log(`3️⃣ [LOGIN] Обновление языка: ${currentLanguage} → ${expectedLanguage}`);
+      if (me.user.language !== expectedLanguage) {
         me = await updateUserLanguage(expectedLanguage, auth.access_token);
-        console.log('✅ [LOGIN] Язык обновлен!');
-      } else {
-        console.log('3️⃣ [LOGIN] Язык уже совпадает:', currentLanguage);
       }
 
-      // 4. Сохраняем сессию
-      console.log('4️⃣ [LOGIN] Сохранение сессии в Zustand store...');
       setSession({
         accessToken: auth.access_token,
         refreshToken: auth.refresh_token,
         user: me.user,
         tenant: me.tenant,
       });
-      console.log('✅ [LOGIN] Сессия сохранена!');
-
-      // 5. Редирект на dashboard
-      console.log('5️⃣ [LOGIN] Редирект на dashboard...');
+      
       router.push(`/${locale}/dashboard`);
     } catch (err) {
-      console.error('❌ [LOGIN] Ошибка:', err);
       if (err instanceof ApiError) {
         setError(err.message || 'Неверный email или пароль');
       } else {
@@ -88,107 +58,107 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-600">
-            <span className="text-2xl font-bold text-white">R</span>
-          </div>
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {t('login.title')}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            {t('login.subtitle')}
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 relative overflow-hidden">
+      {/* Ambient background elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-500/10 rounded-full blur-[120px]" />
+      
+      <div className="w-full max-w-lg relative z-10 animate-in fade-in zoom-in duration-700">
+        {/* Logo Section */}
+        <div className="text-center mb-10">
+          <Link href={`/${locale}`} className="inline-block group mb-6">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[2rem] bg-slate-900 text-white shadow-2xl shadow-indigo-500/20 group-hover:scale-110 transition-transform duration-500">
+               <Zap className="h-10 w-10 fill-current" />
+            </div>
+          </Link>
+          <h1 className="mt-8 text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+            Resto <span className="text-indigo-600">AI</span>
+          </h1>
+          <p className="mt-4 text-slate-500 dark:text-slate-400 font-medium italic">
+             Центральный узел управления v2.4
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('login.email')}</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="demo@restaurant.ai"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('login.password')}</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                  {t('login.remember')}
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="#" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-                  {t('login.forgot')}
-                </Link>
-              </div>
-            </div>
+        {/* Form Card */}
+        <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-12">
+          <div className="mb-10">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">{t('login.title')}</h2>
+            <p className="text-sm font-bold text-slate-400">{t('login.subtitle')}</p>
           </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-800 dark:text-red-200">
-              {error}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="h-14 rounded-2xl border-slate-200 focus:ring-indigo-600 font-bold bg-slate-50/50"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center ml-1">
+                  <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Password</Label>
+                  <Link href="#" className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700">
+                    {t('login.forgot')}
+                  </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="h-14 rounded-2xl border-slate-200 focus:ring-indigo-600 font-bold bg-slate-50/50"
+                  disabled={isLoading}
+                />
+              </div>
             </div>
-          )}
 
-          <Button type="submit" className="w-full gap-2" size="lg" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Вход...
-              </>
-            ) : (
-              <>
-                {t('login.submit')}
-                <ArrowRight className="h-4 w-4" />
-              </>
+            {error && (
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 animate-in shake-200">
+                 <ShieldCheck className="h-5 w-5 shrink-0 rotate-180" />
+                 <p className="text-xs font-black uppercase tracking-tighter">{error}</p>
+              </div>
             )}
-          </Button>
 
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            {t('login.noAccount')}{' '}
-            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-              {t('login.signUp')}
-            </Link>
-          </p>
-        </form>
+            <Button
+              type="submit"
+              className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                  {t('login.submit')}
+                  <ArrowRight className="ml-3 h-5 w-5" />
+                </>
+              )}
+            </Button>
 
-        {/* Demo hint */}
-        <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-900 dark:bg-indigo-950/30">
-          <p className="text-sm text-indigo-700 dark:text-indigo-300">
-            💡 <strong>Demo mode:</strong> Используйте любой email/пароль для входа
-          </p>
+            <div className="text-center pt-2">
+              <p className="text-sm font-bold text-slate-500">
+                {t('login.noAccount')}{' '}
+                <Link
+                  href={`/${locale}/register`}
+                  className="text-indigo-600 hover:text-indigo-700 font-black uppercase tracking-widest text-[11px] ml-2 border-b-2 border-indigo-600/20 hover:border-indigo-600 transition-all"
+                >
+                  {t('login.signUp')}
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>

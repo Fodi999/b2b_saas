@@ -4,7 +4,14 @@
     "howItWorks": "Jak to działa",
     "pricing": "Cennik",
     "signIn": "Zaloguj się",
-    "getStarted": "Rozpocznij"
+    "getStarted": "Zacznij",
+    "nav": {
+      "dashboard": "Panel",
+      "inventory": "Magazyn",
+      "recipes": "Receptury",
+      "dishes": "Dania",
+      "reports": "Raporty"
+    }
   },
   "auth": {
     "login": {
@@ -31,17 +38,27 @@
   },
   "dashboard": {
     "title": "Panel",
-    "welcome": "Witamy z powrotem, {name}!",
-    "logout": "Wyloguj się",
+    "welcome": "Witaj ponownie, {name}!",
+    "logout": "Wyloguj",
     "modules": {
       "inventory": "Magazyn",
-      "recipes": "Przepisy",
+      "inventoryDesc": "Zasoby i zakupy",
+      "recipes": "Receptury",
+      "recipesDesc": "Receptury i kalkulacja",
       "dishes": "Dania",
+      "dishesDesc": "Menu i sprzedaż",
       "menuEngineering": "Menu Engineering",
+      "menuEngineeringDesc": "Analiza rentowności",
       "aiAssistant": "Asystent AI",
-      "reports": "Raporty"
+      "aiAssistantDesc": "Asystent AI Szefa",
+      "reports": "Raporty",
+      "reportsDesc": "Raporty i KPI"
     },
-    "comingSoon": "Już wkrótce...",
+    "sections": {
+      "resources": "Zasoby zarządzania",
+      "metrics": "Metryki systemowe"
+    },
+    "comingSoon": "Wkrótce...",
     "userInfo": "Informacje o użytkowniku (Mock)",
     "aiAlerts": {
       "title": "AI Insights",
@@ -140,25 +157,22 @@
   "howItWorks": {
     "title": "Jak to działa?",
     "step1": {
-      "title": "1. Wgrywasz magazyn i przepisy",
-      "description": "Prosty import lub ręczne dodanie"
+      "title": "Wgraj Dane",
+      "description": "Import magazynu i kart technologicznych jednym kliknięciem"
     },
     "step2": {
-      "title": "2. Dodajesz dania i ceny",
-      "description": "System automatycznie liczy koszty"
+      "title": "Skonfiguruj Menu",
+      "description": "AI natychmiast wyliczy rzeczywisty food cost"
     },
     "step3": {
-      "title": "3. AI pokazuje, gdzie tracisz pieniądze",
-      "description": "Konkretne rekomendacje, nie ogólniki"
+      "title": "Zwieksz Zyski",
+      "description": "Precyzyjne wnioski do optymalizacji każdej pozycji"
     }
   },
   "cta": {
-    "title": "Zacznij zarządzać restauracją jak biznesem, a nie intuicją",
-    "subtitle": "Dołącz do restauratorów, którzy podejmują świadome decyzje",
-    "buttons": {
-      "create": "Utwórz konto",
-      "demo": "Zamów demo"
-    }
+    "title": "Przełącz swoją restaurację na autopilot zysku",
+    "description": "Dołącz do nowego standardu zarządzania RestoAI OS 2026 już dziś.",
+    "button": "Zacznij za darmo"
   },
   "assistant": {
     "header": {
@@ -212,6 +226,353 @@
     },
     "demo": {
       "note": "Tryb demo: To dane testowe, ale scenariusze są prawdziwe. Po podłączeniu backendu system będzie analizował Twoje dane w czasie rzeczywistym."
+    }
+  },
+  "inventory": {
+    "core": {
+      "title": "Magazyn Zsynchronizowany",
+      "status": "System Active",
+      "description": "Dane Query DTO wczytane. Optymalizacja zapytań joined aktywna."
+    },
+    "header": {
+      "title": "Magazyn",
+      "subtitle": "Zarządzanie zapasami i prognozowanie AI"
+    },
+    "actions": {
+      "smartAdd": "Smart Add",
+      "closeAI": "Zamknij AI",
+      "create": "Stwórz Produkt"
+    },
+    "status": {
+      "inStock": "W normie",
+      "low": "Mało",
+      "expiring": "Wygasa",
+      "expired": "Przeterminowany"
+    },
+    "empty": {
+      "title": "Magazyn jest pusty",
+      "description": "Dodaj pierwszy produkt ręcznie lub za pomocą AI",
+      "button": "Dodaj produkt"
+    },
+    "table": {
+      "photo": "Foto",
+      "name": "Nazwa",
+      "category": "Kategoria",
+      "quantity": "Ilość",
+      "price": "Średnia cena",
+      "expiry": "Termin ważności",
+      "status": "Status",
+      "actions": "Akcje"
+    },
+    "expiry": {
+      "expired": "Przeterminowane",
+      "daysLeft": "Zostało {days} dni"
+    },
+    "delete": {
+      "button": "Usuń"
+    },
+    "modal": {
+      "title": "Dodawanie",
+      "subtitle": "Przyjęcie towaru do magazynu Core v2.4",
+      "stepSearch": "Szukaj w katalogu",
+      "stepDetails": "Parametry partii",
+      "searchPlaceholder": "Zacznij wpisywać nazwę...",
+      "priceLabel": "Cena za jednostkę (PLN)",
+      "quantityLabel": "Ilość",
+      "dateLabel": "Data otrzymania",
+      "submit": "Przyjmij na stan",
+      "back": "Wstecz",
+      "expiryNote": "Przewidywany termin ważności: {days} dni (do {date})",
+      "success": "Produkt został dodany"
+    },
+    "search": {
+      "placeholder": "Zacznij wpisywać nazwę produktu...",
+      "notFound": "Nic nie znaleziono.",
+      "units": {
+        "kg": "kg",
+        "l": "l",
+        "pcs": "szt"
+      }
+    }
+  },
+  "recipes": {
+    "header": {
+      "title": "Recipe Core",
+      "subtitle": "Twoja baza kulinarna z analityką kosztów AI",
+      "sync": "Sync Active"
+    },
+    "actions": {
+      "create": "Stwórz przepis"
+    },
+    "difficulty": {
+      "easy": "Łatwe",
+      "medium": "Średnie",
+      "hard": "Trudne"
+    },
+    "status": {
+      "fullStock": "Wszystkie składniki dostępne",
+      "warnings": "{count} ostrzeżenie",
+      "warningsPlural": "{count} ostrzeżenia"
+    },
+    "card": {
+      "servings": "{count} porcji",
+      "prepTime": "{count} min",
+      "totalCost": "Food Cost",
+      "perServing": "Na porcję",
+      "edit": "Edytuj"
+    },
+    "insights": {
+      "title": "Wskaźnik Sukcesu AI",
+      "purity": {
+        "perfect": "Przepis Idealny",
+        "balanced": "Zrównoważony Przepis",
+        "needsWork": "Wymaga Pracy",
+        "risky": "Ryzykowny Skład",
+        "critical": "Krytyczne Problemy"
+      },
+      "details": {
+        "title": "Szczegóły Analizy",
+        "difficulty": "Trudność",
+        "aiTime": "Czas AI",
+        "steps": "Kroków",
+        "checked": "Alergeny Sprawdzone"
+      },
+      "sections": {
+        "market": {
+          "title": "Bezpieczeństwo i Jakość"
+        }
+      }
+    },
+    "metrics": {
+      "title": "Metryki Biznesowe",
+      "subtitle": "Wskaźniki Ekonomiczne i Ryzyko",
+      "cost": {
+        "title": "Analiza Kosztów",
+        "perPortion": "na {count} porcji",
+        "efficiency": "Efektywność zakupów: wysoka"
+      },
+      "margin": {
+        "title": "Marża",
+        "target": "Cel: > 70%",
+        "excellent": "Doskonale",
+        "good": "Dobrze",
+        "low": "Niska"
+      },
+      "risk": {
+        "title": "Ryzyko HACCP",
+        "low": "Niskie",
+        "medium": "Średnie",
+        "high": "Wysokie",
+        "description": "Kontrola Punktów Krytycznych"
+      }
+    },
+    "create": {
+      "steps": {
+        "step1": "KROK 01 / EDYCJA",
+        "step2": "KROK 02 / PODGLĄD",
+        "step3": "KROK 03 / ANALIZA",
+        "step4": "KROK 04 / WNIOSKI"
+      },
+      "actions": {
+        "back": "Wróć",
+        "preview": "Podgląd",
+        "analyze": "Analiza AI",
+        "save": "Zapisz Przepis"
+      },
+      "sections": {
+        "general": {
+          "title": "Informacje Ogólne",
+          "name_label": "Nazwa Przepisu",
+          "name_placeholder": "np. Autorski Burger",
+          "image_label": "Zdjęcie Przepisu",
+          "image_upload": "Wgraj Zdjęcie"
+        },
+        "instructions": {
+          "title": "Technologia Przygotowania",
+          "placeholder": "Opisz proces krok po kroku..."
+        },
+        "ingredients": {
+          "title": "Składniki",
+          "search_placeholder": "Szukaj produktów...",
+          "add_button": "Dodaj Składnik"
+        },
+        "preview": {
+          "servings": "Porcje",
+          "time": "Czas",
+          "weight": "Waga całkowita",
+          "cost_analysis": "Analiza kosztów",
+          "cost_per_serving": "Koszt porcji",
+          "instructions": "Podgląd procesu"
+        }
+      },
+      "analyzing": {
+        "title": "Analiza Neuronowa",
+        "subtitle": "Przetwarzanie składu i metryk ekonomicznych",
+        "phase_1": "Analiza technologii",
+        "phase_2": "Obliczanie logiki"
+      }
+    }
+  },
+  "dishes": {
+    "header": {
+      "title": "Menu",
+      "core": "Dania",
+      "sync": "Synchronizacja",
+      "subtitle": "Twoje menu pod kontrolą analityki marży AI"
+    },
+    "actions": {
+      "create": "Stwórz danie"
+    },
+    "empty": {
+      "title": "Brak dań",
+      "subtitle": "Zbuduj swoje pierwsze danie z gotowych receptur. AI obliczy Food Cost i marżę w czasie rzeczywistym.",
+      "button": "Stwórz pierwsze danie"
+    },
+    "status": {
+      "profit": "Wysoki zysk",
+      "warning": "Niska marża",
+      "loss": "Stratne"
+    },
+    "card": {
+      "recipes": "{count} {count, plural, one {receptura} few {receptury} other {receptur}}",
+      "servings": "{count} porc.",
+      "foodCost": "Food Cost",
+      "salePrice": "Cena sprzedaży",
+      "grossProfit": "Zysk brutto",
+      "fc": "FC",
+      "warnings": "{count} {count, plural, one {ostrzeżenie} few {ostrzeżenia} other {ostrzeżeń}}",
+      "edit": "Edytuj"
+    },
+    "delete": {
+      "title": "Usunąć danie?",
+      "description": "Tej operacji nie można cofnąć. Danie zostanie usunięte z menu.",
+      "cancel": "Anuluj",
+      "confirm": "Usuń"
+    },
+    "create": {
+      "title": "Nowe Danie",
+      "core": "Neural",
+      "subtitle": "Montaż kompozycji z przepisów v2.4",
+      "nameLabel": "Nazwa Dania *",
+      "namePlaceholder": "np. Burger Truflowy",
+      "components": {
+        "title": "Skład (po 1 porcji każdego) *",
+        "add": "Dodaj",
+        "searchPlaceholder": "Szukaj przepisu (min. 2 znaki)...",
+        "notFound": "Przepis nie znaleziony",
+        "notFoundAction": "Stwórz najpierw przepis w sekcji 'Przepisy'",
+        "selectedPortion": "1 porcja",
+        "costNote": "AI wykorzystuje koszt 1 porcji"
+      },
+      "pricing": {
+        "title": "Strategia Cenowa",
+        "label": "Cena Sprzedaży * (PLN)",
+        "placeholder": "0.00"
+      },
+      "analyze": "Analizuj Danie",
+      "analyzing": "Analiza AI...",
+      "back": "Wróć do menu",
+      "save": "Zapisz Danie",
+      "preview": {
+        "title": "Analiza Struktury AI",
+        "subtitle": "Podsumowanie rentowności i rekomendacje",
+        "kpi": {
+          "totalCost": "KOSZT CAŁKOWITY",
+          "margin": "MARŻA (PLN)",
+          "recommended": "CENA AI"
+        }
+      }
+    }
+  },
+  "reports": {
+    "header": {
+      "title": "Neural",
+      "core": "Stats",
+      "sync": "Analityka aktywna",
+      "subtitle": "Głęboka analityka i prognozowanie zysków"
+    },
+    "actions": {
+      "export": "Eksportuj dane"
+    },
+    "periods": {
+      "today": "Dzisiaj",
+      "7days": "7 dni",
+      "30days": "30 dni",
+      "custom": "Własny"
+    },
+    "modes": {
+      "overview": "Przegląd",
+      "profit": "Zysk",
+      "inventory": "Magazyn",
+      "ai": "Analiza AI"
+    },
+    "aiSummary": {
+      "badge": "Podsumowanie AI",
+      "title": "Menu zoptymalizowane w {percent}%",
+      "profit": "Zysk",
+      "losses": "Straty",
+      "growth": "Wzrost"
+    },
+    "kpi": {
+      "revenue": "PRZYCHÓD",
+      "foodCost": "FOOD COST",
+      "revenueGrowth": "+12% vs poprzedni okres",
+      "foodCostTarget": "Norma: < 30%"
+    },
+    "profitAnalysis": {
+      "title": "Analiza rentowności dań",
+      "subtitle": "Sprzedaż i marża w okresie",
+      "filters": {
+        "all": "Wszystkie",
+        "star": "Star",
+        "problem": "Problem",
+        "lowMargin": "Low Margin"
+      },
+      "card": {
+        "margin": "Marża",
+        "fc": "FC"
+      }
+    },
+    "inventoryRisks": {
+      "title": "RYZYKA MAGAZYNOWE",
+      "expiring": "Wygasają w 7 dni"
+    },
+    "aiPlan": {
+      "title": "Plan działań AI",
+      "apply": "Zastosuj",
+      "effect": "Efekt"
+    }
+  },
+  "menuEngineering": {
+    "header": {
+      "title": "Menu",
+      "core": "Engine",
+      "sync": "Zoptymalizowane",
+      "subtitle": "Analiza rentowności i popularności według macierzy BCG"
+    },
+    "actions": {
+      "strategy": "Strategia AI"
+    },
+    "kpi": {
+      "margin": "Całkowita marża",
+      "avgFoodCost": "Średni Food Cost",
+      "problemDishes": "Pozycje problematyczne",
+      "potential": "Potencjał wzrostu"
+    },
+    "filters": {
+      "all": "Pełne menu",
+      "problems": "Problemy",
+      "highMargin": "High Margin"
+    },
+    "card": {
+      "price": "Cena",
+      "foodCost": "Food Cost",
+      "margin": "Marża netto / Danie"
+    },
+    "recommendations": {
+      "title": "Rekomendacje AI",
+      "priceIncrease": "Podnieś cenę dla pozycji problematycznych",
+      "markup": "Zalecana marża"
     }
   }
 }

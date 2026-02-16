@@ -5,7 +5,41 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { useDishesStore } from '@/lib/stores/dishes-store';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, UtensilsCrossed, Plus, Trash2, X } from 'lucide-react';
+import { 
+  Card, 
+  CardContent, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useTranslations } from 'next-intl';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { 
+  ArrowLeft, 
+  UtensilsCrossed, 
+  Plus, 
+  Trash2, 
+  X, 
+  ChevronDown, 
+  ChevronUp, 
+  AlertTriangle, 
+  ArrowRight,
+  Activity,
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  Target
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function DishesPage() {
   const { user } = useAuthStore();
@@ -13,7 +47,9 @@ export default function DishesPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations('dishes');
   const [expandedWarnings, setExpandedWarnings] = useState<string | null>(null);
+  const [dishToDelete, setDishToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -26,229 +62,262 @@ export default function DishesPage() {
   }
 
   const handleDelete = (id: string) => {
-    if (confirm('Вы уверены, что хотите удалить это блюдо?')) {
-      deleteDish(id);
+    setDishToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    if (dishToDelete) {
+      deleteDish(dishToDelete);
+      setDishToDelete(null);
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'profit': return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20';
-      case 'warning': return 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20';
-      case 'loss': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20';
-      default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'profit': return '✅ Рентабельно';
-      case 'warning': return '⚡ Низкая маржа';
-      case 'loss': return '⚠️ Убыточно';
-      default: return status;
+      case 'profit': 
+        return { 
+          label: t('status.profit'), 
+          color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+          dot: 'bg-emerald-500'
+        };
+      case 'warning': 
+        return { 
+          label: t('status.warning'), 
+          color: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+          dot: 'bg-amber-500'
+        };
+      case 'loss': 
+        return { 
+          label: t('status.loss'), 
+          color: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+          dot: 'bg-rose-500'
+        };
+      default: 
+        return { 
+          label: status, 
+          color: 'bg-white/5 text-white/40 border-white/10',
+          dot: 'bg-white/40'
+        };
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-6xl space-y-8">
+    <div className="min-h-screen bg-black text-white selection:bg-indigo-500/30">
+      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="space-y-12">
+          
           {/* Header */}
-          <div className="space-y-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.push(`/${locale}/dashboard`)}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Dashboard
-            </Button>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-950/50">
-                  <UtensilsCrossed className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Блюда
-                  </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Управляйте меню — AI рассчитает маржу и рентабельность
-                  </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="flex items-center gap-6">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-[1.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-black border border-white/10 shadow-2xl">
+                  <UtensilsCrossed className="h-10 w-10 text-indigo-400 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                   <h1 className="text-5xl font-black tracking-tighter italic uppercase leading-none">
+                      {t('header.title')}<span className="text-indigo-500">{t('header.core')}</span>
+                   </h1>
+                   <div className="flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-4 py-1.5 rounded-full border border-indigo-500/20 glass-portal">
+                      <Activity className="h-3.5 w-3.5 animate-pulse" />
+                      <span className="text-[12px] font-black tracking-[0.2em] uppercase">{t('header.sync')}</span>
+                   </div>
+                </div>
+                <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] ml-1">
+                  {t('header.subtitle')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
               <Button
-                size="lg"
-                onClick={() => router.push(`/${locale}/dishes/create`)}
-                className="gap-2"
+                variant="ghost"
+                onClick={() => router.push(`/${locale}/dashboard`)}
+                className="h-14 px-8 rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/5 transition-all border border-white/10"
               >
-                <Plus className="h-5 w-5" />
-                Создать блюдо
+                <ArrowLeft className="h-4 w-4 mr-3" />
+                Dashboard
+              </Button>
+              <Button 
+                onClick={() => router.push(`/${locale}/dishes/create`)}
+                className="h-14 px-10 rounded-[2rem] bg-white text-black hover:bg-indigo-500 hover:text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95"
+              >
+                <Plus className="h-4 w-4 mr-3" />
+                {t('actions.create')}
               </Button>
             </div>
           </div>
 
-          {/* Empty State */}
-          {dishes.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 px-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-950/50 dark:to-purple-900/30 flex items-center justify-center mb-6">
-                <UtensilsCrossed className="h-10 w-10 text-purple-600 dark:text-purple-400" />
-              </div>
-              <h2 className="text-2xl font-semibold mb-3 text-center text-gray-900 dark:text-white">
-                У вас пока нет блюд
-              </h2>
-              <p className="text-muted-foreground text-center max-w-md mb-8">
-                Создайте первое блюдо из рецептов — AI автоматически рассчитает
-                маржу и предупредит об убытках.
-              </p>
-              <Button
-                size="lg"
-                onClick={() => router.push(`/${locale}/dishes/create`)}
-                className="gap-2"
-              >
-                <Plus className="h-5 w-5" />
-                Создать первое блюдо
-              </Button>
-            </div>
-          )}
+          {/* Dishes Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {dishes.map((dish) => {
+              const status = getStatusConfig(dish.status);
+              return (
+                <div key={dish.id} className="group relative">
+                  <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[2.5rem] overflow-hidden transition-all duration-500 group-hover:border-indigo-500/50 group-hover:bg-white/[0.05] h-full flex flex-col">
+                    <div className="p-8 pb-4">
+                      <div className="flex items-start justify-between mb-6">
+                        <Badge className={cn("px-4 py-1.5 rounded-full font-black uppercase text-[10px] tracking-widest border shadow-lg", status.color)}>
+                          <div className={cn("w-1.5 h-1.5 rounded-full mr-2", status.dot)} />
+                          {status.label}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(dish.id)}
+                          className="h-10 w-10 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-all"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </Button>
+                      </div>
 
-          {/* Dish Cards */}
-          {dishes.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dishes.map((dish) => (
-                <div
-                  key={dish.id}
-                  className="bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  {/* Image */}
-                  {dish.imageUrl ? (
-                    <div className="h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-                      <img
-                        src={dish.imageUrl}
-                        alt={dish.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-48 w-full bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-950/50 dark:to-purple-900/30 flex items-center justify-center">
-                      <UtensilsCrossed className="h-16 w-16 text-purple-300 dark:text-purple-700" />
-                    </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="p-5 space-y-4">
-                    {/* Title */}
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-2xl font-black italic text-white tracking-tight mb-2 group-hover:text-indigo-400 transition-colors">
                         {dish.name}
                       </h3>
-                      <span className={`inline-flex items-center text-xs px-2 py-1 rounded-full ${getStatusColor(dish.status)}`}>
-                        {getStatusLabel(dish.status)}
-                      </span>
-                    </div>
-
-                    {/* Components Count */}
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {dish.components.length} {dish.components.length === 1 ? 'рецепт' : dish.components.length > 4 ? 'рецептов' : 'рецепта'} • 
-                      {' '}{dish.components.reduce((sum, c) => sum + c.quantity, 0)} {dish.components.reduce((sum, c) => sum + c.quantity, 0) === 1 ? 'порция' : 'порции'}
-                    </div>
-
-                    {/* Pricing */}
-                    <div className="space-y-2 py-3 border-y border-gray-200 dark:border-gray-800">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Себестоимость:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {dish.totalCost.toFixed(2)} PLN
+                      
+                      <div className="flex flex-wrap items-center gap-3 mb-8">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-3 py-1 rounded-full">
+                          {t('card.recipes', { count: dish.components.length })}
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-3 py-1 rounded-full">
+                          {t('card.servings', { count: 1 })}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Цена:</span>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">
-                          {dish.salePrice.toFixed(2)} PLN
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Маржа:</span>
-                        <span className={`font-semibold ${
-                          dish.status === 'profit' ? 'text-green-600 dark:text-green-400' :
-                          dish.status === 'warning' ? 'text-amber-600 dark:text-amber-400' :
-                          'text-red-600 dark:text-red-400'
-                        }`}>
-                          {dish.margin.toFixed(2)} PLN ({dish.marginPercent.toFixed(1)}%)
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-500">
-                        <span>Food Cost:</span>
-                        <span>{dish.foodCostPercent.toFixed(1)}%</span>
-                      </div>
-                    </div>
 
-                    {/* Warnings */}
-                    {dish.warnings.length > 0 && (
-                      <div>
-                        <button
-                          onClick={() => setExpandedWarnings(expandedWarnings === dish.id ? null : dish.id)}
-                          className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
-                        >
-                          <span>⚠️</span>
-                          <span className="underline decoration-dotted">
-                            {dish.warnings.length} {dish.warnings.length === 1 ? 'предупреждение' : 'предупреждений'}
-                          </span>
-                        </button>
-
-                        {expandedWarnings === dish.id && (
-                          <div className="mt-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-xs font-semibold text-amber-900 dark:text-amber-100">
-                                Проблемы из рецептов:
-                              </p>
-                              <button
-                                onClick={() => setExpandedWarnings(null)}
-                                className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                            <ul className="space-y-1">
-                              {dish.warnings.map((warning, idx) => (
-                                <li key={idx} className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-1.5">
-                                  <span className="mt-0.5">•</span>
-                                  <span>{warning}</span>
-                                </li>
-                              ))}
-                            </ul>
+                      {/* Main Metrics */}
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-black/40 rounded-[2rem] p-5 border border-white/5">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">{t('card.foodCost')}</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-white italic">{dish.totalCost.toFixed(2)}</span>
+                            <span className="text-[10px] font-bold text-white/20">PLN</span>
                           </div>
-                        )}
+                        </div>
+                        <div className="bg-black/40 rounded-[2rem] p-5 border border-white/5">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">{t('card.salePrice')}</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-white italic">{dish.salePrice.toFixed(2)}</span>
+                            <span className="text-[10px] font-bold text-white/20">PLN</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => router.push(`/${locale}/dishes/${dish.id}`)}
-                      >
-                        Подробнее
-                      </Button>
+                      {/* Margin Row */}
+                      <div className="bg-indigo-500/5 rounded-[2rem] p-6 border border-indigo-500/10 mb-6 flex items-center justify-between">
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400/60 mb-1">{t('card.grossProfit')}</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-indigo-400 italic">{(dish.salePrice - dish.totalCost).toFixed(2)}</span>
+                            <span className="text-[10px] font-bold text-indigo-400/40">PLN</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1">{t('card.fc')}</p>
+                          <span className={cn(
+                            "text-2xl font-black italic",
+                            dish.foodCostPercent > 35 ? "text-rose-400" : "text-emerald-400"
+                          )}>
+                            {dish.foodCostPercent.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Warnings */}
+                      {dish.warnings && dish.warnings.length > 0 && (
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-4">
+                          <button 
+                            onClick={() => setExpandedWarnings(expandedWarnings === dish.id ? null : dish.id)}
+                            className="w-full flex items-center justify-between text-amber-500"
+                          >
+                            <div className="flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4" />
+                              <span className="text-[11px] font-black uppercase tracking-widest">
+                                {t('card.warnings', { count: dish.warnings.length })}
+                              </span>
+                            </div>
+                            {expandedWarnings === dish.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </button>
+                          {expandedWarnings === dish.id && (
+                            <div className="mt-3 space-y-2 pt-3 border-t border-amber-500/20">
+                              {dish.warnings.map((warning, idx) => (
+                                <p key={idx} className="text-xs text-amber-500/80 italic font-medium">
+                                  • {warning}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-auto p-6 pt-0">
                       <Button
                         variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(dish.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                        className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase text-[10px] tracking-widest rounded-xl transition-all group/btn"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {t('card.edit')}
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                       </Button>
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
+          </div>
+
+          {/* Empty State */}
+          {dishes.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-32 text-center bg-white/[0.02] border border-white/5 rounded-[4rem]">
+              <div className="h-24 w-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-10 border border-white/10 group animate-pulse">
+                <UtensilsCrossed className="h-12 w-12 text-white/20 group-hover:text-white/40 transition-colors" />
+              </div>
+              <h2 className="text-3xl font-black italic tracking-tighter mb-4 text-white">
+                {t('empty.title')}
+              </h2>
+              <p className="text-white/40 max-w-sm mb-10 font-medium leading-relaxed">
+                {t('empty.subtitle')}
+              </p>
+              <Button 
+                onClick={() => router.push(`/${locale}/dishes/create`)}
+                className="h-14 px-10 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white font-black uppercase text-[10px] tracking-widest"
+              >
+                {t('empty.button')}
+              </Button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!dishToDelete} onOpenChange={() => setDishToDelete(null)}>
+        <DialogContent className="bg-black border border-white/10 rounded-[2.5rem] selection:bg-indigo-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black italic text-white tracking-tight uppercase">
+              {t('delete.title')}
+            </DialogTitle>
+            <DialogDescription className="text-white/40 font-medium leading-relaxed pt-2">
+              {t('delete.description')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-4 pt-10">
+            <Button
+              variant="ghost"
+              onClick={() => setDishToDelete(null)}
+              className="h-12 px-8 rounded-xl font-black uppercase text-[10px] tracking-widest text-white/40 hover:text-white hover:bg-white/5 border border-white/10"
+            >
+              {t('delete.cancel')}
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              className="h-12 px-8 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-rose-500/20"
+            >
+              {t('delete.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

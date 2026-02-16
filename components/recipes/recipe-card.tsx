@@ -1,10 +1,13 @@
 'use client';
 
-import { Clock, Users, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import { RECIPE_CATEGORIES } from '@/lib/mock-data/recipes';
-import type { Recipe } from '@/lib/mock-data/recipes';
+import { Clock, Users, AlertCircle, CheckCircle, Utensils, ChevronRight, Zap } from 'lucide-react';
+import type { Recipe } from '@/lib/stores/recipes-store';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
 type RecipeCardProps = {
   recipe: Recipe;
@@ -15,107 +18,121 @@ type RecipeCardProps = {
 export default function RecipeCard({ recipe, cost, costPerServing }: RecipeCardProps) {
   const params = useParams();
   const locale = params.locale as string;
-  const category = RECIPE_CATEGORIES[recipe.category as keyof typeof RECIPE_CATEGORIES];
+  const t = useTranslations('recipes');
 
   const getStatusBadge = () => {
     switch (recipe.status) {
-      case 'ok':
+      case 'published':
         return (
-          <div className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-950 dark:text-green-300">
+          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 font-black uppercase tracking-widest text-[10px] px-2 py-0.5 rounded-full">
             <CheckCircle className="h-3 w-3" />
-            OK
-          </div>
+            LIVE
+          </Badge>
         );
-      case 'warning':
+      case 'draft':
         return (
-          <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 gap-1 font-black uppercase tracking-widest text-[10px] px-2 py-0.5 rounded-full">
             <AlertCircle className="h-3 w-3" />
-            Внимание
-          </div>
+            DRAFT
+          </Badge>
         );
-      case 'error':
-        return (
-          <div className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
-            <XCircle className="h-3 w-3" />
-            Проблема
-          </div>
-        );
+      default:
+        return null;
     }
   };
 
   return (
-    <Link
-      href={`/${locale}/recipes/${recipe.id}`}
-      className="group block rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="text-4xl">{category?.icon || '🍽️'}</div>
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-              {recipe.name}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {category?.name}
-            </p>
+    <Link href={`/${locale}/recipes/${recipe.id}`} className="block group">
+      <div className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-indigo-500/50 rounded-[2.5rem] transition-all duration-300 overflow-hidden relative backdrop-blur-sm">
+        <div className="p-8">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 shadow-inner">
+                <Utensils className="h-7 w-7 text-indigo-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 leading-none">
+                    Recipe Card
+                  </span>
+                  {getStatusBadge()}
+                </div>
+                <h3 className="font-black text-xl text-white italic tracking-tight group-hover:text-indigo-400 transition-colors">
+                  {recipe.name}
+                </h3>
+              </div>
+            </div>
+            <div className="p-2 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ChevronRight className="w-5 h-5 text-white/40" />
+            </div>
           </div>
+
+          {/* Description */}
+          {recipe.description && (
+            <p className="mb-6 text-sm text-white/60 line-clamp-2 leading-relaxed font-medium">
+              {recipe.description}
+            </p>
+          )}
+
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/5">
+              <Clock className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
+                {t('card.prepTime', { count: recipe.prepTime || 0 })}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/5">
+              <Users className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
+                {t('card.servings', { count: recipe.servings })}
+              </span>
+            </div>
+            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.2em] border-white/10 text-white/40 px-3 py-1 rounded-full">
+              {recipe.difficulty}
+            </Badge>
+          </div>
+
+          {/* Cost Info */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-5 bg-black/40 rounded-[2rem] border border-white/10">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">
+                {t('card.totalCost')}
+              </p>
+              <div className="flex items-baseline gap-1">
+                <p className="text-2xl font-black text-white italic">
+                  {cost.toFixed(2)}
+                </p>
+                <span className="text-[10px] font-bold text-white/40">PLN</span>
+              </div>
+            </div>
+            <div className="p-5 bg-indigo-500/[0.05] rounded-[2rem] border border-indigo-500/20">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400/60 mb-2 whitespace-nowrap">
+                {t('card.perServing')}
+              </p>
+              <div className="flex items-baseline gap-1">
+                <p className="text-2xl font-black text-indigo-400 italic">
+                  {costPerServing.toFixed(2)}
+                </p>
+                <span className="text-[10px] font-bold text-indigo-400/40">PLN</span>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Insights Indicator */}
+          {recipe.aiInsights && recipe.aiInsights.length > 0 && (
+            <div className="mt-6 flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 group-hover:border-indigo-500/30 transition-colors">
+              <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-indigo-400 animate-pulse" />
+              </div>
+              <p className="text-[11px] text-white/60 leading-tight line-clamp-1 italic font-medium">
+                {recipe.aiInsights[0]}
+              </p>
+            </div>
+          )}
         </div>
-        {getStatusBadge()}
       </div>
-
-      {/* Description */}
-      <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-        {recipe.description}
-      </p>
-
-      {/* Meta Info */}
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-        {recipe.prepTime && (
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {recipe.prepTime} мин
-          </div>
-        )}
-        <div className="flex items-center gap-1">
-          <Users className="h-4 w-4" />
-          {recipe.servings} порций
-        </div>
-      </div>
-
-      {/* Cost Info */}
-      <div className="mt-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-900 dark:bg-indigo-950/30">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-indigo-600 dark:text-indigo-400">
-              Себестоимость (бот)
-            </p>
-            <p className="mt-1 text-lg font-bold text-indigo-900 dark:text-indigo-100">
-              {cost.toFixed(2)} PLN
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-indigo-600 dark:text-indigo-400">
-              За порцию
-            </p>
-            <p className="mt-1 text-lg font-bold text-indigo-900 dark:text-indigo-100">
-              {costPerServing.toFixed(2)} PLN
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Insights Preview */}
-      {recipe.aiInsights.length > 0 && (
-        <div className="mt-3">
-          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
-            🤖 AI заметил:
-          </p>
-          <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-            {recipe.aiInsights[0]}
-          </p>
-        </div>
-      )}
     </Link>
   );
 }
