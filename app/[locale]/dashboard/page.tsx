@@ -55,33 +55,33 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in duration-700">
-        <div className="space-y-10">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 max-w-7xl animate-in fade-in duration-700">
+        <div className="space-y-6 sm:space-y-10">
           
           {/* Top Header Section */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group">
-                <LayoutDashboard className="h-8 w-8 group-hover:scale-110 transition-transform" />
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-[1rem] sm:rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group flex-shrink-0">
+                <LayoutDashboard className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                   <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+                   <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
                       Portal <span className="text-indigo-600">Core</span>
                    </h1>
-                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full border border-emerald-100/50">
-                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-black tracking-widest uppercase">Operational</span>
+                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-emerald-100/50">
+                      <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[8px] sm:text-[10px] font-black tracking-widest uppercase">Operational</span>
                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-slate-500 dark:text-slate-400 font-medium">
-                    {t('welcome', { name: user.display_name || user.email.split('@')[0] })}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-xs sm:text-base text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+                    {t('welcome', { name: user.display_name?.split(' ')[0] || user.email.split('@')[0] })}
                   </p>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-slate-300 hidden sm:inline">•</span>
                   {tenant && (
-                    <div className="flex items-center gap-1.5 text-indigo-600 font-bold text-sm bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
-                      <Store className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1.5 text-indigo-600 font-bold text-[10px] sm:text-sm bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
+                      <Store className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
                       {tenant.name}
                     </div>
                   )}
@@ -89,28 +89,37 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-               <Button variant="ghost" onClick={handleLogout} className="h-12 px-6 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-transparent hover:border-rose-100">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+               <Button variant="ghost" onClick={handleLogout} className="h-10 sm:h-12 w-full sm:w-auto px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all border border-slate-200 sm:border-transparent hover:border-rose-100">
                 <LogOut className="h-4 w-4 mr-2" />
                 {t('logout')}
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
              {/* Main AI Feed */}
-              <div className="lg:col-span-3 space-y-8">
+              <div className="lg:col-span-3 space-y-6 sm:space-y-8">
                 {/* 🔥 V3: Inventory Health Banner (RS 2026 Edition) */}
                 {(health || dashboard) && (
-                  <div className="relative overflow-hidden group rounded-[2.5rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-10 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-indigo-500/30 transition-all duration-500">
-                    <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:opacity-[0.07] group-hover:scale-110 transition-all duration-1000 rotate-12">
+                  <div className="relative overflow-hidden group rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-10 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-indigo-500/30 transition-all duration-500">
+                    <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:opacity-[0.07] group-hover:scale-110 transition-all duration-1000 rotate-12 hidden md:block">
                       <ShieldCheck className="h-48 w-48" />
                     </div>
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
-                      <div className="flex items-center gap-8">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-10">
+                      <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6 sm:gap-8 w-full sm:w-auto">
                         {/* Circular Progress (Section 7) */}
-                        <div className="relative">
-                          <svg className="h-28 w-28 -rotate-90">
+                        <div className="relative flex-shrink-0">
+                          <svg className="h-16 w-16 sm:h-28 sm:w-28 -rotate-90">
+                            <circle
+                              cx="32"
+                              cy="32"
+                              r="28"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              className="text-slate-100 dark:text-slate-800 sm:hidden"
+                            />
                             <circle
                               cx="56"
                               cy="56"
@@ -118,9 +127,25 @@ export default function DashboardPage() {
                               fill="none"
                               stroke="currentColor"
                               strokeWidth="8"
-                              className="text-slate-100 dark:text-slate-800"
+                              className="text-slate-100 dark:text-slate-800 hidden sm:block"
                             />
                             <circle
+                              cx="32"
+                              cy="32"
+                              r="28"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              strokeDasharray={2 * Math.PI * 28}
+                              strokeDashoffset={2 * Math.PI * 28 * (1 - (dashboard?.health_score ?? health?.health_score ?? 0) / 100)}
+                              strokeLinecap="round"
+                              className={cn(
+                                "transition-all duration-1000 ease-out sm:hidden",
+                                (dashboard?.health_score ?? health?.health_score ?? 0) >= 80 ? "text-emerald-500" :
+                                (dashboard?.health_score ?? health?.health_score ?? 0) >= 50 ? "text-amber-500" : "text-rose-500"
+                              )}
+                            />
+                             <circle
                               cx="56"
                               cy="56"
                               r="48"
@@ -131,21 +156,21 @@ export default function DashboardPage() {
                               strokeDashoffset={2 * Math.PI * 48 * (1 - (dashboard?.health_score ?? health?.health_score ?? 0) / 100)}
                               strokeLinecap="round"
                               className={cn(
-                                "transition-all duration-1000 ease-out",
+                                "transition-all duration-1000 ease-out hidden sm:block",
                                 (dashboard?.health_score ?? health?.health_score ?? 0) >= 80 ? "text-emerald-500" :
                                 (dashboard?.health_score ?? health?.health_score ?? 0) >= 50 ? "text-amber-500" : "text-rose-500"
                               )}
                             />
                           </svg>
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-black italic">{dashboard?.health_score ?? health?.health_score ?? 0}%</span>
+                            <span className="text-sm sm:text-2xl font-black italic">{dashboard?.health_score ?? health?.health_score ?? 0}%</span>
                           </div>
                         </div>
 
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3">
+                        <div className="space-y-3 sm:space-y-4 flex-1">
+                          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
                             <div className="relative">
-                              <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic">
+                              <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic">
                                 {t('v3.healthTitle')} <span className="text-indigo-600">{t('v3.healthSub')}</span>
                               </h3>
                               {(health?.badge_count ?? 0) > 0 && (
@@ -158,7 +183,7 @@ export default function DashboardPage() {
                               )}
                             </div>
                             <Badge className={cn(
-                              "text-[10px] font-black uppercase tracking-widest px-3 py-1 border-none",
+                              "text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-0.5 sm:py-1 border-none",
                               (health?.status === 'Excellent' || (dashboard?.health_score ?? 0) >= 90) ? "bg-emerald-500 text-white" :
                               (health?.status === 'Good' || (dashboard?.health_score ?? 0) >= 70) ? "bg-indigo-500 text-white" :
                               (health?.status === 'Warning' || (dashboard?.health_score ?? 0) >= 40) ? "bg-amber-500 text-white" : "bg-rose-500 text-white"
@@ -168,41 +193,41 @@ export default function DashboardPage() {
                                 : (health?.status ? t(`v3.healthStatus.${health.status.toLowerCase()}`) : t('v3.healthStatus.good'))}
                             </Badge>
                           </div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium max-w-sm leading-relaxed text-sm">
+                          <p className="text-slate-500 dark:text-slate-400 font-medium max-w-sm leading-relaxed text-xs sm:text-sm">
                             {(dashboard?.health_score ?? health?.health_score ?? 0) >= 80 
                               ? t('v3.healthDesc.good') 
                               : t('v3.healthDesc.issues')}
                           </p>
                           
                           {/* Metrics row (Section 7) */}
-                          <div className="flex items-center gap-6 pt-1">
-                             <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t('v3.metrics.risks')}</span>
-                                <span className={cn("text-lg font-black italic", (dashboard?.expired_risks.length ?? 0) > 0 ? "text-rose-500" : "text-slate-900 dark:text-white")}>
+                          <div className="grid grid-cols-3 sm:flex items-center justify-center sm:justify-start gap-2 sm:gap-6 pt-1 w-full max-w-[280px] sm:max-w-none">
+                             <div className="flex flex-col items-center sm:items-start">
+                                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400">{t('v3.metrics.risks')}</span>
+                                <span className={cn("text-sm sm:text-lg font-black italic", (dashboard?.expired_risks.length ?? 0) > 0 ? "text-rose-500" : "text-slate-900 dark:text-white")}>
                                   {dashboard?.expired_risks.length ?? health?.expired ?? 0}
                                 </span>
                              </div>
-                             <div className="w-px h-6 bg-slate-100 dark:bg-slate-800" />
-                             <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t('v3.metrics.stockouts')}</span>
-                                <span className={cn("text-lg font-black italic", (dashboard?.stockout_risks.length ?? 0) > 0 ? "text-amber-500" : "text-slate-900 dark:text-white")}>
+                             <div className="hidden sm:block w-px h-6 bg-slate-100 dark:bg-slate-800" />
+                             <div className="flex flex-col items-center sm:items-start">
+                                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400">{t('v3.metrics.stockouts')}</span>
+                                <span className={cn("text-sm sm:text-lg font-black italic", (dashboard?.stockout_risks.length ?? 0) > 0 ? "text-amber-500" : "text-slate-900 dark:text-white")}>
                                   {dashboard?.stockout_risks.length ?? health?.low_stock ?? 0}
                                 </span>
                              </div>
-                             <div className="w-px h-6 bg-slate-100 dark:bg-slate-800" />
-                             <div className="flex flex-col">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t('v3.metrics.critical')}</span>
-                                <span className={cn("text-lg font-black italic", (health?.critical ?? 0) > 0 ? "text-rose-600" : "text-slate-900 dark:text-white")}>
+                             <div className="hidden sm:block w-px h-6 bg-slate-100 dark:bg-slate-800" />
+                             <div className="flex flex-col items-center sm:items-start">
+                                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400">{t('v3.metrics.critical')}</span>
+                                <span className={cn("text-sm sm:text-lg font-black italic", (health?.critical ?? 0) > 0 ? "text-rose-600" : "text-slate-900 dark:text-white")}>
                                   {health?.critical ?? 0}
                                 </span>
                              </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 w-full sm:w-auto">
                         <Button 
                           onClick={() => router.push(`/${locale}/inventory`)}
-                          className="h-14 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95 gap-3 group/btn"
+                          className="h-12 sm:h-14 w-full sm:px-10 rounded-xl sm:rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95 gap-3 group/btn"
                         >
                           {t('v3.optimizeBtn')}
                           <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
@@ -214,18 +239,18 @@ export default function DashboardPage() {
 
                 {/* 🔥 V3: Predictive Analytics (Stockout Predictions) */}
                 {dashboard ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="border-none bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden group">
-                      <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between space-y-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <Card className="border-none bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden group">
+                      <CardHeader className="p-6 sm:p-8 pb-4 flex flex-row items-center justify-between space-y-0">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('v3.predictiveTitle')}</p>
-                          <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('v3.stockoutTitle')}</CardTitle>
+                          <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">{t('v3.predictiveTitle')}</p>
+                          <CardTitle className="text-lg sm:text-xl font-black italic uppercase tracking-tighter">{t('v3.stockoutTitle')}</CardTitle>
                         </div>
-                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
                           <Zap className="h-5 w-5" />
                         </div>
                       </CardHeader>
-                      <CardContent className="p-8 pt-0 space-y-4">
+                      <CardContent className="p-6 sm:p-8 pt-0 space-y-4">
                         {dashboard.stockout_risks.length > 0 ? (
                           dashboard.stockout_risks.slice(0, 3).map((risk) => (
                             <div key={risk.ingredient_id} className="flex items-center justify-between group/item">
@@ -265,17 +290,17 @@ export default function DashboardPage() {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden group">
-                      <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between space-y-0">
+                    <Card className="border-none bg-white dark:bg-slate-900 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden group">
+                      <CardHeader className="p-6 sm:p-8 pb-4 flex flex-row items-center justify-between space-y-0">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('v3.qualityControl')}</p>
-                          <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('v3.expiryTitle')}</CardTitle>
+                          <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">{t('v3.qualityControl')}</p>
+                          <CardTitle className="text-lg sm:text-xl font-black italic uppercase tracking-tighter">{t('v3.expiryTitle')}</CardTitle>
                         </div>
-                        <div className="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center flex-shrink-0">
                           <AlertCircle className="h-5 w-5" />
                         </div>
                       </CardHeader>
-                      <CardContent className="p-8 pt-0 space-y-4">
+                      <CardContent className="p-6 sm:p-8 pt-0 space-y-4">
                         {dashboard.expired_risks.length > 0 ? (
                           dashboard.expired_risks.slice(0, 3).map((risk) => (
                              <div key={risk.batch_id} className="flex items-center justify-between group/item">
@@ -397,7 +422,7 @@ export default function DashboardPage() {
                   <Card className="border-none bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden group">
                     <CardHeader className="p-8 pb-0 flex flex-row items-center justify-between space-y-0">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('v3.inventoryLoss')}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{t('v3.inventoryLoss')}</p>
                         <CardTitle className="text-xl font-black italic uppercase tracking-tighter">{t('v3.wasteKpi')}</CardTitle>
                       </div>
                       <div className={cn(

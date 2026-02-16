@@ -154,43 +154,43 @@ export default function MenuEngineeringPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in duration-700">
-        <div className="space-y-10">
+      <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-10 max-w-7xl animate-in fade-in duration-700">
+        <div className="space-y-6 sm:space-y-10">
           
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group">
-                <Target className="h-8 w-8 group-hover:scale-110 transition-transform" />
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group">
+                <Target className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                   <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
+                   <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                       {t('header.title')} <span className="text-indigo-600">{t('header.core')}</span>
                    </h1>
-                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full border border-emerald-100/50">
-                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-black tracking-widest uppercase">{t('header.sync')}</span>
+                   <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-emerald-100/50">
+                      <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[8px] sm:text-[10px] font-black tracking-widest uppercase">{t('header.sync')}</span>
                    </div>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 font-medium italic">
+                <p className="text-slate-500 dark:text-slate-400 font-medium italic text-xs sm:text-sm">
                   {t('header.subtitle')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Button
                 variant="ghost"
                 onClick={() => router.push(`/${locale}/dashboard`)}
-                className="h-12 px-6 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-200"
+                className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] tracking-widest text-slate-400 hover:text-indigo-600 transition-all border border-slate-200 sm:border-transparent"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Dashboard
               </Button>
               <Button
                 onClick={() => setShowRecommendations(true)}
-                className="h-12 px-8 rounded-2xl bg-slate-900 dark:bg-slate-800 text-white font-black uppercase text-[10px] tracking-widest shadow-xl transition-all hover:scale-105"
+                className="h-10 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-slate-800 text-white font-black uppercase text-[9px] tracking-widest shadow-xl transition-all hover:scale-105"
               >
                 <Sparkles className="h-4 w-4 mr-2 text-indigo-400" />
                 {t('actions.strategy')}

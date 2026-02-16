@@ -365,6 +365,8 @@
       "dateLabel": "Received at",
       "submit": "Accept to storage",
       "back": "Back",
+      "cancel": "Cancel",
+      "continue": "Continue",
       "expiryNote": "Estimated shelf life: {days} days (until {date})",
       "success": "Product added successfully"
     },

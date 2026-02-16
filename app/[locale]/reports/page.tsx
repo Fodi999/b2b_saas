@@ -136,136 +136,140 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-indigo-500/30">
-      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
-        <div className="space-y-10">
+      <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-10 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="space-y-6 sm:space-y-10">
           
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="flex items-center gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6">
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-[1.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-black border border-white/10 shadow-2xl">
-                  <BarChart3 className="h-10 w-10 text-indigo-400 group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-[1rem] sm:rounded-[1.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-[1rem] sm:rounded-[1.5rem] bg-black border border-white/10 shadow-2xl">
+                  <BarChart3 className="h-6 w-6 sm:h-10 sm:w-10 text-indigo-400 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-4">
-                   <h1 className="text-5xl font-black tracking-tighter italic uppercase leading-none">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                   <h1 className="text-2xl sm:text-5xl font-black tracking-tighter italic uppercase leading-none">
                       {t('header.title')}<span className="text-indigo-500">{t('header.core')}</span>
                    </h1>
-                   <div className="flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-4 py-1.5 rounded-full border border-indigo-500/20 glass-portal">
-                      <Activity className="h-3.5 w-3.5 animate-pulse" />
-                      <span className="text-[12px] font-black tracking-[0.2em] uppercase">{t('header.sync')}</span>
+                   <div className="flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-2 sm:px-4 py-0.5 sm:py-1.5 rounded-full border border-indigo-500/20 glass-portal">
+                      <Activity className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 animate-pulse" />
+                      <span className="text-[8px] sm:text-[12px] font-black tracking-[0.2em] uppercase">{t('header.sync')}</span>
                    </div>
                 </div>
-                <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] ml-1">
+                <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[7px] sm:text-[10px] ml-1">
                   {t('header.subtitle')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <Button
                 variant="ghost"
                 onClick={() => router.push(`/${locale}/dashboard`)}
-                className="h-14 px-8 rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/5 transition-all border border-white/10"
+                className="h-10 sm:h-14 px-4 sm:px-8 rounded-xl sm:rounded-[2rem] font-black uppercase text-[9px] tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/5 transition-all border border-white/10"
               >
-                <ArrowLeft className="h-4 w-4 mr-3" />
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Dashboard
               </Button>
-              <Button className="h-14 px-10 rounded-[2rem] bg-indigo-500 hover:bg-indigo-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95">
-                <Download className="h-4 w-4 mr-3" />
+              <Button className="h-10 sm:h-14 px-6 sm:px-10 rounded-xl sm:rounded-[2rem] bg-indigo-500 hover:bg-indigo-600 text-white font-black uppercase text-[9px] tracking-[0.2em] shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95">
+                <Download className="h-4 w-4 mr-2" />
                 {t('actions.export')}
               </Button>
             </div>
           </div>
 
           {/* Filters Bar */}
-          <div className="flex flex-wrap items-center gap-8 bg-white/[0.03] backdrop-blur-xl p-4 rounded-[2.5rem] border border-white/10">
-            <div className="flex items-center gap-1 p-1.5 bg-black/40 rounded-2xl border border-white/5">
-               {(['today', '7days', '30days', 'custom'] as PeriodType[]).map((p) => (
-                  <Button 
-                    key={p} 
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 bg-white/[0.03] backdrop-blur-xl p-2 sm:p-4 rounded-2xl sm:rounded-[2.5rem] border border-white/10 overflow-hidden">
+            <div className="flex overflow-x-auto sm:overflow-visible pb-1 sm:pb-0 scrollbar-hide">
+              <div className="flex items-center gap-1 p-1 bg-black/40 rounded-xl sm:rounded-2xl border border-white/5 shrink-0">
+                 {(['today', '7days', '30days', 'custom'] as PeriodType[]).map((p) => (
+                    <Button 
+                      key={p} 
+                      variant="ghost"
+                      size="sm" 
+                      className={cn(
+                        "rounded-lg sm:rounded-xl h-7 sm:h-10 px-3 sm:px-6 font-black uppercase text-[7px] sm:text-[10px] tracking-widest transition-all whitespace-nowrap",
+                        period === p ? "bg-indigo-500 text-white shadow-xl" : "text-white/40 hover:text-white hover:bg-white/5"
+                      )}
+                      onClick={() => setPeriod(p)}
+                    >
+                      {t(`periods.${p}`)}
+                    </Button>
+                 ))}
+              </div>
+            </div>
+            <div className="flex overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 scrollbar-hide">
+              <div className="flex items-center gap-1 p-1 bg-black/40 rounded-xl sm:rounded-2xl border border-white/5 shrink-0">
+                {(['overview', 'profit', 'inventory', 'ai'] as ModeType[]).map((m) => (
+                   <Button 
+                    key={m} 
                     variant="ghost"
                     size="sm" 
                     className={cn(
-                      "rounded-xl h-10 px-6 font-black uppercase text-[10px] tracking-widest transition-all",
-                      period === p ? "bg-indigo-500 text-white shadow-xl" : "text-white/40 hover:text-white hover:bg-white/5"
+                      "rounded-lg sm:rounded-xl h-8 sm:h-10 px-4 sm:px-6 font-black uppercase text-[8px] sm:text-[10px] tracking-widest transition-all whitespace-nowrap",
+                      mode === m ? "bg-white text-black shadow-xl" : "text-white/40 hover:text-white hover:bg-white/5"
                     )}
-                    onClick={() => setPeriod(p)}
+                    onClick={() => setMode(m)}
                   >
-                    {t(`periods.${p}`)}
-                  </Button>
-               ))}
-            </div>
-            <div className="flex items-center gap-1 p-1.5 bg-black/40 rounded-2xl border border-white/5">
-              {(['overview', 'profit', 'inventory', 'ai'] as ModeType[]).map((m) => (
-                 <Button 
-                  key={m} 
-                  variant="ghost"
-                  size="sm" 
-                  className={cn(
-                    "rounded-xl h-10 px-6 font-black uppercase text-[10px] tracking-widest transition-all",
-                    mode === m ? "bg-white text-black shadow-xl" : "text-white/40 hover:text-white hover:bg-white/5"
-                  )}
-                  onClick={() => setMode(m)}
-                >
-                   {t(`modes.${m}`)}
-                 </Button>
-              ))}
+                     {t(`modes.${m}`)}
+                   </Button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* AI Vision Card */}
-          <div className="bg-gradient-to-br from-indigo-900/40 via-black to-black border border-indigo-500/30 rounded-[3rem] p-10 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity duration-1000 rotate-12 scale-150">
-              <Sparkles className="h-64 w-64 text-indigo-400" />
+          <div className="bg-gradient-to-br from-indigo-900/40 via-black to-black border border-indigo-500/30 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-10 group-hover:opacity-20 transition-opacity duration-1000 rotate-12 scale-150">
+              <Sparkles className="h-48 w-48 sm:h-64 sm:w-64 text-indigo-400" />
             </div>
             
             <div className="relative z-10">
-              <div className="flex flex-col md:flex-row items-center gap-12">
-                <div className="relative">
+              <div className="flex flex-col md:flex-row items-center gap-8 sm:gap-12">
+                <div className="relative flex-shrink-0">
                   <div className="absolute inset-0 bg-indigo-500 blur-2xl opacity-20 animate-pulse"></div>
-                  <div className="relative flex-shrink-0 w-24 h-24 bg-black/50 backdrop-blur-3xl rounded-[2rem] flex items-center justify-center border border-indigo-500/30">
-                    <Zap className="h-12 w-12 text-indigo-400" />
+                  <div className="relative w-16 h-16 sm:w-24 sm:h-24 bg-black/50 backdrop-blur-3xl rounded-[1.2rem] sm:rounded-[2rem] flex items-center justify-center border border-indigo-500/30">
+                    <Zap className="h-8 w-8 sm:h-12 sm:w-12 text-indigo-400" />
                   </div>
                 </div>
                 
                 <div className="flex-1 text-center md:text-left">
-                  <div className="flex flex-wrap items-center gap-4 mb-6 justify-center md:justify-start">
-                    <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full font-black uppercase text-[10px] tracking-[0.2em]">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 sm:mb-6 justify-center md:justify-start">
+                    <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-black uppercase text-[8px] sm:text-[10px] tracking-[0.2em]">
                       {t('aiSummary.badge')} · {t(`periods.${period}`)}
                     </Badge>
-                    <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
-                      <Target className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-emerald-400 text-[8px] sm:text-[10px] font-black uppercase tracking-widest">
+                      <Target className="w-3 h-3 sm:w-4 sm:h-4" />
                       84% Accuracy
                     </div>
                   </div>
 
-                  <h2 className="text-4xl font-black mb-8 tracking-tighter italic uppercase leading-tight max-w-2xl">
+                  <h2 className="text-2xl sm:text-4xl font-black mb-6 sm:mb-8 tracking-tighter italic uppercase leading-tight max-w-2xl">
                     {t('aiSummary.title', { percent: 84 })}
                   </h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-indigo-500/40 transition-all">
-                      <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.profit')}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="bg-white/[0.03] p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-indigo-500/40 transition-all">
+                      <p className="text-white/30 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-2 sm:mb-3">{t('aiSummary.profit')}</p>
                       <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-black text-white italic">+{kpis.profit.toFixed(0)}</p>
-                        <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
+                        <p className="text-2xl sm:text-3xl font-black text-white italic">+{kpis.profit.toFixed(0)}</p>
+                        <span className="text-[10px] font-bold text-white/20 uppercase">PLN</span>
                       </div>
                     </div>
-                    <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-rose-500/40 transition-all">
-                       <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.losses')}</p>
+                    <div className="bg-white/[0.03] p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-rose-500/40 transition-all">
+                       <p className="text-white/30 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-2 sm:mb-3">{t('aiSummary.losses')}</p>
                        <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-black text-rose-500 italic">–{inventoryMetrics.totalLoss.toFixed(0)}</p>
-                        <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
+                        <p className="text-2xl sm:text-3xl font-black text-rose-500 italic">–{inventoryMetrics.totalLoss.toFixed(0)}</p>
+                        <span className="text-[10px] font-bold text-white/20 uppercase">PLN</span>
                       </div>
                     </div>
-                    <div className="bg-white/[0.03] p-6 rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-emerald-500/40 transition-all">
-                       <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-3">{t('aiSummary.growth')}</p>
+                    <div className="bg-white/[0.03] p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] backdrop-blur-md border border-white/10 group/item hover:border-emerald-500/40 transition-all sm:col-span-2 md:col-span-1">
+                       <p className="text-white/30 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-2 sm:mb-3">{t('aiSummary.growth')}</p>
                        <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-black text-emerald-400 italic">+{kpis.potentialGrowth.toFixed(0)}</p>
-                        <span className="text-xs font-bold text-white/20 uppercase">PLN</span>
+                        <p className="text-2xl sm:text-3xl font-black text-emerald-400 italic">+{kpis.potentialGrowth.toFixed(0)}</p>
+                        <span className="text-[10px] font-bold text-white/20 uppercase">PLN</span>
                        </div>
                     </div>
                   </div>
@@ -274,20 +278,20 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Revenue Card */}
-                <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 group hover:border-indigo-500/40 transition-all">
-                  <div className="flex items-center justify-between mb-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kpi.revenue')}</p>
+                <div className="bg-white/[0.03] border border-white/10 rounded-[1.8rem] sm:rounded-[2.5rem] p-6 sm:p-8 group hover:border-indigo-500/40 transition-all">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kpi.revenue')}</p>
                     <div className="p-2 bg-emerald-500/10 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-emerald-400" />
+                      <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
                     </div>
                   </div>
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-4xl font-black text-white italic tracking-tighter">{kpis.revenue.toFixed(0)}</span>
-                    <span className="text-sm font-bold text-white/20 uppercase">PLN</span>
+                  <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+                    <span className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter">{kpis.revenue.toFixed(0)}</span>
+                    <span className="text-xs sm:text-sm font-bold text-white/20 uppercase">PLN</span>
                   </div>
                   <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10 inline-block">
                     {t('kpi.revenueGrowth')}
@@ -295,15 +299,15 @@ export default function ReportsPage() {
                 </div>
 
                 {/* Food Cost Card */}
-                <div className="bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-8 group hover:border-amber-500/40 transition-all">
-                  <div className="flex items-center justify-between mb-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kpi.foodCost')}</p>
+                <div className="bg-white/[0.03] border border-white/10 rounded-[1.8rem] sm:rounded-[2.5rem] p-6 sm:p-8 group hover:border-amber-500/40 transition-all">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{t('kpi.foodCost')}</p>
                     <div className={cn("p-2 rounded-lg", kpis.avgFoodCost < 30 ? "bg-emerald-500/10" : "bg-amber-500/10")}>
                       <TrendingDown className={cn("h-5 w-5", kpis.avgFoodCost < 30 ? "text-emerald-400" : "text-amber-400")} />
                     </div>
                   </div>
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className={cn("text-4xl font-black italic tracking-tighter", kpis.avgFoodCost < 30 ? "text-emerald-400" : "text-amber-400")}>
+                  <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+                    <span className={cn("text-3xl font-black italic tracking-tighter", kpis.avgFoodCost < 30 ? "text-emerald-400" : "text-amber-400")}>
                       {kpis.avgFoodCost.toFixed(1)}%
                     </span>
                   </div>

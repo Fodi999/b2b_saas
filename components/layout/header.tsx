@@ -11,10 +11,13 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/auth/user-avatar';
+import { usePWAInstall } from '@/lib/hooks/use-pwa-install';
+import { Download } from 'lucide-react';
 
 export default function Header() {
   const t = useTranslations('header');
   const { user } = useAuthStore();
+  const { installPrompt, showInstallPrompt } = usePWAInstall();
   const params = useParams();
   const pathname = usePathname();
   const locale = params.locale as string;
@@ -24,20 +27,20 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl transition-all">
-      <div className="container mx-auto px-6">
-        <div className="flex h-20 items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex h-16 sm:h-20 items-center justify-between">
           {/* Logo Section */}
-          <Link href={`/${locale}${user ? '/dashboard' : ''}`} className="flex items-center gap-4 group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 dark:bg-indigo-600 text-white shadow-xl shadow-slate-200 dark:shadow-indigo-500/20 group-hover:scale-105 transition-all duration-500">
-              <Zap className="h-6 w-6 fill-current" />
+          <Link href={`/${locale}${user ? '/dashboard' : ''}`} className="flex items-center gap-2 sm:gap-4 group">
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-indigo-600 text-white shadow-xl shadow-slate-200 dark:shadow-indigo-500/20 group-hover:scale-105 transition-all duration-500">
+              <Zap className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
+              <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
                 Resto<span className="text-indigo-600 dark:text-indigo-400">AI</span>
               </span>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex items-center gap-1.5 mt-0.5 sm:mt-1">
                  <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                 <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">
                     v2.4 Core
                  </span>
               </div>
@@ -71,18 +74,18 @@ export default function Header() {
           )}
 
           {/* Actions Section */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden sm:flex items-center gap-2 sm:gap-3">
                <LanguageSwitcher />
                <ThemeToggle />
             </div>
             
-            <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-2 hidden sm:block" />
+            <div className="h-6 sm:h-8 w-px bg-slate-200 dark:bg-slate-800 mx-1 sm:mx-2 hidden sm:block" />
             
             {user ? (
-              <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-3 pl-1 pr-3 py-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-200 transition-colors group">
-                    <UserAvatar size="sm" editable className="h-9 w-9 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform" />
+              <div className="flex items-center gap-2 sm:gap-4">
+                 <div className="flex items-center gap-2 sm:gap-3 pl-1 pr-1 sm:pr-3 py-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-200 transition-colors group">
+                    <UserAvatar size="sm" editable className="h-8 w-8 sm:h-9 sm:w-9 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform" />
                     <Link href={`/${locale}/dashboard`} className="hidden md:flex flex-col text-left">
                        <span className="text-xs font-black text-slate-900 dark:text-white max-w-[120px] truncate leading-none mb-0.5">{user.display_name || user.email}</span>
                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Verified User</span>
@@ -107,7 +110,7 @@ export default function Header() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="lg:hidden h-11 w-11 rounded-2xl bg-slate-100 dark:bg-slate-900"
+              className="lg:hidden h-10 w-10 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-slate-900"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
@@ -124,24 +127,45 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="animate-in slide-in-from-top-6 duration-300 pb-8 pt-4 lg:hidden border-t border-slate-100 dark:border-slate-800 mt-2">
+          <div className="animate-in slide-in-from-top-6 duration-300 pb-8 pt-4 lg:hidden border-t border-slate-100 dark:border-slate-800 mt-2 max-h-[85vh] overflow-y-auto">
             <nav className="flex flex-col space-y-4">
                {user && (
-                 <div className="grid grid-cols-2 gap-3 mb-6">
-                    <Link href={`/${locale}/dashboard`} onClick={() => setIsMobileMenuOpen(false)}>
+                 <div className="grid grid-cols-2 gap-3 mb-4">
+                    <Link href={`/${locale}/dashboard`} className="col-span-1" onClick={() => setIsMobileMenuOpen(false)}>
                        <Button variant="secondary" className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest gap-2">
                           <LayoutGrid className="h-4 w-4" /> Dashboard
                        </Button>
                     </Link>
-                    <Link href={`/${locale}/assistant`} onClick={() => setIsMobileMenuOpen(false)}>
-                       <Button variant="secondary" className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest gap-2">
-                          <Sparkles className="h-4 w-4 text-indigo-500" /> AI Assistant
+                    <Link href={`/${locale}/assistant`} className="col-span-1" onClick={() => setIsMobileMenuOpen(false)}>
+                       <Button variant="secondary" className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest gap-2 shrink-0">
+                          <Sparkles className="h-4 w-4 text-indigo-500" /> Assistant
                        </Button>
                     </Link>
+                    {[
+                      { label: t('nav.inventory'), href: `/${locale}/inventory`, icon: LayoutGrid },
+                      { label: t('nav.recipes'), href: `/${locale}/recipes`, icon: LayoutGrid },
+                      { label: t('nav.dishes'), href: `/${locale}/dishes`, icon: LayoutGrid },
+                      { label: t('nav.reports'), href: `/${locale}/reports`, icon: LayoutGrid },
+                    ].map((item) => (
+                      <Link key={item.href} href={item.href} className="col-span-1" onClick={() => setIsMobileMenuOpen(false)}>
+                         <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-500 border-slate-100 dark:border-slate-800">
+                            {item.label}
+                         </Button>
+                      </Link>
+                    ))}
                  </div>
                )}
 
               <div className="flex flex-col gap-2">
+                {installPrompt && (
+                   <Button 
+                     onClick={showInstallPrompt}
+                     variant="outline" 
+                     className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest gap-2 bg-indigo-50/50 dark:bg-indigo-500/5 border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400"
+                   >
+                     <Download className="h-4 w-4" /> Install App
+                   </Button>
+                )}
                 {!user ? (
                    <>
                     <Link href={`/${locale}/login`} onClick={() => setIsMobileMenuOpen(false)}>

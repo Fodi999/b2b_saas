@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/layout/header";
@@ -18,9 +18,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
-  title: "AI Restaurant Management Platform",
-  description: "Smart restaurant management: inventory, recipes, menu and profit under AI control",
+  title: "RestoAI | Pro Management Platform",
+  description: "Smart restaurant management: inventory, recipes, and AI analytics for modern food business.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "RestoAI",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 const locales = ['pl', 'en', 'uk', 'ru'];

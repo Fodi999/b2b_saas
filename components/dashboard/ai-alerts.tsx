@@ -60,23 +60,23 @@ export default function AIAlerts() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 shadow-sm">
-          <Sparkles className="h-5 w-5" />
+        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-indigo-500/10 text-indigo-600 shadow-sm">
+          <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-1">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-0.5 sm:mb-1">
             {t('title')}
           </h3>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Neural Intelligence Feed</p>
+          <p className="text-[7px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">Neural Intelligence Feed</p>
         </div>
-        <Badge variant="secondary" className="ml-2 bg-indigo-500 text-white border-none px-3 py-1 font-black text-[9px] uppercase tracking-widest animate-pulse">
+        <Badge variant="secondary" className="ml-2 bg-indigo-500 text-white border-none px-2 sm:px-3 py-0.5 sm:py-1 font-black text-[7px] sm:text-[9px] uppercase tracking-widest animate-pulse">
            Live
         </Badge>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {alerts.map((alert, index) => (
           <InsightCard
             key={index}

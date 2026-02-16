@@ -1,0 +1,40 @@
+{
+  "name": "RestoAI Portal",
+  "short_name": "RestoAI",
+  "description": "Professional AI-Powered Restaurant Management System",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/window.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/window.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Inventory",
+      "url": "/inventory",
+      "description": "Quick access to stock management"
+    },
+    {
+      "name": "Recipes",
+      "url": "/recipes",
+      "description": "View and create recipes"
+    },
+    {
+      "name": "Assistant",
+      "url": "/assistant",
+      "description": "Chat with AI Assistant"
+    }
+  ]
+}

@@ -38,11 +38,11 @@ export function InsightCard({
   return (
     <Alert 
       variant={config.variant} 
-      className={`transition-all hover:shadow-sm ${'className' in config ? config.className : ''}`}
+      className={`transition-all hover:shadow-sm p-4 sm:p-5 rounded-2xl sm:rounded-[1.5rem] ${'className' in config ? config.className : ''}`}
     >
-      <Icon className={`h-4 w-4 ${config.colorClass}`} />
-      <AlertTitle className="font-bold tracking-tight">{title}</AlertTitle>
-      <AlertDescription className="mt-1 text-xs opacity-80 leading-relaxed">
+      <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${config.colorClass}`} />
+      <AlertTitle className="font-bold tracking-tight text-xs sm:text-sm mb-1">{title}</AlertTitle>
+      <AlertDescription className="mt-0.5 text-[10px] sm:text-xs opacity-80 leading-relaxed font-medium">
         {description}
       </AlertDescription>
     </Alert>

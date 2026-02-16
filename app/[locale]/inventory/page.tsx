@@ -329,73 +329,73 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="container mx-auto px-6 py-10 max-w-7xl animate-in fade-in duration-700">
-        <div className="space-y-10">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 max-w-7xl animate-in fade-in duration-700">
+        <div className="space-y-8 sm:space-y-10">
           {/* Neural Core Status Banner */}
-          <div className="relative overflow-hidden group rounded-[3rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-xl shadow-slate-200/50 dark:shadow-none">
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
-              <div className="flex items-center gap-6">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-500">
-                  <Database className="h-10 w-10" />
+          <div className="relative overflow-hidden group rounded-[2rem] sm:rounded-[3rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-10">
+              <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6">
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-[1.5rem] sm:rounded-[2rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-500">
+                  <Database className="h-8 w-8 sm:h-10 sm:w-10" />
                 </div>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                     <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                         {t('core.title')}
                      </h3>
-                     <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[10px] font-black uppercase tracking-widest px-3">{t('core.status')}</Badge>
+                     <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-3">{t('core.status')}</Badge>
                   </div>
-                  <p className="text-slate-500 dark:text-slate-400 font-medium">
+                  <p className="text-xs sm:text-slate-500 dark:text-slate-400 font-medium">
                     {t('core.description')}
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-8 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-4">
-                  <Cpu className="h-6 w-6 text-indigo-500" />
+              <div className="w-full lg:w-auto flex items-center justify-around sm:justify-center gap-4 sm:gap-8 bg-slate-50 dark:bg-slate-800/50 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <Cpu className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-500" />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Memory Engine</p>
-                    <p className="text-lg font-black text-slate-900 dark:text-white">v2.4 Neural</p>
+                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Memory Engine</p>
+                    <p className="text-sm sm:text-lg font-black text-slate-900 dark:text-white">v2.4 Neural</p>
                   </div>
                 </div>
-                <div className="h-10 w-px bg-slate-200 dark:bg-slate-700" />
+                <div className="h-8 sm:h-10 w-px bg-slate-200 dark:bg-slate-700" />
                 <div className="text-right">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Latency</p>
-                  <p className="text-lg font-black text-emerald-500">0.4ms</p>
+                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Latency</p>
+                  <p className="text-sm sm:text-lg font-black text-emerald-500">0.4ms</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Header Controls */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 onClick={() => router.push(`/${locale}/dashboard`)}
-                className="h-12 w-12 rounded-2xl border border-slate-100 dark:border-slate-800 hover:bg-white transition-all shadow-sm"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800 hover:bg-white transition-all shadow-sm"
               >
                 <ArrowLeft className="h-5 w-5 text-slate-400" />
               </Button>
               <div>
-                <h1 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{t('header.title')}</h1>
-                <p className="text-sm font-medium text-slate-500">{t('header.subtitle')}</p>
+                <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{t('header.title')}</h1>
+                <p className="text-xs sm:text-sm font-medium text-slate-500">{t('header.subtitle')}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Button
                 variant="outline"
                 onClick={() => setIsAIFormOpen(!isAIFormOpen)}
-                className={`h-12 px-6 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all ${isAIFormOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20' : 'border-slate-100 dark:border-slate-800 hover:bg-white'}`}
+                className={`h-11 sm:h-12 px-4 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all ${isAIFormOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20' : 'border-slate-100 dark:border-slate-800 hover:bg-white'}`}
               >
                 <SparklesIcon className="h-4 w-4 mr-2" />
                 {isAIFormOpen ? t('actions.closeAI') : t('actions.smartAdd')}
               </Button>
               <Button
                 onClick={() => setIsModalOpen(true)}
-                className="h-12 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95"
+                className="h-11 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase text-[9px] sm:text-[10px] tracking-widest shadow-xl shadow-indigo-500/20 transition-all active:scale-95"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t('actions.create')}
@@ -417,44 +417,43 @@ export default function InventoryPage() {
           )}
 
           {/* 🔥 V3: Analytics Summary Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
             {/* Inventory Health Score */}
-            <Card className="rounded-[2.5rem] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-8 opacity-5">
-                <ShieldCheck className="h-32 w-32" />
+            <Card className="rounded-[1.5rem] sm:rounded-[2.5rem] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-5">
+                <ShieldCheck className="h-24 w-24 sm:h-32 sm:w-32" />
               </div>
-              <CardContent className="p-8">
-                <div className="flex items-center gap-6">
-                  <div className={`h-24 w-24 rounded-full border-8 flex flex-col items-center justify-center transition-all duration-1000 ${getHealthBg(health?.status || 'Good').split(' ')[1]} ${getHealthColor(health?.status || 'Good')}`}>
-                    <span className="text-3xl font-black">{health?.health_score ?? '--'}</span>
-                    <span className="text-[8px] font-black uppercase tracking-widest">%</span>
+              <CardContent className="p-4 sm:p-8">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                  {/* 🔥 V3: Optimized Circle for 75% Scale / Mini screens */}
+                  <div className={`h-16 w-16 sm:h-24 sm:w-24 rounded-full border-[3px] sm:border-8 flex flex-col items-center justify-center transition-all duration-1000 flex-shrink-0 ${getHealthBg(health?.status || 'Good').split(' ')[1]} ${getHealthColor(health?.status || 'Good')}`}>
+                    <span className="text-xl sm:text-3xl font-black leading-none">{health?.health_score ?? '--'}</span>
+                    <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-widest mt-0.5">%</span>
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                  <div className="flex-1 space-y-3 sm:space-y-2 text-center sm:text-left">
+                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3">
+                      <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">
                         {t('analytics.health.title')}
                       </h3>
-                      <Badge variant="outline" className={`font-black uppercase text-[10px] ${getHealthBg(health?.status || 'Good')}`}>
+                      <Badge variant="outline" className={`font-black uppercase text-[8px] sm:text-[10px] py-0 h-5 ${getHealthBg(health?.status || 'Good')}`}>
                         {health?.status ? t(`analytics.health.${health.status.toLowerCase()}`) : '--'}
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-500 font-medium leading-tight">
+                    <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">
                       {t('analytics.health.desc')}
                     </p>
-                    <div className="flex gap-4 pt-2">
-                      <div className="text-center">
-                        <p className="text-[10px] font-black uppercase text-rose-500">{t('analytics.health.metrics.expired')}</p>
-                        <p className="text-lg font-black">{health?.expired ?? 0}</p>
+                    <div className="grid grid-cols-3 sm:flex justify-center sm:justify-start gap-2 sm:gap-6 pt-2">
+                      <div className="text-center sm:text-left">
+                        <p className="text-[7px] sm:text-[10px] font-black uppercase text-rose-500 tracking-tight">{t('analytics.health.metrics.expired')}</p>
+                        <p className="text-sm sm:text-lg font-black leading-none mt-1">{health?.expired ?? 0}</p>
                       </div>
-                      <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
-                      <div className="text-center">
-                        <p className="text-[10px] font-black uppercase text-amber-500">{t('analytics.health.metrics.lowStock')}</p>
-                        <p className="text-lg font-black">{health?.low_stock ?? 0}</p>
+                      <div className="text-center sm:text-left border-x border-slate-100 dark:border-slate-800 sm:border-none px-2 sm:px-0">
+                        <p className="text-[7px] sm:text-[10px] font-black uppercase text-amber-500 tracking-tight">{t('analytics.health.metrics.lowStock')}</p>
+                        <p className="text-sm sm:text-lg font-black leading-none mt-1">{health?.low_stock ?? 0}</p>
                       </div>
-                      <div className="w-px h-8 bg-slate-100 dark:bg-slate-800" />
-                      <div className="text-center">
-                        <p className="text-[10px] font-black uppercase text-indigo-500">{t('analytics.health.metrics.warning')}</p>
-                        <p className="text-lg font-black">{health?.warning ?? 0}</p>
+                      <div className="text-center sm:text-left">
+                        <p className="text-[7px] sm:text-[10px] font-black uppercase text-indigo-500 tracking-tight">{t('analytics.health.metrics.warning')}</p>
+                        <p className="text-sm sm:text-lg font-black leading-none mt-1">{health?.warning ?? 0}</p>
                       </div>
                     </div>
                   </div>
@@ -463,36 +462,36 @@ export default function InventoryPage() {
             </Card>
 
             {/* Waste KPI & Loss Analytics */}
-            <Card className="rounded-[2.5rem] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative group">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-500">
-                <TrendingDown className="h-32 w-32" />
+            <Card className="rounded-[1.5rem] sm:rounded-[2.5rem] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                <TrendingDown className="h-24 w-24 sm:h-32 sm:w-32" />
               </div>
-              <CardContent className="p-8 space-y-6">
+              <CardContent className="p-5 sm:p-8 space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                    <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">
                       {t('analytics.waste.title')}
                     </h3>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">
                       {t('analytics.waste.period')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className={`text-4xl font-black italic tracking-tighter ${(lossReport?.waste_percentage ?? 0) > 5 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    <div className={`text-2xl sm:text-4xl font-black italic tracking-tighter ${(lossReport?.waste_percentage ?? 0) > 5 ? 'text-rose-500' : 'text-emerald-500'}`}>
                       {lossReport?.waste_percentage ?? '0.0'}%
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('analytics.waste.wasteKpi')}</p>
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">{t('analytics.waste.wasteKpi')}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 gap-4 sm:gap-2">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center flex-shrink-0">
                       <ZapIcon className="h-5 w-5 text-rose-500" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-500">{t('analytics.waste.totalLoss')}</p>
-                      <p className="text-lg font-black">{( (lossReport?.total_loss_cents ?? 0) / 100).toFixed(2)} PLN</p>
+                      <p className="text-base sm:text-lg font-black">{( (lossReport?.total_loss_cents ?? 0) / 100).toFixed(2)} PLN</p>
                     </div>
                   </div>
                   <Button
@@ -500,7 +499,7 @@ export default function InventoryPage() {
                     size="sm"
                     disabled={isProcessing || (health?.expired ?? 0) === 0}
                     onClick={handleCleanup}
-                    className="rounded-xl border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[9px] tracking-widest gap-2"
+                    className="h-9 sm:h-auto rounded-xl border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[8px] sm:text-[9px] tracking-widest gap-2"
                   >
                     {isProcessing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                     {t('analytics.waste.cleanButton')}
@@ -524,122 +523,135 @@ export default function InventoryPage() {
 
           {/* Catalog & Inventory Table */}
           <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
-            <div className="flex items-center justify-between mb-4">
-              <TabsList>
-                <TabsTrigger value="all">{tCat('all')} ({items.length})</TabsTrigger>
-                {categories.map((cat) => (
-                  <TabsTrigger key={cat.name} value={cat.name}>
-                    {translateCategory(cat.name)} ({cat.count})
+            <div className="mb-6">
+              <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+                <TabsList className="h-11 sm:h-12 bg-slate-100/50 dark:bg-slate-800 p-1.5 rounded-xl sm:rounded-2xl inline-flex w-max shrink-0">
+                  <TabsTrigger 
+                    value="all" 
+                    className="rounded-lg sm:rounded-xl px-4 sm:px-6 font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm transition-all whitespace-nowrap"
+                  >
+                    {tCat('all')} <span className="ml-2 opacity-50">{items.length}</span>
                   </TabsTrigger>
-                ))}
-              </TabsList>
+                  {categories.map((cat) => (
+                    <TabsTrigger 
+                      key={cat.name} 
+                      value={cat.name} 
+                      className="rounded-lg sm:rounded-xl px-4 sm:px-6 font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm transition-all whitespace-nowrap"
+                    >
+                      {translateCategory(cat.name)} <span className="ml-2 opacity-50">{cat.count}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
             </div>
 
             <TabsContent value={activeTab}>
-              <Card>
+              <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
                 <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[80px]">{t('table.photo')}</TableHead>
-                        <TableHead>{t('table.name')}</TableHead>
-                        <TableHead>{t('table.category')}</TableHead>
-                        <TableHead>{t('table.quantity')}</TableHead>
-                        <TableHead>{t('table.price')}</TableHead>
-                        <TableHead>{t('table.expiry')}</TableHead>
-                        <TableHead>{t('table.status')}</TableHead>
-                        <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        Array.from({ length: 5 }).map((_, i) => (
-                          <TableRow key={i}>
-                            <TableCell><Skeleton className="h-10 w-10 rounded" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
-                            <TableCell></TableCell>
-                          </TableRow>
-                        ))
-                      ) : items.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
-                            {t('empty.description')}
-                          </TableCell>
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <Table>
+                      <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+                        <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                          <TableHead className="w-[60px] sm:w-[80px] text-[10px] font-black uppercase tracking-widest text-slate-400 pl-6">{t('table.photo')}</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('table.name')}</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">{t('table.category')}</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('table.quantity')}</TableHead>
+                          <TableHead className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">{t('table.price')}</TableHead>
+                          <TableHead className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">{t('table.expiry')}</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 hidden lg:table-cell">{t('table.status')}</TableHead>
+                          <TableHead className="w-[80px] sm:w-[100px] text-right pr-6"></TableHead>
                         </TableRow>
-                      ) : (
-                        filteredItems.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              <ProductImage
-                                src={item.image_url}
-                                alt={item.product_name}
-                                containerClassName="h-10 w-10 rounded border bg-muted flex items-center justify-center overflow-hidden"
-                              />
+                      </TableHeader>
+                      <TableBody>
+                        {loading ? (
+                          Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                              <TableCell><Skeleton className="h-10 w-10 rounded" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                              <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
+                              <TableCell></TableCell>
+                            </TableRow>
+                          ))
+                        ) : items.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                              {t('empty.description')}
                             </TableCell>
-                            <TableCell className="font-medium">
-                              {item.product_name}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {getCategoryIcon(item.category || 'Other')}
-                                <span className="text-xs">{translateCategory(item.category || 'Other')}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {formatQuantity(item.quantity, item.base_unit)}
-                            </TableCell>
-                            <TableCell>
-                              {item.price ? `${item.price.toFixed(2)} PLN` : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-sm">{formatDate(item.expiration_date, locale)}</span>
-                                {(() => {
-                                  const days = getDaysRemaining(item.expiration_date);
-                                  if (days === null) return null;
-                                  return (
-                                    <span className={`text-[10px] ${
-                                      days < 3 ? 'text-red-500 font-bold' : 'text-muted-foreground'
-                                    }`}>
+                          </TableRow>
+                        ) : (
+                          filteredItems.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell className="pl-6">
+                                <ProductImage
+                                  src={item.image_url}
+                                  alt=""
+                                  containerClassName="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl border bg-muted flex items-center justify-center overflow-hidden shadow-sm"
+                                />
+                              </TableCell>
+                              <TableCell className="font-bold text-slate-900 dark:text-slate-100 text-[10px] sm:text-sm">
+                                {item.product_name}
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <div className="flex items-center gap-2">
+                                  {getCategoryIcon(item.category || 'Other')}
+                                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{translateCategory(item.category || 'Other')}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-black text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
+                                {formatQuantity(item.quantity, item.base_unit)}
+                              </TableCell>
+                              <TableCell className="font-bold text-slate-500 text-[10px] sm:text-sm">
+                                {item.price ? `${item.price.toFixed(2)} PLN` : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{formatDate(item.expiration_date, locale)}</span>
+                                  {(() => {
+                                    const days = getDaysRemaining(item.expiration_date);
+                                    if (days === null) return null;
+                                    return (
+                                      <span className={`text-[9px] font-black uppercase tracking-tight ${
+                                        days < 3 ? 'text-red-500' : 'text-slate-400'
+                                      }`}>
                                       {days <= 0 
                                         ? t('expiry.expired') 
                                         : t('expiry.daysLeft', { days })}
                                     </span>
-                                  );
-                                })()}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(item.status)}
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={() => handleDeleteClick(item.id, item.product_name)}
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    {t('delete.button')}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                                    );
+                                  })()}
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden lg:table-cell">
+                                {getStatusBadge(item.status)}
+                              </TableCell>
+                              <TableCell className="text-right pr-6">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                                      <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => handleDeleteClick(item.id, item.product_name)}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      {t('delete.button')}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

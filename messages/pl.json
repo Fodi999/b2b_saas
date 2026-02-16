@@ -308,6 +308,8 @@
       "dateLabel": "Data otrzymania",
       "submit": "Przyjmij na stan",
       "back": "Wstecz",
+      "cancel": "Anuluj",
+      "continue": "Kontynuuj",
       "expiryNote": "Przewidywany termin ważności: {days} dni (do {date})",
       "success": "Produkt został dodany"
     },
