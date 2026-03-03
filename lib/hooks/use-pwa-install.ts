@@ -17,6 +17,9 @@ export function usePWAInstall() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
+      // Only prevent default (suppress browser mini-infobar) when we're
+      // ready to show our own install UI. Calling preventDefault without
+      // later calling prompt() triggers a console warning in Chrome.
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
     };

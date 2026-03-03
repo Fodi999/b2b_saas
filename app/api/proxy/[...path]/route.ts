@@ -17,7 +17,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL!;
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://ministerial-yetta-fodi999-c58d8823.koyeb.app';
 
 // Headers that must not be forwarded to the backend request
 const STRIP_REQUEST_HEADERS = new Set([
@@ -85,7 +87,11 @@ async function handler(
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Proxy error';
-    return NextResponse.json({ error: msg }, { status: 502 });
+    console.error(`[proxy] ${req.method} ${targetUrl} → fetch error: ${msg}`);
+    return NextResponse.json(
+      { error: 'Backend unreachable', detail: msg, target: targetUrl },
+      { status: 502 }
+    );
   }
 
   // Forward response headers — strip encoding/hop-by-hop
