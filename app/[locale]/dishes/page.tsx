@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { useDishesStore } from '@/lib/stores/dishes-store';
+import { getDishes, deleteDish as deleteDishAPI, type Dish } from '@/lib/api/dishes';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { 
@@ -37,25 +37,45 @@ import {
   Zap,
   TrendingUp,
   TrendingDown,
-  Target
+  Target,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function DishesPage() {
-  const { user } = useAuthStore();
-  const { dishes, deleteDish } = useDishesStore();
+  const { user, accessToken } = useAuthStore();
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations('dishes');
   const [expandedWarnings, setExpandedWarnings] = useState<string | null>(null);
   const [dishToDelete, setDishToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const loadDishes = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      setIsLoading(true);
+      setLoadError(null);
+      const data = await getDishes(accessToken);
+      setDishes(data.items);
+    } catch {
+      setLoadError('Не удалось загрузить блюда');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     if (!user) {
       router.push(`/${locale}/login`);
+      return;
     }
-  }, [user, router, locale]);
+    loadDishes();
+  }, [user, router, locale, loadDishes]);
 
   if (!user) {
     return null;
@@ -65,40 +85,42 @@ export default function DishesPage() {
     setDishToDelete(id);
   };
 
-  const confirmDelete = () => {
-    if (dishToDelete) {
-      deleteDish(dishToDelete);
+  const confirmDelete = async () => {
+    if (!dishToDelete || !accessToken) return;
+    try {
+      setIsDeleting(true);
+      await deleteDishAPI(dishToDelete, accessToken);
+      setDishes(prev => prev.filter(d => d.id !== dishToDelete));
       setDishToDelete(null);
+    } catch {
+      setLoadError('Не удалось удалить блюдо');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'profit': 
-        return { 
-          label: t('status.profit'), 
-          color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-          dot: 'bg-emerald-500'
-        };
-      case 'warning': 
-        return { 
-          label: t('status.warning'), 
-          color: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-          dot: 'bg-amber-500'
-        };
-      case 'loss': 
-        return { 
-          label: t('status.loss'), 
-          color: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-          dot: 'bg-rose-500'
-        };
-      default: 
-        return { 
-          label: status, 
-          color: 'bg-white/5 text-white/40 border-white/10',
-          dot: 'bg-white/40'
-        };
-    }
+  const getStatusConfig = (dish: Dish) => {
+    const fc = dish.food_cost_percent ?? 0;
+    if (!dish.active) return {
+      label: t('status.loss'),
+      color: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+      dot: 'bg-rose-500'
+    };
+    if (fc <= 35) return {
+      label: t('status.profit'),
+      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      dot: 'bg-emerald-500'
+    };
+    if (fc <= 50) return {
+      label: t('status.warning'),
+      color: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+      dot: 'bg-amber-500'
+    };
+    return {
+      label: t('status.loss'),
+      color: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+      dot: 'bg-rose-500'
+    };
   };
 
   return (
@@ -153,7 +175,11 @@ export default function DishesPage() {
           {/* Dishes Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
             {dishes.map((dish) => {
-              const status = getStatusConfig(dish.status);
+              const status = getStatusConfig(dish);
+              const costPln = (dish.recipe_cost_cents ?? 0) / 100;
+              const pricePln = dish.selling_price_cents / 100;
+              const profit = pricePln - costPln;
+              const fc = dish.food_cost_percent ?? 0;
               return (
                 <div key={dish.id} className="group relative">
                   <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl sm:rounded-[2.5rem] overflow-hidden transition-all duration-500 group-hover:border-indigo-500/50 group-hover:bg-white/[0.05] h-full flex flex-col">
@@ -176,14 +202,16 @@ export default function DishesPage() {
                       <h3 className="text-lg sm:text-2xl font-black italic text-white tracking-tight mb-2 group-hover:text-indigo-400 transition-colors">
                         {dish.name}
                       </h3>
-                      
+
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-8">
-                        <span className="text-[7px] sm:text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                          {t('card.recipes', { count: dish.components.length })}
-                        </span>
                         <span className="text-[7px] sm:text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                           {t('card.servings', { count: 1 })}
                         </span>
+                        {!dish.active && (
+                          <span className="text-[7px] sm:text-[10px] font-black uppercase tracking-widest text-rose-400/80 bg-rose-500/10 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-rose-500/20">
+                            Неактивно
+                          </span>
+                        )}
                       </div>
 
                       {/* Main Metrics */}
@@ -191,14 +219,14 @@ export default function DishesPage() {
                         <div className="bg-black/40 rounded-2xl sm:rounded-[2rem] p-3 sm:p-5 border border-white/5">
                           <p className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1">{t('card.foodCost')}</p>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-base sm:text-2xl font-black text-white italic">{dish.totalCost.toFixed(1)}</span>
+                            <span className="text-base sm:text-2xl font-black text-white italic">{costPln.toFixed(1)}</span>
                             <span className="text-[8px] sm:text-[10px] font-bold text-white/20">PLN</span>
                           </div>
                         </div>
                         <div className="bg-black/40 rounded-2xl sm:rounded-[2rem] p-3 sm:p-5 border border-white/5">
                           <p className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1">{t('card.salePrice')}</p>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-lg sm:text-2xl font-black text-white italic">{dish.salePrice.toFixed(1)}</span>
+                            <span className="text-lg sm:text-2xl font-black text-white italic">{pricePln.toFixed(1)}</span>
                             <span className="text-[9px] sm:text-[10px] font-bold text-white/20">PLN</span>
                           </div>
                         </div>
@@ -209,7 +237,7 @@ export default function DishesPage() {
                         <div>
                           <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400/60 mb-1">{t('card.grossProfit')}</p>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-lg sm:text-2xl font-black text-indigo-400 italic">{(dish.salePrice - dish.totalCost).toFixed(1)}</span>
+                            <span className="text-lg sm:text-2xl font-black text-indigo-400 italic">{profit.toFixed(1)}</span>
                             <span className="text-[9px] sm:text-[10px] font-bold text-indigo-400/40">PLN</span>
                           </div>
                         </div>
@@ -217,39 +245,12 @@ export default function DishesPage() {
                           <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1">{t('card.fc')}</p>
                           <span className={cn(
                             "text-xl sm:text-2xl font-black italic",
-                            dish.foodCostPercent > 35 ? "text-rose-400" : "text-emerald-400"
+                            fc > 35 ? "text-rose-400" : "text-emerald-400"
                           )}>
-                            {dish.foodCostPercent.toFixed(1)}%
+                            {fc.toFixed(1)}%
                           </span>
                         </div>
                       </div>
-
-                      {/* Warnings */}
-                      {dish.warnings && dish.warnings.length > 0 && (
-                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-4">
-                          <button 
-                            onClick={() => setExpandedWarnings(expandedWarnings === dish.id ? null : dish.id)}
-                            className="w-full flex items-center justify-between text-amber-500"
-                          >
-                            <div className="flex items-center gap-2">
-                              <AlertTriangle className="h-4 w-4" />
-                              <span className="text-[11px] font-black uppercase tracking-widest">
-                                {t('card.warnings', { count: dish.warnings.length })}
-                              </span>
-                            </div>
-                            {expandedWarnings === dish.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </button>
-                          {expandedWarnings === dish.id && (
-                            <div className="mt-3 space-y-2 pt-3 border-t border-amber-500/20">
-                              {dish.warnings.map((warning, idx) => (
-                                <p key={idx} className="text-xs text-amber-500/80 italic font-medium">
-                                  • {warning}
-                                </p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
 
                     <div className="mt-auto p-5 sm:p-6 pt-0">
@@ -268,8 +269,27 @@ export default function DishesPage() {
             })}
           </div>
 
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <Loader2 className="h-12 w-12 text-indigo-400 animate-spin mb-6" />
+              <p className="text-white/40 font-black uppercase tracking-widest text-[10px]">Загрузка блюд...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {loadError && !isLoading && (
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-rose-500/5 border border-rose-500/20 rounded-[3rem]">
+              <AlertTriangle className="h-12 w-12 text-rose-400 mb-6" />
+              <p className="text-rose-400 font-black uppercase tracking-widest text-[11px] mb-6">{loadError}</p>
+              <Button onClick={loadDishes} className="h-12 px-8 rounded-2xl bg-white/5 hover:bg-white/10 text-white font-black uppercase text-[10px] tracking-widest border border-white/10">
+                Попробовать снова
+              </Button>
+            </div>
+          )}
+
           {/* Empty State */}
-          {dishes.length === 0 && (
+          {!isLoading && !loadError && dishes.length === 0 && (
             <div className="flex flex-col items-center justify-center py-32 text-center bg-white/[0.02] border border-white/5 rounded-[4rem]">
               <div className="h-24 w-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-10 border border-white/10 group animate-pulse">
                 <UtensilsCrossed className="h-12 w-12 text-white/20 group-hover:text-white/40 transition-colors" />
@@ -312,9 +332,10 @@ export default function DishesPage() {
             </Button>
             <Button
               onClick={confirmDelete}
-              className="h-12 px-8 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-rose-500/20"
+              disabled={isDeleting}
+              className="h-12 px-8 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-rose-500/20 disabled:opacity-50"
             >
-              {t('delete.confirm')}
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('delete.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

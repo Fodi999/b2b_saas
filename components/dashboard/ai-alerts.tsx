@@ -18,8 +18,8 @@ export default function AIAlerts() {
   const alerts = useMemo(() => {
     const list = [];
 
-    // 1. � Real Backend Alerts (V3 Integration)
-    backendAlerts.forEach(alert => {
+    // 1. Real Backend Alerts (V3 Integration)
+    (backendAlerts ?? []).forEach(alert => {
       list.push({
         variant: alert.severity === 'critical' ? 'danger' as const : 'warning' as const,
         title: alert.product_name,
@@ -27,8 +27,9 @@ export default function AIAlerts() {
       });
     });
 
-    // 2. � Business Logic: Unprofitable Dishes (Static logic for now)
-    const lossDishes = dishes.filter(d => d.status === 'loss');
+    // 2. Business Logic: Unprofitable Dishes
+    const safeDishes = Array.isArray(dishes) ? dishes : [];
+    const lossDishes = safeDishes.filter(d => (d.profit_margin_percent ?? 0) < 15);
     if (lossDishes.length > 0) {
       list.push({
         variant: 'danger' as const,

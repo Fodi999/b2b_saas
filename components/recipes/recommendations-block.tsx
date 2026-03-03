@@ -1,3 +1,4 @@
+import React from 'react';
 import { ChevronDown, ChevronUp, Sparkles, Shield, Zap, RefreshCw, Target } from 'lucide-react';
 import { useState } from 'react';
 import { RecipeInsightSuggestion } from '@/lib/api/recipes';
@@ -7,7 +8,7 @@ interface RecommendationsBlockProps {
   recommendations: RecipeInsightSuggestion[];
 }
 
-const CATEGORY_CONFIG: Record<string, { icon: any; label: string; description: string; color: string; glow: string }> = {
+const CATEGORY_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; label: string; description: string; color: string; glow: string }> = {
   improvement: {
     icon: Sparkles,
     label: 'Taste Improvement',

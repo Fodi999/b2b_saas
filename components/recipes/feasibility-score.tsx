@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 interface FeasibilityScoreProps {
   score: number;
-  dishType: string;
+  dishType?: string;
 }
 
 export function FeasibilityScore({ score, dishType }: FeasibilityScoreProps) {
@@ -99,7 +99,7 @@ export function FeasibilityScore({ score, dishType }: FeasibilityScoreProps) {
           </div>
           <div>
             <div className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">Dish Concept</div>
-            <div className="text-sm font-bold text-white uppercase italic">{dishType}</div>
+            <div className="text-sm font-bold text-white uppercase italic">{dishType || '—'}</div>
           </div>
         </div>
       </div>

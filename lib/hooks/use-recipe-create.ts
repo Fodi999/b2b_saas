@@ -31,50 +31,33 @@ export function useRecipeCreate(): UseRecipeCreateResult {
     setError(null);
     setCreatedRecipe(null);
 
-    try {
-      console.log('🔄 [USE_RECIPE_CREATE] Starting recipe creation...', data);
-      
-      const recipe = await createRecipe(data, accessToken);
-      
-      console.log('✅ [USE_RECIPE_CREATE] Recipe created successfully:', recipe);
-      setCreatedRecipe(recipe);
+    try {      
+      const recipe = await createRecipe(data, accessToken);      setCreatedRecipe(recipe);
       return recipe;
     } catch (err) {
       // Если ошибка 401 - пробуем обновить токен и повторить
-      if (err instanceof ApiError && err.status === 401) {
-        console.log('🔄 [USE_RECIPE_CREATE] Token expired, refreshing...');
-        
+      if (err instanceof ApiError && err.status === 401) {        
         const refreshed = await refreshAccessToken();
         
-        if (refreshed) {
-          console.log('✅ [USE_RECIPE_CREATE] Token refreshed, retrying...');
-          
+        if (refreshed) {          
           // Получаем новый токен из store
           const newToken = useAuthStore.getState().accessToken;
           
           if (newToken) {
             try {
-              const recipe = await createRecipe(data, newToken);
-              console.log('✅ [USE_RECIPE_CREATE] Recipe created after token refresh:', recipe);
-              setCreatedRecipe(recipe);
+              const recipe = await createRecipe(data, newToken);              setCreatedRecipe(recipe);
               return recipe;
             } catch (retryErr) {
-              const errorMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error';
-              console.error('❌ [USE_RECIPE_CREATE] Failed after token refresh:', errorMessage);
-              setError(errorMessage);
+              const errorMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error';              setError(errorMessage);
               return null;
             }
           }
-        } else {
-          console.error('❌ [USE_RECIPE_CREATE] Token refresh failed');
-          setError('Authentication expired. Please login again.');
+        } else {          setError('Authentication expired. Please login again.');
           return null;
         }
       }
       
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error('❌ [USE_RECIPE_CREATE] Failed to create recipe:', errorMessage);
-      setError(errorMessage);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';      setError(errorMessage);
       return null;
     } finally {
       setIsCreating(false);
@@ -90,13 +73,8 @@ export function useRecipeCreate(): UseRecipeCreateResult {
     setIsCreating(true);
     setError(null);
 
-    try {
-      console.log('🔄 [USE_RECIPE_CREATE] Starting recipe update...', { id, data });
-      
-      const recipe = await updateRecipe(id, data, accessToken);
-      
-      console.log('✅ [USE_RECIPE_CREATE] Recipe updated successfully:', recipe);
-      return recipe;
+    try {      
+      const recipe = await updateRecipe(id, data, accessToken);      return recipe;
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         const refreshed = await refreshAccessToken();

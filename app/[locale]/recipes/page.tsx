@@ -5,20 +5,16 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { useRecipesStore } from '@/lib/stores/recipes-store';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import RecipeCard from '@/components/recipes/recipe-card';
 import { 
   ArrowLeft, 
   ChefHat, 
   Plus, 
-  Sparkles, 
-  Clock, 
-  Users, 
-  Trash2, 
-  X, 
-  Loader2, 
   AlertTriangle,
-  ChevronDown,
-  ChevronUp
+  Loader2,
+  Search
 } from 'lucide-react';
+import { Input } from "@/components/ui/input";
 import { 
   Card, 
   CardContent, 
@@ -37,6 +33,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
 export default function RecipesPage() {
   const { user, accessToken } = useAuthStore();
@@ -47,6 +44,7 @@ export default function RecipesPage() {
   const t = useTranslations('recipes');
   const [expandedWarnings, setExpandedWarnings] = useState<string | null>(null);
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!user) {
@@ -58,6 +56,10 @@ export default function RecipesPage() {
       fetchRecipes(accessToken);
     }
   }, [user, accessToken, router, locale, fetchRecipes]);
+
+  const filteredRecipes = recipes.filter(r => 
+    r.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (!user) {
     return null;
@@ -88,208 +90,96 @@ export default function RecipesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-12 max-w-[1440px] space-y-6 sm:space-y-12 animate-in fade-in duration-700">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
-          <div className="space-y-1 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 text-zinc-500 mb-2">
-              <div className="h-0.5 w-4 sm:w-8 bg-zinc-400 dark:bg-zinc-800 rounded-full" />
-              <span className="text-[7px] sm:text-[10px] font-black uppercase tracking-[0.2em]">{t('header.subtitle')}</span>
+    <div className="min-h-screen bg-black text-white selection:bg-indigo-500/30">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.08),transparent_50%)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-[0.02] pointer-events-none" />
+
+      <div className="container mx-auto px-4 py-8 max-w-[1400px] relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        {/* Minimal Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/[0.03]">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-[1px] w-6 bg-indigo-500/60 rounded-full" />
+              <span className="text-[9px] font-bold uppercase tracking-[0.45em] text-indigo-400/80">
+                {t('header.subtitle')}
+              </span>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 sm:gap-4">
-              <h1 className="text-2xl sm:text-5xl font-black italic uppercase tracking-tighter text-slate-900 dark:text-white">
-                {t('header.title').split(' ')[0]} <span className="text-indigo-600 dark:text-indigo-500">{t('header.title').split(' ')[1] || 'CORE'}</span>
-              </h1>
-              <Badge variant="outline" className="px-2 sm:px-4 py-0.5 sm:py-1 rounded-full border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 font-black uppercase tracking-widest text-[7px] sm:text-[10px]">
-                {t('header.sync')}
-              </Badge>
-            </div>
+            <h1 className="text-4xl sm:text-6xl font-extrabold italic uppercase tracking-tighter leading-none text-white/90">
+              {t('header.title').split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400/80 to-indigo-600/80 font-black">{t('header.title').split(' ')[1] || 'CORE'}</span>
+            </h1>
           </div>
 
-          <div className="flex items-center justify-center gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="relative group w-full sm:w-60">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20 group-focus-within:text-indigo-400/60 transition-colors" />
+              <Input 
+                placeholder="SEARCH..." 
+                className="pl-9 h-10 bg-white/[0.03] border-white/5 rounded-lg font-bold uppercase tracking-widest text-[9px] focus-visible:ring-indigo-500/10 placeholder:text-white/10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <Button
               variant="outline"
               onClick={() => router.push(`/${locale}/dashboard`)}
-              className="h-10 w-10 sm:h-14 sm:w-14 rounded-lg sm:rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm"
+              className="h-10 w-10 rounded-lg border-white/5 bg-white/[0.03] hover:bg-white/5 text-white/30 hover:text-white/60 transition-all shadow-none"
             >
-              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-slate-400" />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             <Button
               onClick={() => router.push(`/${locale}/recipes/create`)}
-              className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg sm:rounded-2xl h-10 sm:h-14 px-4 sm:px-8 font-black uppercase text-[9px] sm:text-[12px] tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-500/20 border-none flex-1 sm:flex-initial"
+              className="bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-lg h-10 px-6 font-bold uppercase text-[10px] tracking-widest transition-all hover:translate-y-[-1px] active:translate-y-[1px] shadow-lg shadow-indigo-600/10 border-none group"
             >
-              <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
               {t('actions.create')}
             </Button>
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] font-bold uppercase tracking-wider text-[11px] sm:text-sm flex items-center gap-4">
-            <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-4 animate-in zoom-in-95">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0" />
             {error}
           </div>
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-[350px] sm:h-[400px] rounded-[2rem] sm:rounded-[2.5rem] bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 animate-pulse" />
+              <div key={i} className="h-80 rounded-[2rem] bg-white/[0.03] border border-white/5 animate-pulse" />
             ))}
           </div>
-        ) : recipes.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] sm:rounded-[3rem] p-10 sm:p-20 flex flex-col items-center text-center space-y-6 sm:space-y-8 shadow-xl shadow-slate-200/50 dark:shadow-none">
-            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-[1.5rem] sm:rounded-[2rem] bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-slate-800">
-              <ChefHat className="h-10 w-10 sm:h-12 sm:w-12 text-slate-400" />
+        ) : filteredRecipes.length === 0 ? (
+          <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-24 flex flex-col items-center text-center space-y-8 backdrop-blur-sm">
+            <div className="h-24 w-24 rounded-[2rem] bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner group">
+              <ChefHat className="h-12 w-12 text-indigo-400 group-hover:scale-110 transition-transform" />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-black italic uppercase tracking-tighter text-slate-900 dark:text-white">No Recipes Found</h2>
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px] sm:text-xs">Start by creating your first tech card</p>
+            <div className="space-y-3">
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">
+                NO ENCRYPTED RECIPES
+              </h2>
+              <p className="text-white/30 font-black uppercase tracking-[0.3em] text-[10px]">
+                THE DATABASE IS EMPTY. INITIATE FIRST PROTOCOL.
+              </p>
             </div>
             <Button
               onClick={() => router.push(`/${locale}/recipes/create`)}
-              variant="outline"
-              className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl sm:rounded-2xl h-10 sm:h-12 px-6 sm:px-8 font-black uppercase text-[10px] tracking-widest"
+              className="bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 rounded-xl h-12 px-8 font-black uppercase text-[10px] tracking-widest transition-all"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Create First Recipe
+              CREATE FIRST DATA_BLOCK
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
-            {recipes.map((recipe) => (
-              <div key={recipe.id} className="relative group">
-                <Card 
-                  key={recipe.id}
-                  className="group border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 overflow-hidden rounded-3xl sm:rounded-[2.5rem] transition-all duration-500 hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/10 flex flex-col"
-                >
-                  {/* Image/Header */}
-                  <div className="relative h-40 sm:h-56 w-full overflow-hidden">
-                    {recipe.imageUrl ? (
-                      <img
-                        src={recipe.imageUrl}
-                        alt={recipe.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <ChefHat className="h-12 w-12 sm:h-16 sm:w-16 text-slate-300 dark:text-slate-700" />
-                      </div>
-                    )}
-                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                      <Badge className="bg-white/95 dark:bg-black/95 backdrop-blur-md px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-indigo-600 dark:text-indigo-400 font-black uppercase text-[7px] sm:text-[10px] tracking-widest border-none shadow-lg">
-                        {t('card.servings', { count: recipe.servings })}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <CardContent className="p-5 sm:p-8 pb-4 flex-1 flex flex-col gap-3 sm:gap-6">
-                    <div>
-                      <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight line-clamp-1 group-hover:text-indigo-600 transition-colors mb-2">
-                        {recipe.name}
-                      </h3>
-                      
-                      <div className="flex items-center gap-2 sm:gap-4">
-                        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg bg-slate-50 dark:bg-slate-800 text-[7px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">
-                          <Clock className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 text-indigo-500" />
-                          {t('card.prepTime', { count: recipe.prepTime })}
-                        </div>
-                        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg bg-slate-50 dark:bg-slate-800 text-[7px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">
-                          <Sparkles className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 text-indigo-500" />
-                          {getDifficultyLabel(recipe.difficulty)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Costing Section */}
-                    <div className="p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/50">
-                      <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                        <div className="space-y-1">
-                          <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.3em] text-slate-400 font-black">{t('card.totalCost')}</p>
-                          <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 italic">
-                            {recipe.totalCost.toFixed(1)} <span className="text-[10px] font-bold not-italic opacity-40">PLN</span>
-                          </p>
-                        </div>
-                        <div className="border-l border-slate-200 dark:border-slate-800 pl-4 sm:pl-6 space-y-1">
-                          <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.3em] text-slate-400 font-black">{t('card.perServing')}</p>
-                          <p className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-500 italic">
-                            {recipe.costPerServing.toFixed(1)} <span className="text-[10px] font-bold not-italic opacity-40">PLN</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Warnings / Availablity */}
-                    <div className="mt-auto">
-                      {recipe.warnings.length > 0 ? (
-                        <div className="space-y-3 sm:space-y-4">
-                          <button
-                            onClick={() => setExpandedWarnings(expandedWarnings === recipe.id ? null : recipe.id)}
-                            className="w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-amber-500/5 text-amber-600 dark:text-amber-500 hover:bg-amber-500/10 transition-all border border-amber-500/10 scale-100 active:scale-[0.98]"
-                          >
-                            <div className="flex items-center gap-2 sm:gap-3">
-                              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
-                              <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-left">
-                                {recipe.warnings.length === 1 
-                                  ? t('status.warnings', { count: recipe.warnings.length }) 
-                                  : t('status.warningsPlural', { count: recipe.warnings.length })}
-                              </span>
-                            </div>
-                            {expandedWarnings === recipe.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </button>
-                          
-                          {expandedWarnings === recipe.id && (
-                            <div className="p-5 rounded-2xl border border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-950/20 space-y-3 animate-in slide-in-from-top-4 duration-300">
-                              <ul className="space-y-2">
-                                {recipe.warnings.map((warning, idx) => (
-                                  <li key={idx} className="text-xs font-bold text-amber-800 dark:text-amber-200 flex items-start gap-3 leading-tight opacity-80">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1 flex-shrink-0" />
-                                    <span>{warning}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/5 text-emerald-500 border border-emerald-500/10">
-                          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">{t('status.fullStock')}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-
-                  <CardFooter className="p-6 sm:p-8 pt-0 gap-2 sm:gap-3">
-                    <Button
-                      variant="outline"
-                      className="flex-1 h-10 sm:h-12 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest border-slate-200 dark:border-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 transition-all group/btn"
-                      onClick={() => router.push(`/${locale}/recipes/${recipe.id}`)}
-                    >
-                      {t('card.edit')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(recipe.id)}
-                      className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDelete(recipe.id);
-                  }}
-                  className="absolute top-6 right-6 p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl border border-red-500/20 opacity-0 group-hover:opacity-100 transition-all z-10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRecipes.map((recipe) => (
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe} 
+                cost={recipe.totalCost} 
+                costPerServing={recipe.costPerServing} 
+              />
             ))}
           </div>
         )}

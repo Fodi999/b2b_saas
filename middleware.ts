@@ -49,24 +49,14 @@ export default function middleware(request: NextRequest) {
     pathWithoutLocale === route || pathWithoutLocale === ''
   );
   
-  console.log('🔐 [MIDDLEWARE]', {
-    pathname,
-    pathWithoutLocale,
-    hasToken: !!accessToken,
-    isProtectedRoute,
-    isPublicRoute,
-  });
-  
-  // 🚫 Protected route without token → redirect to login
+  // Protected route without token → redirect to login
   if (isProtectedRoute && !accessToken) {
-    console.log('❌ [MIDDLEWARE] Unauthorized access, redirecting to login');
     const loginUrl = new URL(`/${pathnameLocale}/login`, request.url);
     return NextResponse.redirect(loginUrl);
   }
   
-  // ✅ Has token but on public route (login/register) → redirect to dashboard
+  // Has token but on public route (login/register) → redirect to dashboard
   if (accessToken && (pathWithoutLocale === '/login' || pathWithoutLocale === '/register')) {
-    console.log('✅ [MIDDLEWARE] Already authenticated, redirecting to dashboard');
     const dashboardUrl = new URL(`/${pathnameLocale}/dashboard`, request.url);
     return NextResponse.redirect(dashboardUrl);
   }

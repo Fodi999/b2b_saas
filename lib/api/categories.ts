@@ -1,39 +1,33 @@
 import { apiFetch } from './client';
+import { CatalogCategorySchema, type CatalogCategoryDTO } from '@/lib/schemas/dto';
 
-export interface CategoryDTO {
-  id: string;
-  name: string;
-  description: string | null;
-  image_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type { CatalogCategoryDTO as CategoryDTO };
 
 /**
- * Получить список всех категорий
+ * Get all catalog categories (safe: always returns array).
  */
-export async function getCategories(accessToken: string): Promise<CategoryDTO[]> {
-  console.log('📂 [CATEGORIES API] Загрузка всех категорий');
-  const response = await apiFetch<{ categories: CategoryDTO[] }>(
-    '/api/admin/categories',
-    {},
-    accessToken
-  );
-  return response?.categories || [];
-}
+export async function getCategories(accessToken: string): Promise<CatalogCategoryDTO[]> {
+  const raw = await apiFetch<unknown>('/api/admin/categories', {}, accessToken);
 
-/**
- * Получить одну категорию по ID
- */
-export async function getCategory(id: string, accessToken: string): Promise<CategoryDTO> {
-  console.log('📂 [CATEGORIES API] Загрузка категории:', id);
-  const response = await apiFetch<CategoryDTO>(
-    `/api/admin/categories/${id}`,
-    {},
-    accessToken
-  );
-  if (!response) {
-    throw new Error(`Category ${id} not found`);
+  // May be { categories: [] } or bare array
+  let arr: unknown[] = [];
+  if (Array.isArray(raw)) {
+    arr = raw;
+  } else if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>;
+    arr = Array.isArray(obj.categories) ? obj.categories as unknown[] : [];
   }
-  return response;
+
+  return arr.map(c => CatalogCategorySchema.parse(c));
+}
+
+/**
+ * Get a single category by ID.
+ */
+export async function getCategory(
+  id: string,
+  accessToken: string
+): Promise<CatalogCategoryDTO> {
+  const raw = await apiFetch<unknown>(`/api/admin/categories/${id}`, {}, accessToken);
+  return CatalogCategorySchema.parse(raw);
 }

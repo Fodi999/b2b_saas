@@ -1,15 +1,18 @@
-import { LightbulbIcon } from 'lucide-react';
+import { LightbulbIcon, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
+import Link from 'next/link';
 
 export function NextAction({
   title,
   description,
+  href,
 }: {
   title: string;
   description: string;
+  href?: string;
 }) {
-  return (
-    <Card className="border-none bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
+  const content = (
+    <Card className="border-none bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group cursor-pointer h-full">
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
         <LightbulbIcon className="h-16 w-16 text-indigo-500" />
       </div>
@@ -21,7 +24,7 @@ export function NextAction({
               <LightbulbIcon className="h-6 w-6" />
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1">
             <h4 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none">
               {title}
             </h4>
@@ -29,8 +32,16 @@ export function NextAction({
               {description}
             </p>
           </div>
+          {href && (
+            <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
+          )}
         </div>
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return <Link href={href} className="block h-full">{content}</Link>;
+  }
+  return content;
 }

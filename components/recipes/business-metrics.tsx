@@ -69,11 +69,11 @@ export function BusinessMetrics({
           <div className="bg-black/40 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border border-white/5 group hover:border-indigo-500/30 transition-all">
             <div className="flex justify-between items-start mb-3 sm:mb-4">
               <div className="p-2 sm:p-3 bg-indigo-500/10 rounded-xl sm:rounded-2xl">
-                <DollarSign className="w-4 h-4 sm:w-5 h-5 text-indigo-400" />
+                <BarChart3 className="w-4 h-4 sm:w-5 h-5 text-indigo-400" />
               </div>
               <div className="text-right">
                 <div className="text-2xl sm:text-3xl font-black text-white italic tracking-tighter">
-                  ${cost?.toFixed(2)}
+                  {cost?.toFixed(2)} <span className="text-[10px] font-bold text-zinc-600 not-italic">PLN</span>
                 </div>
                 <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">
                   {t('cost.perPortion', { count: servings })}

@@ -43,13 +43,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   refreshToken: null,
 
   setSession: ({ accessToken, refreshToken, user, tenant }) => {
-    console.log('💾 [STORE] Сохранение сессии:', {
-      user_id: user.id,
-      user_email: user.email,
-      tenant_id: tenant.id,
-      tenant_name: tenant.name,
-    });
-    
     // Сохраняем токены для восстановления сессии
     localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('access_token', accessToken);
@@ -78,23 +71,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   refreshAccessToken: async () => {
     const state = get();
-    const currentRefreshToken = state.refreshToken;
+    // 🔍 ТЕСТ: Пробуем найти refresh token в стейте, если нет - в localStorage (для этапа инициализации)
+    const canUseLocalStorage = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+    const currentRefreshToken = state.refreshToken || (canUseLocalStorage ? localStorage.getItem('refresh_token') : null);
     
     if (!currentRefreshToken) {
-      console.error('[STORE] Нет refresh token для обновления');
       return false;
     }
 
     try {
-      console.log('[STORE] Обновление access token...');
       const response = await refreshTokenAPI(currentRefreshToken);
       
-      console.log('[STORE] Access token обновлён');
       set({ accessToken: response.access_token });
+      
+      // ✅ Сохраняем новый токен в localStorage для восстановления сессии
+      if (canUseLocalStorage) {
+        localStorage.setItem('access_token', response.access_token);
+      }
+      
+      // ✅ Обновляем cookie для middleware
+      if (typeof document !== 'undefined') {
+        document.cookie = `access_token=${response.access_token}; path=/; max-age=3600; SameSite=Lax`;
+      }
+      
       return true;
     } catch (error) {
-      console.error('[STORE] Не удалось обновить access token:', error);
-      
       // Если обновление не удалось - разлогиниваем
       get().logout();
       return false;
@@ -102,10 +103,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    console.log('🚪 [STORE] Выход из системы, очистка localStorage, cookies и state');
-    
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('access_token');
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('access_token');
+    }
     
     // Очищаем cookie
     if (typeof document !== 'undefined') {

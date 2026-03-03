@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Folder, UtensilsCrossed } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Folder, UtensilsCrossed, Sparkles, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { searchCatalogIngredients, type CatalogIngredientDTO } from '@/lib/api/inventory';
 import { useAuthStore } from '@/lib/stores/auth-store';
@@ -10,7 +10,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -25,25 +24,31 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<CatalogIngredientDTO[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  const handleSearch = async (value: string) => {
-    setQuery(value);
-    if (value.length >= 2) {
-      try {
-        const searchResults = await searchCatalogIngredients(value, accessToken || undefined);
-        setResults(searchResults);
-        setIsOpen(true);
-      } catch (error) {
-        console.error('❌ Ошибка поиска в каталоге:', error);
-        setResults([]);
-      }
-    } else {
+  useEffect(() => {
+    if (query.length < 2) {
       setResults([]);
       setIsOpen(false);
+      return;
     }
-  };
+
+    const timer = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const searchResults = await searchCatalogIngredients(query, accessToken || undefined);
+        setResults(searchResults);
+        setIsOpen(true);
+      } catch (error) {        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 400); // 400ms debounce
+
+    return () => clearTimeout(timer);
+  }, [query, accessToken]);
 
   const handleSelect = (product: CatalogIngredientDTO) => {
     onSelect(product);
@@ -54,14 +59,18 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
 
   return (
     <div className="w-full">
-      <Popover open={isOpen && results.length > 0} onOpenChange={setIsOpen}>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+            {isLoading ? (
+              <Loader2 className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo-500 animate-spin z-10" />
+            ) : (
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 z-10" />
+            )}
             <input
               type="text"
               value={query}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder={t('placeholder')}
               className="flex h-14 w-full rounded-[1.25rem] border-none bg-slate-50 dark:bg-slate-800 pl-12 pr-4 py-2 text-sm ring-offset-background placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all font-bold"
             />
@@ -72,9 +81,21 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <Command>
-            <CommandList>
-              <CommandEmpty className="p-4 text-center text-slate-400 font-bold">{t('notFound')}</CommandEmpty>
+          <Command className="border-none" shouldFilter={false}>
+            <CommandList className="max-h-[300px]">
+              {results.length === 0 && !isLoading && (
+                <CommandEmpty className="p-8 text-center space-y-4">
+                  <div className="flex flex-col items-center gap-2">
+                    <Sparkles className="h-8 w-8 text-indigo-500 animate-pulse" />
+                    <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                      {t('results.notFoundTitle')}
+                    </p>
+                    <p className="text-xs text-slate-500 font-medium">
+                      {t('results.notFoundDesc')}
+                    </p>
+                  </div>
+                </CommandEmpty>
+              )}
               <CommandGroup>
                 {results.map((product) => {
                   const unitLabel =
@@ -82,6 +103,7 @@ export default function ProductSearch({ onSelect }: ProductSearchProps) {
                   return (
                     <CommandItem
                       key={product.id}
+                      value={product.name}
                       onSelect={() => handleSelect(product)}
                       className="flex items-center gap-4 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                     >

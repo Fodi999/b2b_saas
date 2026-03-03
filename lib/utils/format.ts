@@ -12,6 +12,11 @@ export function formatDate(date: Date | string): string {
   return d.toLocaleDateString('ru-RU');
 }
 
-export function formatPrice(price: number, currency = 'PLN'): string {
-  return `${price.toFixed(2)} ${currency}`;
+export function formatPrice(price: number, locale = 'ru-RU', currency = 'PLN'): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    useGrouping: true,
+  }).format(price) + ` ${currency}`;
 }

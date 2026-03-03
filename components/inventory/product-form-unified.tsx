@@ -74,7 +74,7 @@ export default function ProductFormUnified({ onSuccess }: { onSuccess?: (product
 
       const totalTime = Date.now() - startTimeRef.current;
       setDuration(totalTime);
-      setResult(data);
+      setResult(data as unknown as ProductResult);
       if (onSuccess) onSuccess(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during AI processing');

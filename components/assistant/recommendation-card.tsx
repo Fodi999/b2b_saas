@@ -1,7 +1,8 @@
 import { Zap, ArrowRight, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from 'next/link';
 
 export function RecommendationCard({
   priority,
@@ -9,12 +10,14 @@ export function RecommendationCard({
   description,
   action,
   expectedImpact,
+  href,
 }: {
   priority: number;
   title: string;
   description: string;
   action: string;
   expectedImpact: string;
+  href?: string;
 }) {
   return (
     <Card className="border-none bg-slate-900 text-white rounded-[2.5rem] shadow-2xl shadow-indigo-500/20 overflow-hidden relative">
@@ -51,9 +54,18 @@ export function RecommendationCard({
             </div>
           </div>
           
-          <Button className="h-16 px-10 bg-white text-slate-900 hover:bg-slate-200 rounded-[1.5rem] gap-3 font-black uppercase text-[12px] tracking-widest shadow-xl transition-all active:scale-95 group">
-            {action}
-            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+          <Button className="h-16 px-10 bg-white text-slate-900 hover:bg-slate-200 rounded-[1.5rem] gap-3 font-black uppercase text-[12px] tracking-widest shadow-xl transition-all active:scale-95 group" asChild={!!href}>
+            {href ? (
+              <Link href={href}>
+                {action}
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            ) : (
+              <>
+                {action}
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
           </Button>
         </div>
       </CardContent>

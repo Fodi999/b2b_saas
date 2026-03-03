@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button'
 import { 
   Card, 
   CardHeader, 
-  CardTitle, 
-  CardDescription, 
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,10 +16,10 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Sparkles, TrendingUp, ChevronDown, ChevronUp, X, ArrowLeft, Target, Utensils, LayoutGrid, Star, CircleDollarSign, HelpCircle, Skull, AlertTriangle, Coins } from 'lucide-react'
+import { Sparkles, AlertTriangle, X, ArrowLeft, Target, Utensils, LayoutGrid, Star, CircleDollarSign, HelpCircle, Skull, Loader2 } from 'lucide-react'
 
 type MenuCategory = 'star' | 'cash-cow' | 'question' | 'dog'
-type FilterType = 'all' | 'problems' | 'high-margin' | 'expiring' | 'low-price'
+type FilterType = 'all' | 'problems' | 'high-margin'
 
 interface MenuDish {
   dishId: string
@@ -39,8 +37,8 @@ interface MenuDish {
 // Calculate category based on food cost %
 function calculateCategory(foodCost: number): MenuCategory {
   if (foodCost < 30) return 'star'
-  if (foodCost >= 30 && foodCost < 40) return 'cash-cow'
-  if (foodCost >= 40 && foodCost < 55) return 'question'
+  if (foodCost < 40) return 'cash-cow'
+  if (foodCost < 55) return 'question'
   return 'dog'
 }
 
@@ -69,8 +67,8 @@ const categoryConfig = {
 }
 
 export default function MenuEngineeringPage() {
-  const { user } = useAuthStore()
-  const { dishes } = useDishesStore()
+  const { user, accessToken } = useAuthStore()
+  const { dishes, fetchDishes, loading } = useDishesStore()
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as string
@@ -82,27 +80,38 @@ export default function MenuEngineeringPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/login')
+      router.push(`/${locale}/login`)
     }
-  }, [user, router])
+  }, [user, router, locale])
 
-  // Transform dishes to menu dishes
+  // Load dishes from backend on mount
+  useEffect(() => {
+    if (accessToken) {
+      fetchDishes(accessToken)
+    }
+  }, [accessToken, fetchDishes])
+
+  // Transform dishes to menu dishes using DishDTO fields (cents → PLN)
   const menuDishes: MenuDish[] = useMemo(() => {
     return dishes.map(dish => {
-      const foodCost = (dish.totalCost / dish.salePrice) * 100
+      const costPln = (dish.recipe_cost_cents ?? 0) / 100
+      const pricePln = dish.selling_price_cents / 100
+      const margin = pricePln - costPln
+      const marginPercent = pricePln > 0 ? (margin / pricePln) * 100 : 0
+      const foodCost = dish.food_cost_percent ?? (pricePln > 0 ? (costPln / pricePln) * 100 : 0)
       const category = calculateCategory(foodCost)
       
       return {
         dishId: dish.id,
         dishName: dish.name,
-        cost: dish.totalCost,
-        price: dish.salePrice,
-        margin: dish.margin,
-        marginPercent: dish.marginPercent,
-        foodCost: dish.foodCostPercent,
-        category: category,
-        warnings: dish.warnings || [],
-        imageUrl: dish.imageUrl,
+        cost: costPln,
+        price: pricePln,
+        margin,
+        marginPercent,
+        foodCost,
+        category,
+        warnings: [],
+        imageUrl: dish.image_url ?? undefined,
       }
     })
   }, [dishes])
@@ -114,21 +123,39 @@ export default function MenuEngineeringPage() {
         totalMarginPercent: 0,
         avgFoodCost: 0,
         problemDishes: 0,
-        potentialGrowth: 0,
+        recommendedMarkupPct: 15,
+        recommendedReductionPct: 20,
         monthlyPotential: 0,
       }
     }
 
-    const totalMargin = menuDishes.reduce((sum, d) => sum + d.marginPercent, 0)
+    const avgMargin = menuDishes.reduce((sum, d) => sum + d.marginPercent, 0) / menuDishes.length
     const avgFoodCost = menuDishes.reduce((sum, d) => sum + d.foodCost, 0) / menuDishes.length
-    const problemDishes = menuDishes.filter(d => d.category === 'dog' || d.category === 'question').length
+    const problemDishes = menuDishes.filter(d => d.category === 'dog' || d.category === 'question')
+    const problemCount = problemDishes.length
+
+    // Recommended markup: how much to raise price so food cost hits 30%
+    // target_price = cost / 0.30  => markup % = (target_price - current_price) / current_price * 100
+    const avgProblemMarkup = problemDishes.length > 0
+      ? problemDishes.reduce((sum, d) => {
+          const targetPrice = d.cost / 0.30
+          return sum + Math.max(0, ((targetPrice - d.price) / d.price) * 100)
+        }, 0) / problemDishes.length
+      : 15
+
+    // Potential monthly revenue gain if problem dishes reach 30% food cost
+    const monthlyPotential = problemDishes.reduce((sum, d) => {
+      const targetMargin = d.price * 0.70
+      return sum + Math.max(0, targetMargin - d.margin)
+    }, 0)
 
     return {
-      totalMarginPercent: totalMargin / menuDishes.length,
-      avgFoodCost: avgFoodCost,
-      problemDishes: problemDishes,
-      potentialGrowth: problemDishes > 0 ? 18 : 0,
-      monthlyPotential: problemDishes > 0 ? 420 : 0,
+      totalMarginPercent: avgMargin,
+      avgFoodCost,
+      problemDishes: problemCount,
+      recommendedMarkupPct: Math.round(avgProblemMarkup) || 15,
+      recommendedReductionPct: 20,
+      monthlyPotential: Math.round(monthlyPotential),
     }
   }, [menuDishes])
 
@@ -139,18 +166,42 @@ export default function MenuEngineeringPage() {
         return menuDishes.filter(d => d.category === 'dog' || d.category === 'question')
       case 'high-margin':
         return menuDishes.filter(d => d.marginPercent >= 70)
-      case 'expiring':
-        return menuDishes.filter(d => d.warnings.length > 0)
-      case 'low-price':
-        return menuDishes.filter(d => d.price < 25)
       default:
         return menuDishes
     }
   }, [menuDishes, filter])
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
+
+  const RecommendationsPanel = () => (
+    <div className="space-y-4">
+      <h2 className="text-xl font-black text-slate-900 dark:text-white mb-4">{t('recommendations.title')}</h2>
+      <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-700">
+        <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-2">
+          {t('recommendations.priceIncrease')}
+        </p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">
+          {t('recommendations.markup')}: <span className="font-bold text-slate-900 dark:text-slate-200">{analytics.recommendedMarkupPct}%</span>
+        </p>
+      </div>
+      <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-700">
+        <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">
+          {t('recommendations.optimizeDishes')}
+        </p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">
+          {t('recommendations.ingredientSubstitution')}
+        </p>
+      </div>
+      <div className="p-4 bg-red-500/10 rounded-xl border border-red-100 dark:border-red-700">
+        <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-2">
+          {t('recommendations.reducePortions')}
+        </p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">
+          {t('recommendations.recommendedReduction')}: <span className="font-bold text-slate-900 dark:text-slate-200">{analytics.recommendedReductionPct}%</span>
+        </p>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
@@ -160,11 +211,11 @@ export default function MenuEngineeringPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8">
             <div className="flex items-center gap-4 sm:gap-6">
-              <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30 group">
-                <Target className="h-6 w-6 sm:h-8 sm:w-8 group-hover:scale-110 transition-transform" />
+              <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl sm:rounded-[1.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-500/30">
+                <Target className="h-6 w-6 sm:h-8 sm:w-8" />
               </div>
               <div className="space-y-1">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
+                <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
                    <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                       {t('header.title')} <span className="text-indigo-600">{t('header.core')}</span>
                    </h1>
@@ -199,179 +250,207 @@ export default function MenuEngineeringPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-             {/* Main Dashboard section of Engineering page */}
+             {/* Main content */}
              <div className="lg:col-span-3 space-y-8">
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                 <Card className="border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                    <CardContent className="p-6">
+               {/* KPI cards */}
+               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                 <Card className="col-span-1 border-none shadow-xl bg-white dark:bg-slate-900">
+                    <CardContent className="p-5 sm:p-6">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('kpi.margin')}</p>
-                      <div className="text-3xl font-black text-indigo-600">{analytics.totalMarginPercent.toFixed(1)}%</div>
+                      <div className="text-2xl sm:text-3xl font-black text-indigo-600">{analytics.totalMarginPercent.toFixed(1)}%</div>
                       <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
-                         <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${analytics.totalMarginPercent}%` }} />
+                         <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${Math.min(analytics.totalMarginPercent, 100)}%` }} />
                       </div>
                     </CardContent>
                  </Card>
-                 <Card className="border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                    <CardContent className="p-6">
+                 <Card className="col-span-1 border-none shadow-xl bg-white dark:bg-slate-900">
+                    <CardContent className="p-5 sm:p-6">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('kpi.avgFoodCost')}</p>
-                      <div className={`text-3xl font-black ${analytics.avgFoodCost > 35 ? 'text-red-500' : 'text-emerald-500'}`}>{analytics.avgFoodCost.toFixed(1)}%</div>
+                      <div className={`text-2xl sm:text-3xl font-black ${analytics.avgFoodCost > 35 ? 'text-red-500' : 'text-emerald-500'}`}>{analytics.avgFoodCost.toFixed(1)}%</div>
                     </CardContent>
                  </Card>
-                 <Card className="border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                    <CardContent className="p-6">
+                 <Card className="col-span-1 border-none shadow-xl bg-white dark:bg-slate-900">
+                    <CardContent className="p-5 sm:p-6">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{t('kpi.problemDishes')}</p>
-                      <div className="text-3xl font-black text-amber-500">{analytics.problemDishes}</div>
+                      <div className="text-2xl sm:text-3xl font-black text-amber-500">{analytics.problemDishes}</div>
                     </CardContent>
                  </Card>
-                 <Card className="border-none shadow-xl shadow-indigo-500/10 bg-indigo-600 text-white">
-                    <CardContent className="p-6">
+                 <Card className="col-span-1 border-none shadow-xl shadow-indigo-500/10 bg-indigo-600 text-white">
+                    <CardContent className="p-5 sm:p-6">
                       <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">{t('kpi.potential')}</p>
-                      <div className="text-3xl font-black text-white">+{analytics.monthlyPotential} PLN</div>
+                      <div className="text-2xl sm:text-3xl font-black text-white">+{analytics.monthlyPotential} PLN</div>
                     </CardContent>
                  </Card>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-6 mb-8 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                 <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                    {(['all', 'problems', 'high-margin'] as FilterType[]).map((f) => (
-                      <Button key={f} variant={filter === f ? 'default' : 'ghost'} size="sm" className="h-8 text-[11px] font-black uppercase rounded-lg px-4 transition-all" onClick={() => setFilter(f)}>
-                        {f === 'all' ? t('filters.all') : f === 'problems' ? (
-                          <span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> {t('filters.problems')}</span>
-                        ) : (
-                          <span className="flex items-center gap-1.5"><CircleDollarSign className="h-3 w-3" /> {t('filters.highMargin')}</span>
-                        )}
-                      </Button>
-                    ))}
-                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {menuDishes.map((dish) => (
-                    <Card key={dish.dishId} className="group overflow-hidden border-none shadow-xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:scale-[1.02] transition-all cursor-pointer" onClick={() => setSelectedDish(dish)}>
-                      <CardHeader className="p-0 relative h-40 overflow-hidden">
-                        {dish.imageUrl ? (
-                          <img src={dish.imageUrl} alt={dish.dishName} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-                            <Utensils className="h-12 w-12 text-slate-300 dark:text-slate-700" />
-                          </div>
-                        )}
-                        <div className="absolute top-3 left-3">
-                          <Badge className={categoryConfig[dish.category].color}>
-                            {(() => {
-                              const Icon = categoryConfig[dish.category].icon;
-                              return <Icon className="h-3 w-3 mr-1.5" />;
-                            })()}
-                            {categoryConfig[dish.category].label}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-5">
-                         <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 line-clamp-1">{dish.dishName}</h3>
-                         <div className="grid grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
-                           <div>
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.price')}</p>
-                              <p className="text-xl font-bold">{dish.price.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">PLN</span></p>
-                           </div>
-                           <div>
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.foodCost')}</p>
-                              <p className={`text-xl font-bold ${dish.foodCost > 35 ? 'text-red-500' : 'text-emerald-500'}`}>{dish.foodCost.toFixed(1)}%</p>
-                           </div>
-                         </div>
-                         <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.margin')}</p>
-                            <p className="text-lg font-black text-slate-900 dark:text-white">+{dish.margin.toFixed(1)} PLN</p>
-                         </div>
-                      </CardContent>
-                    </Card>
+              {/* Filters */}
+              <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm w-fit">
+                 {(['all', 'problems', 'high-margin'] as FilterType[]).map((f) => (
+                   <Button key={f} variant={filter === f ? 'default' : 'ghost'} size="sm" className="h-8 text-[11px] font-black uppercase rounded-lg px-4 transition-all" onClick={() => setFilter(f)}>
+                     {f === 'all' ? t('filters.all') : f === 'problems' ? (
+                       <span className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" /> {t('filters.problems')}</span>
+                     ) : (
+                       <span className="flex items-center gap-1.5"><CircleDollarSign className="h-3 w-3" /> {t('filters.highMargin')}</span>
+                     )}
+                   </Button>
                  ))}
               </div>
+
+              {/* Dish cards */}
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4 text-slate-400">
+                  <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
+                  <p className="text-sm font-black uppercase tracking-widest">{t('loading')}</p>
+                </div>
+              ) : filteredDishes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4 text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <Utensils className="h-12 w-12 text-slate-300" />
+                  <p className="text-sm font-black uppercase tracking-widest text-center px-8">{t('empty')}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredDishes.map((dish) => {
+                    const Icon = categoryConfig[dish.category].icon
+                    return (
+                      <Card key={dish.dishId} className="group overflow-hidden border-none shadow-xl bg-white dark:bg-slate-900 hover:scale-[1.02] transition-all cursor-pointer" onClick={() => setSelectedDish(dish)}>
+                        <CardHeader className="p-0 relative h-40 overflow-hidden">
+                          {dish.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={dish.imageUrl} alt={dish.dishName} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                              <Utensils className="h-12 w-12 text-slate-300 dark:text-slate-700" />
+                            </div>
+                          )}
+                          <div className="absolute top-3 left-3">
+                            <Badge className={categoryConfig[dish.category].color}>
+                              <Icon className="h-3 w-3 mr-1.5" />
+                              {categoryConfig[dish.category].label}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-5">
+                           <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 line-clamp-1">{dish.dishName}</h3>
+                           <div className="grid grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                             <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.price')}</p>
+                                <p className="text-xl font-bold">{dish.price.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">PLN</span></p>
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.foodCost')}</p>
+                                <p className={`text-xl font-bold ${dish.foodCost > 35 ? 'text-red-500' : 'text-emerald-500'}`}>{dish.foodCost.toFixed(1)}%</p>
+                             </div>
+                           </div>
+                           <div className="flex items-center justify-between">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t('card.margin')}</p>
+                              <p className={`text-lg font-black ${dish.margin >= 0 ? 'text-slate-900 dark:text-white' : 'text-red-500'}`}>
+                                {dish.margin >= 0 ? '+' : ''}{dish.margin.toFixed(1)} PLN
+                              </p>
+                           </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
-            {/* Recommendations & Insights section */}
-            <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-6">
-               <h2 className="text-xl font-black text-slate-900 dark:text-white mb-4">{t('recommendations.title')}</h2>
-               <div className="space-y-4">
-                 <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-700">
-                   <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-2">
-                     {t('recommendations.priceIncrease')}
-                   </p>
-                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                     {t('recommendations.markup')}: <span className="font-bold text-slate-900 dark:text-slate-200">15%</span>
-                   </p>
-                 </div>
-                 <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-700">
-                   <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">
-                     {t('recommendations.optimizeDishes')}
-                   </p>
-                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                     {t('recommendations.ingredientSubstitution')}
-                   </p>
-                 </div>
-                 <div className="p-4 bg-red-500/10 rounded-xl border border-red-100 dark:border-red-700">
-                   <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-2">
-                     {t('recommendations.reducePortions')}
-                   </p>
-                   <p className="text-slate-500 dark:text-slate-400 text-sm">
-                     {t('recommendations.recommendedReduction')}: <span className="font-bold text-slate-900 dark:text-slate-200">20%</span>
-                   </p>
-                 </div>
-               </div>
+            {/* Recommendations sidebar — desktop only */}
+            <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-6 h-fit">
+               <RecommendationsPanel />
             </div>
           </div>
         </div>
       </div>
 
+      {/* AI Strategy modal (mobile + desktop) */}
+      <Dialog open={showRecommendations} onOpenChange={setShowRecommendations}>
+        <DialogContent className="sm:max-w-md p-6 rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <p className="text-lg font-black text-slate-900 dark:text-white">{t('actions.strategy')}</p>
+            </div>
+            <button onClick={() => setShowRecommendations(false)} className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <X className="h-4 w-4 text-slate-400" />
+            </button>
+          </div>
+          <RecommendationsPanel />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dish detail modal */}
       <Dialog open={!!selectedDish} onOpenChange={(open) => !open && setSelectedDish(null)}>
         <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-slate-900">
-          {selectedDish && (
-            <div className="flex flex-col">
-              <div className="h-48 bg-slate-900 relative">
-                 {selectedDish.imageUrl ? (
-                   <img src={selectedDish.imageUrl} className="w-full h-full object-cover opacity-50" />
-                 ) : (
-                   <div className="w-full h-full flex items-center justify-center opacity-20"><LayoutGrid className="h-24 w-24 text-white" /></div>
-                 )}
-                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
-                 <div className="absolute bottom-6 left-6 right-6">
-                    <Badge className={categoryConfig[selectedDish.category].color + ' mb-2'}>
-                       {(() => {
-                          const Icon = categoryConfig[selectedDish.category].icon;
-                          return <Icon className="h-3 w-3 mr-1.5" />;
-                       })()}
-                       {categoryConfig[selectedDish.category].label}
-                    </Badge>
-                    <h2 className="text-2xl font-black text-white">{selectedDish.dishName}</h2>
-                 </div>
-              </div>
-              <div className="p-8 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Стратегия AI</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold">
-                      {selectedDish.category === 'star' ? 'Лидер меню. Сохраняйте рецептуру.' : 
-                       selectedDish.category === 'dog' ? 'Критически низкая маржа. Рекомендуется поднять цену.' :
-                       'Провести ротацию ингредиентов.'}
-                    </p>
+          {selectedDish && (() => {
+            const Icon = categoryConfig[selectedDish.category].icon
+            const strategyText = selectedDish.category === 'star'
+              ? t('dish.strategyLeader')
+              : selectedDish.category === 'dog'
+              ? t('dish.strategyCritical')
+              : t('dish.strategyOptimize')
+            return (
+              <div className="flex flex-col">
+                <div className="h-48 bg-slate-900 relative">
+                   {selectedDish.imageUrl ? (
+                     // eslint-disable-next-line @next/next/no-img-element
+                     <img src={selectedDish.imageUrl} alt={selectedDish.dishName} className="w-full h-full object-cover opacity-50" />
+                   ) : (
+                     <div className="w-full h-full flex items-center justify-center opacity-20"><LayoutGrid className="h-24 w-24 text-white" /></div>
+                   )}
+                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
+                   <div className="absolute bottom-6 left-6 right-6">
+                      <Badge className={categoryConfig[selectedDish.category].color + ' mb-2'}>
+                         <Icon className="h-3 w-3 mr-1.5" />
+                         {categoryConfig[selectedDish.category].label}
+                      </Badge>
+                      <h2 className="text-2xl font-black text-white">{selectedDish.dishName}</h2>
+                   </div>
+                </div>
+                <div className="p-8 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('dish.aiStrategy')}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-bold">{strategyText}</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-sm font-bold">
+                         <span className="text-slate-400">{t('dish.marginality')}</span>
+                         <span className={selectedDish.marginPercent >= 30 ? 'text-emerald-500' : 'text-amber-500'}>{selectedDish.marginPercent.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm font-bold">
+                         <span className="text-slate-400">Food Cost</span>
+                         <span className={selectedDish.foodCost > 35 ? 'text-red-500' : 'text-emerald-500'}>{selectedDish.foodCost.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm font-bold">
+                         <span className="text-slate-400">{t('dish.costPrice')}</span>
+                         <span>{selectedDish.cost.toFixed(2)} PLN</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm font-bold">
+                         <span className="text-slate-400">{t('card.margin')}</span>
+                         <span className={selectedDish.margin >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}>
+                           {selectedDish.margin >= 0 ? '+' : ''}{selectedDish.margin.toFixed(2)} PLN
+                         </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center text-sm font-bold">
-                       <span className="text-slate-400">Маржинальность</span>
-                       <span className="text-emerald-500">{selectedDish.marginPercent.toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm font-bold">
-                       <span className="text-slate-400">Себестоимость</span>
-                       <span>{selectedDish.cost.toFixed(1)} PLN</span>
-                    </div>
+                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex gap-3">
+                    <Button
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold h-12"
+                      onClick={() => router.push(`/${locale}/dishes`)}
+                    >
+                      {t('dish.edit')}
+                    </Button>
+                    <Button variant="outline" className="flex-1 rounded-xl font-bold h-12" onClick={() => setSelectedDish(null)}>
+                      {t('dish.close')}
+                    </Button>
                   </div>
                 </div>
-                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-                  <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold h-12">Редактировать</Button>
-                  <Button variant="outline" className="flex-1 rounded-xl font-bold h-12" onClick={() => setSelectedDish(null)}>Закрыть</Button>
-                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
         </DialogContent>
       </Dialog>
     </div>

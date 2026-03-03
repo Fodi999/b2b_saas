@@ -23,7 +23,8 @@
       "forgot": "Zapomniałeś hasła?",
       "submit": "Zaloguj się",
       "noAccount": "Nie masz konta?",
-      "signUp": "Zarejestruj się"
+      "signUp": "Zarejestruj się",
+      "coreVersion": "Neural Core v2.4"
     },
     "register": {
       "title": "Utwórz konto",
@@ -179,6 +180,9 @@
       "title": "Asystent AI",
       "description": "AI przeanalizował Twoje dane i znalazł, gdzie tracisz pieniądze"
     },
+    "refresh": "Odśwież",
+    "loading": "Analizuję dane Twojej restauracji...",
+    "errorTitle": "Błąd ładowania danych",
     "step1": {
       "title": "Krok 1: Wykryte problemy",
       "description": "AI przeanalizował dane i wykrył następujące problemy"
@@ -191,37 +195,51 @@
       "title": "Krok 3: Co dalej",
       "description": "Następne kroki do optymalizacji"
     },
+    "allClear": {
+      "title": "Nie wykryto problemów",
+      "description": "Twoja restauracja działa efektywnie. Wszystkie dania są rentowne, magazyn jest w normie, menu jest zrównoważone."
+    },
     "issues": {
       "margin": {
         "title": "Wykryto ujemną marżę",
         "description": "Danie \"Carbonara\" sprzedaje się z marżą −8%. Koszt własny jest wyższy od ceny sprzedaży.",
-        "metric": "−8% marża"
+        "descriptionReal": "Danie \"{name}\" ma marżę {margin}. Koszt własny przekracza cenę sprzedaży.",
+        "metric": "−8% marża",
+        "metricSuffix": "marża"
       },
       "expiry": {
         "title": "Składniki wkrótce przeterminują się",
         "description": "3 składniki (śmietana, bekon, parmezan) przeterminują się za 48 godzin.",
-        "metric": "3 produkty"
+        "descriptionReal": "{count} {count, plural, one {składnik} few {składniki} many {składników} other {składnika}} wkrótce wygaśnie: {names}.",
+        "metric": "3 produkty",
+        "metricReal": "{count} {count, plural, one {produkt} few {produkty} many {produktów} other {produktu}"
       },
       "menu": {
         "title": "Słabe pozycje w menu",
         "description": "2 dania w kategorii \"Niski zysk / Wysokie sprzedaże\" według macierzy BCG.",
-        "metric": "2 dania"
+        "descriptionReal": "{count} {count, plural, one {danie} few {dania} many {dań} other {dania}} w słabych kategoriach BCG (Dogs/Plowhorses).",
+        "metric": "2 dania",
+        "metricReal": "{count} {count, plural, one {danie} few {dania} many {dań} other {dania}"
       }
     },
     "recommendation": {
       "title": "Podnieś cenę Carbonary lub tymczasowo usuń z menu",
+      "titleReal": "Podnieś cenę {name} lub zrewiduj przepis",
       "description": "Danie jest popularne (12 zamówień/dzień), ale nierentowne. Zalecamy podniesienie ceny o 15% lub zamianę przepisu na tańszy.",
-      "action": "Przejdź do edycji dania",
+      "descriptionReal": "Danie \"{name}\" ma marżę {margin}. Zalecamy podniesienie ceny o 15% lub rewizję przepisu w celu obniżenia kosztów.",
+      "action": "Przejdź do dań",
       "expectedImpact": "+2400 PLN/miesiąc"
     },
     "nextActions": {
       "checkDishes": {
-        "title": "Sprawdź pozostałe dania",
-        "description": "Uruchom pełną analizę menu, aby znaleźć ukryte problemy z marżą."
+        "title": "Analiza menu",
+        "description": "Uruchom pełną analizę menu, aby znaleźć ukryte problemy z marżą.",
+        "descriptionReal": "Menu Engineering pokazuje potencjał wzrostu przychodów o {potential}. Otwórz macierz BCG."
       },
       "useExpiring": {
         "title": "Wykorzystaj przeterminowujące się produkty",
-        "description": "Zobacz proponowane przepisy dla śmietany, bekonu i parmezanu."
+        "description": "Zobacz proponowane przepisy dla przeterminowujących się składników.",
+        "descriptionReal": "Pilnie użyj: {names}. Otwórz magazyn, aby zarządzać zapasami."
       }
     },
     "demo": {
@@ -261,7 +279,13 @@
         "period": "Ostatnie 30 dni",
         "cleanup": "Wyczyść przeterminowane",
         "cleanupSuccess": "Wycofano {count} przeterminowanych partii",
-        "cleanButton": "Uruchom czyszczenie FIFO"
+        "cleanButton": "Uruchom czyszczenie FIFO",
+        "lossTable": {
+          "title": "Dziennik strat",
+          "ingredient": "Produkt",
+          "quantity": "Ilość",
+          "value": "Kwota"
+        }
       }
     },
     "actions": {
@@ -270,9 +294,10 @@
       "create": "Stwórz Produkt"
     },
     "status": {
-      "inStock": "W normie",
-      "low": "Mało",
-      "expiring": "Wygasa",
+      "safe": "Dobrze",
+      "low": "Niski stan",
+      "warning": "Ostrzeżenie",
+      "critical": "Krytyczne",
       "expired": "Przeterminowany"
     },
     "empty": {
@@ -316,6 +341,10 @@
     "search": {
       "placeholder": "Zacznij wpisywać nazwę produktu...",
       "notFound": "Nic nie znaleziono.",
+      "results": {
+        "notFoundTitle": "Brak wyników",
+        "notFoundDesc": "Spróbuj innej nazwy lub skorzystaj z AI Smart Add w menu powyżej"
+      },
       "units": {
         "kg": "kg",
         "l": "l",
@@ -351,9 +380,13 @@
       "hard": "Trudne"
     },
     "status": {
-      "fullStock": "Wszystkie składniki dostępne",
+      "fullStock": "Wszystkie składniki w magazynie",
       "warnings": "{count} ostrzeżenie",
-      "warningsPlural": "{count} ostrzeżenia"
+      "warningsPlural": "{count} ostrzeżenia",
+      "draft": "Szkic",
+      "ai_review": "Weryfikacja AI",
+      "approved": "Zatwierdzony",
+      "production": "Gotowy"
     },
     "card": {
       "servings": "{count} porcji",
@@ -409,10 +442,10 @@
     },
     "create": {
       "steps": {
-        "step1": "KROK 01 / EDYCJA",
-        "step2": "KROK 02 / PODGLĄD",
-        "step3": "KROK 03 / ANALIZA",
-        "step4": "KROK 04 / WNIOSKI"
+        "step1": "Szkic",
+        "step2": "Analiza AI",
+        "step3": "Zatwierdzono",
+        "step4": "W produkcji"
       },
       "actions": {
         "back": "Wróć",
@@ -533,7 +566,8 @@
       "subtitle": "Głęboka analityka i prognozowanie zysków"
     },
     "actions": {
-      "export": "Eksportuj dane"
+      "export": "Eksportuj dane",
+      "refresh": "Odśwież"
     },
     "periods": {
       "today": "Dzisiaj",
@@ -547,9 +581,12 @@
       "inventory": "Magazyn",
       "ai": "Analiza AI"
     },
+    "loading": "Ładowanie...",
     "aiSummary": {
       "badge": "Podsumowanie AI",
       "title": "Menu zoptymalizowane w {percent}%",
+      "titleDefault": "Analizujemy wydajność menu...",
+      "loading": "Ładujemy analitykę...",
       "profit": "Zysk",
       "losses": "Straty",
       "growth": "Wzrost"
@@ -563,6 +600,7 @@
     "profitAnalysis": {
       "title": "Analiza rentowności dań",
       "subtitle": "Sprzedaż i marża w okresie",
+      "empty": "Brak dań spełniających filtr",
       "filters": {
         "all": "Wszystkie",
         "star": "Star",
@@ -571,17 +609,35 @@
       },
       "card": {
         "margin": "Marża",
-        "fc": "FC"
+        "fc": "FC",
+        "price": "Cena"
       }
     },
     "inventoryRisks": {
       "title": "RYZYKA MAGAZYNOWE",
-      "expiring": "Wygasają w 7 dni"
+      "expiring": "Wygasają w 7 dni",
+      "items": "pozycji",
+      "allGood": "Magazyn w porządku",
+      "manage": "Zarządzaj magazynem"
+    },
+    "wasteKpi": {
+      "title": "STRATY I ODPISY",
+      "totalLoss": "Łączne straty",
+      "wastePct": "Waste %"
     },
     "aiPlan": {
       "title": "Plan działań AI",
       "apply": "Zastosuj",
-      "effect": "Efekt"
+      "effect": "Efekt",
+      "allOptimal": "Wszystko optymalne!",
+      "raisePriceFor": "Podnieś cenę: {name}",
+      "optimizeWaste": "Zredukuj waste (obecny: {pct}%)",
+      "save": "Oszczędź {amount} PLN",
+      "reviewDogs": "Przejrzyj {count} nierentownych dań",
+      "menuImpact": "Popraw efektywność menu",
+      "useExpiring": "Użyj {name} w przepisach",
+      "preventLoss": "Zapobiegnij odpisowi",
+      "perMonth": "mies"
     }
   },
   "menuEngineering": {
@@ -613,7 +669,23 @@
     "recommendations": {
       "title": "Rekomendacje AI",
       "priceIncrease": "Podnieś cenę dla pozycji problematycznych",
-      "markup": "Zalecana marża"
-    }
+      "markup": "Zalecana marża",
+      "optimizeDishes": "Zoptymalizuj skład dań",
+      "ingredientSubstitution": "Zamień drogie składniki na bardziej przystępne odpowiedniki bez utraty jakości",
+      "reducePortions": "Zmniejsz wielkość porcji",
+      "recommendedReduction": "Zalecana redukcja"
+    },
+    "dish": {
+      "aiStrategy": "Strategia AI",
+      "strategyLeader": "Lider menu. Zachowaj recepturę i aktywnie promuj.",
+      "strategyCritical": "Krytycznie niska marża. Podnieś cenę lub usuń z menu.",
+      "strategyOptimize": "Rozważ rotację składników lub korektę ceny.",
+      "marginality": "Marżowość",
+      "costPrice": "Koszt własny",
+      "edit": "Edytuj",
+      "close": "Zamknij"
+    },
+    "empty": "Brak dań do wyświetlenia. Dodaj dania w sekcji Dania.",
+    "loading": "Ładowanie danych..."
   }
 }

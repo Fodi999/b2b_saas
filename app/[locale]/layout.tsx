@@ -6,7 +6,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/layout/header";
 import { AuthInitializer } from "@/components/auth/auth-initializer";
+import { NetworkStatus } from "@/components/network-status";
 import "../globals.css";
+
+// Runtime env validation — fails fast if NEXT_PUBLIC_API_URL is missing
+import '@/lib/schemas/env';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,6 +77,7 @@ export default async function LocaleLayout(props: Props) {
             <NextIntlClientProvider messages={messages}>
               <Header />
               {props.children}
+              <NetworkStatus />
             </NextIntlClientProvider>
           </AuthInitializer>
         </ThemeProvider>

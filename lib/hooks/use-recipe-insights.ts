@@ -26,62 +26,38 @@ export function useRecipeInsights(): UseRecipeInsightsResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchInsights = async (recipeId: string, language: RecipeLanguage) => {
-    console.log('🚀 [USE_RECIPE_INSIGHTS] fetchInsights вызван!', { recipeId, language, hasToken: !!accessToken });
-    
-    if (!accessToken) {
-      console.error('❌ [USE_RECIPE_INSIGHTS] Нет токена авторизации!');
-      setError('Not authenticated');
+  const fetchInsights = async (recipeId: string, language: RecipeLanguage) => {    
+    if (!accessToken) {      setError('Not authenticated');
       return;
     }
 
     setIsLoading(true);
     setError(null);
 
-    try {
-      console.log('[USE_RECIPE_INSIGHTS] Загрузка AI Insights...', { recipeId, language });
-      
-      const response = await getRecipeInsights(recipeId, language, accessToken);
-      
-      console.log('[USE_RECIPE_INSIGHTS] AI Insights загружены:', {
-        score: response.insights.feasibility_score,
-        errors: response.insights.validation.errors.length,
-      });
-      
+    try {      
+      const response = await getRecipeInsights(recipeId, language, accessToken);      
       setInsights(response);
     } catch (err) {
       // Если ошибка 401 - пробуем обновить токен и повторить
-      if (err instanceof ApiError && err.status === 401) {
-        console.log('[USE_RECIPE_INSIGHTS] Token expired, refreshing...');
-        
+      if (err instanceof ApiError && err.status === 401) {        
         const refreshed = await refreshAccessToken();
         
-        if (refreshed) {
-          console.log('[USE_RECIPE_INSIGHTS] Token refreshed, retrying...');
-          
+        if (refreshed) {          
           const newToken = useAuthStore.getState().accessToken;
           
           if (newToken) {
             try {
-              const response = await getRecipeInsights(recipeId, language, newToken);
-              console.log('[USE_RECIPE_INSIGHTS] AI Insights loaded after token refresh');
-              setInsights(response);
+              const response = await getRecipeInsights(recipeId, language, newToken);              setInsights(response);
               setIsLoading(false);
               return;
             } catch (retryErr) {
-              const errorMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error';
-              console.error('[USE_RECIPE_INSIGHTS] Failed after token refresh:', errorMessage);
-              setError(errorMessage);
+              const errorMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error';              setError(errorMessage);
             }
           }
-        } else {
-          console.error('[USE_RECIPE_INSIGHTS] Token refresh failed');
-          setError('Authentication expired. Please login again.');
+        } else {          setError('Authentication expired. Please login again.');
         }
       } else {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('[USE_RECIPE_INSIGHTS] Ошибка загрузки:', errorMessage);
-        setError(errorMessage);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';        setError(errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -97,20 +73,12 @@ export function useRecipeInsights(): UseRecipeInsightsResult {
     setIsLoading(true);
     setError(null);
 
-    try {
-      console.log('[USE_RECIPE_INSIGHTS] Пересоздание AI Insights...', { recipeId, language });
-      
-      const response = await regenerateRecipeInsights(recipeId, language, accessToken);
-      
-      console.log('[USE_RECIPE_INSIGHTS] AI Insights пересозданы:', {
-        score: response.insights.feasibility_score,
-      });
-      
+    try {      
+      const response = await regenerateRecipeInsights(recipeId, language, accessToken);      
       setInsights(response);
     } catch (err) {
       // Обработка 401 для regenerate
       if (err instanceof ApiError && err.status === 401) {
-        console.log('[USE_RECIPE_INSIGHTS] Token expired (regenerate), refreshing...');
         
         const refreshed = await refreshAccessToken();
         
@@ -119,24 +87,18 @@ export function useRecipeInsights(): UseRecipeInsightsResult {
           
           if (newToken) {
             try {
-              const response = await regenerateRecipeInsights(recipeId, language, newToken);
-              console.log('[USE_RECIPE_INSIGHTS] Regenerated after token refresh');
-              setInsights(response);
+              const response = await regenerateRecipeInsights(recipeId, language, newToken);              setInsights(response);
               setIsLoading(false);
               return;
             } catch (retryErr) {
-              const errorMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error';
-              console.error('[USE_RECIPE_INSIGHTS] Failed regenerate after token refresh:', errorMessage);
-              setError(errorMessage);
+              const errorMessage = retryErr instanceof Error ? retryErr.message : 'Unknown error';              setError(errorMessage);
             }
           }
         } else {
           setError('Authentication expired. Please login again.');
         }
       } else {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('[USE_RECIPE_INSIGHTS] Ошибка пересоздания:', errorMessage);
-        setError(errorMessage);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';        setError(errorMessage);
       }
     } finally {
       setIsLoading(false);

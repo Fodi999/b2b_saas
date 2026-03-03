@@ -93,7 +93,7 @@ export default function AIInsightsTestPage() {
                 <div className="h-8 w-1 bg-indigo-500 rounded-full" />
                 <h2 className="text-2xl font-bold">💡 AI Recommendations</h2>
               </div>
-              <RecommendationsBlock recommendations={recommendationsTestData} />
+              <RecommendationsBlock recommendations={recommendationsTestData as any} />
             </section>
           )}
 

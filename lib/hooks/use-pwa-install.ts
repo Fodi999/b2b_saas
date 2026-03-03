@@ -11,7 +11,9 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function usePWAInstall() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+  );
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -27,13 +29,16 @@ export function usePWAInstall() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
-    }
+    const mql = window.matchMedia('(display-mode: standalone)');
+    const handleMqlChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setIsInstalled(true);
+    };
+    mql.addEventListener('change', handleMqlChange);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      mql.removeEventListener('change', handleMqlChange);
     };
   }, []);
 

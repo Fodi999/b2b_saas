@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useInventoryStore } from '@/lib/stores/inventory-store';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, Users, Sparkles, ChefHat, Info, Utensils, Package, ChevronRight, Loader2, AlertCircle, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Clock, Users, Sparkles, ChefHat, Info, Utensils, Package, ChevronRight, Loader2, AlertCircle, TrendingUp, CheckCircle } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import { formatQuantity } from '@/lib/utils/format';
 import { getRecipe, getRecipeInsights, type RecipeDTO } from '@/lib/api/recipes';
+import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 export default function RecipeDetailPage() {
   const { user, accessToken } = useAuthStore();
@@ -16,6 +19,7 @@ export default function RecipeDetailPage() {
   const params = useParams();
   const locale = params.locale as string;
   const recipeId = params.id as string;
+  const t = useTranslations('recipes');
 
   const [recipe, setRecipe] = useState<RecipeDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,9 +40,7 @@ export default function RecipeDetailPage() {
       try {
         const data = await getRecipe(recipeId, accessToken);
         setRecipe(data);
-      } catch (err) {
-        console.error('❌ [RECIPE_DETAIL] Ошибка загрузки:', err);
-        setError('Не удалось загрузить рецепт');
+      } catch (err) {        setError('Не удалось загрузить рецепт');
       } finally {
         setIsLoading(false);
       }
@@ -80,21 +82,11 @@ export default function RecipeDetailPage() {
     setIsAnalyzing(true);
 
     try {
-      console.log('🚀 [RECIPE_DETAIL] Запуск AI анализа...', { recipeId });
-
       // Вызываем API для генерации AI Insights
       const result = await getRecipeInsights(recipeId, 'ru', accessToken);
-
-      console.log('✅ [RECIPE_DETAIL] AI анализ завершен:', {
-        score: result.insights.feasibility_score,
-        generatedIn: result.generated_in_ms
-      });
-
       // Redirect to analysis page
       router.push(`/${locale}/recipes/${recipeId}/analysis`);
-    } catch (err) {
-      console.error('❌ [RECIPE_DETAIL] Ошибка AI анализа:', err);
-      alert('Не удалось проанализировать рецепт. Попробуйте еще раз.');
+    } catch (err) {      alert('Не удалось проанализировать рецепт. Попробуйте еще раз.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -129,15 +121,24 @@ export default function RecipeDetailPage() {
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    30 мин
+                    30 {t('card.prepTime', { count: 30 }).split(' ')[1] || 'min'}
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
-                    {recipe.servings} порций
+                    {t('card.servings', { count: recipe.servings })}
                   </div>
-                  <div className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium dark:bg-gray-800 uppercase">
-                    {recipe.status}
-                  </div>
+                  <Badge className={cn(
+                    "px-3 py-1 text-[10px] font-black uppercase tracking-widest border-none rounded-full",
+                    recipe.status === 'production' 
+                      ? "bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                      : recipe.status === 'approved'
+                        ? "bg-blue-500 text-white"
+                        : recipe.status === 'ai_review'
+                          ? "bg-amber-500 text-white animate-pulse"
+                          : "bg-zinc-500 text-white"
+                  )}>
+                    {t(`status.${recipe.status}`)}
+                  </Badge>
                 </div>
 
                 {/* AI Analysis Button */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, Users, AlertCircle, CheckCircle, Utensils, ChevronRight, Zap } from 'lucide-react';
+import { Clock, Users, AlertCircle, CheckCircle, Utensils, ChevronRight, Zap, Sparkles } from 'lucide-react';
 import type { Recipe } from '@/lib/stores/recipes-store';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -21,19 +21,35 @@ export default function RecipeCard({ recipe, cost, costPerServing }: RecipeCardP
   const t = useTranslations('recipes');
 
   const getStatusBadge = () => {
+    const badgeClass = "bg-white/5 border-white/5 gap-1 font-bold uppercase tracking-[0.2em] text-[8px] px-1.5 py-0.5 rounded-md";
+    
     switch (recipe.status) {
-      case 'published':
+      case 'production':
         return (
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 font-black uppercase tracking-widest text-[10px] px-2 py-0.5 rounded-full">
-            <CheckCircle className="h-3 w-3" />
-            LIVE
+          <Badge variant="outline" className={cn(badgeClass, "text-emerald-400/80 border-emerald-500/10")}>
+            <CheckCircle className="h-2.5 w-2.5" />
+            {t('status.production')}
+          </Badge>
+        );
+      case 'approved':
+        return (
+          <Badge variant="outline" className={cn(badgeClass, "text-blue-400/80 border-blue-500/10")}>
+            <CheckCircle className="h-2.5 w-2.5" />
+            {t('status.approved')}
+          </Badge>
+        );
+      case 'ai_review':
+        return (
+          <Badge variant="outline" className={cn(badgeClass, "text-indigo-400/80 border-indigo-500/10 animate-pulse")}>
+            <Sparkles className="h-2.5 w-2.5" />
+            {t('status.ai_review')}
           </Badge>
         );
       case 'draft':
         return (
-          <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 gap-1 font-black uppercase tracking-widest text-[10px] px-2 py-0.5 rounded-full">
-            <AlertCircle className="h-3 w-3" />
-            DRAFT
+          <Badge variant="outline" className={cn(badgeClass, "text-zinc-400/80 border-white/5")}>
+            <AlertCircle className="h-2.5 w-2.5" />
+            {t('status.draft')}
           </Badge>
         );
       default:
@@ -43,94 +59,85 @@ export default function RecipeCard({ recipe, cost, costPerServing }: RecipeCardP
 
   return (
     <Link href={`/${locale}/recipes/${recipe.id}`} className="block group">
-      <div className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-indigo-500/50 rounded-[2.5rem] transition-all duration-300 overflow-hidden relative backdrop-blur-sm">
-        <div className="p-8">
+      <div className="bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-indigo-500/50 rounded-[2rem] transition-all duration-300 overflow-hidden relative backdrop-blur-sm shadow-xl">
+        
+        {/* Image Header */}
+        <div className="relative h-48 w-full overflow-hidden border-b border-white/5">
+          {recipe.imageUrl ? (
+            <img 
+              src={recipe.imageUrl} 
+              alt={recipe.name}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+          ) : (
+            <div className="h-full w-full bg-indigo-500/5 flex items-center justify-center">
+              <Utensils className="h-16 w-16 text-white/5" />
+            </div>
+          )}
+          <div className="absolute top-4 left-4">
+            {getStatusBadge()}
+          </div>
+        </div>
+
+        {/* Content Container */}
+        <div className="p-5">
           {/* Header */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 shadow-inner">
-                <Utensils className="h-7 w-7 text-indigo-400" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 leading-none">
-                    Recipe Card
-                  </span>
-                  {getStatusBadge()}
-                </div>
-                <h3 className="font-black text-xl text-white italic tracking-tight group-hover:text-indigo-400 transition-colors">
-                  {recipe.name}
-                </h3>
-              </div>
-            </div>
-            <div className="p-2 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-              <ChevronRight className="w-5 h-5 text-white/40" />
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="font-extrabold text-base text-white/90 italic tracking-tight group-hover:text-indigo-400 transition-colors uppercase leading-tight">
+              {recipe.name}
+            </h3>
+            <div className="p-1 px-1.5 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0">
+              <ChevronRight className="w-3.5 h-3.5 text-white/40" />
             </div>
           </div>
 
-          {/* Description */}
-          {recipe.description && (
-            <p className="mb-6 text-sm text-white/60 line-clamp-2 leading-relaxed font-medium">
-              {recipe.description}
-            </p>
-          )}
-
-          {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-4 mb-8">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/5">
-              <Clock className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
-                {t('card.prepTime', { count: recipe.prepTime || 0 })}
+          {/* Minimal Meta Info */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+              <Clock className="h-2.5 w-2.5 text-indigo-400/80" />
+              <span className="text-[8px] font-bold uppercase tracking-wider text-white">
+                {recipe.prepTime || 30}M
               </span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/5">
-              <Users className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
-                {t('card.servings', { count: recipe.servings })}
+            <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+              <Users className="h-2.5 w-2.5 text-emerald-400/80" />
+              <span className="text-[8px] font-bold uppercase tracking-wider text-white">
+                {recipe.servings}P
               </span>
             </div>
-            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.2em] border-white/10 text-white/40 px-3 py-1 rounded-full">
+            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/20 ml-auto border-l border-white/5 pl-2">
               {recipe.difficulty}
-            </Badge>
+            </span>
           </div>
 
-          {/* Cost Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 bg-black/40 rounded-[2rem] border border-white/10">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">
-                {t('card.totalCost')}
-              </p>
+          {/* Footer Stats */}
+          <div className="pt-4 border-t border-white/[0.03] flex items-end justify-between">
+            <div className="space-y-0.5">
+              <span className="text-[7px] font-bold uppercase tracking-[0.3em] text-white/20 block">
+                FOOD COST
+              </span>
               <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-black text-white italic">
-                  {cost.toFixed(2)}
-                </p>
-                <span className="text-[10px] font-bold text-white/40">PLN</span>
+                <span className="text-sm font-black text-white italic tracking-tighter">
+                  {cost?.toLocaleString() || '0.00'}
+                </span>
+                <span className="text-[8px] font-bold text-white/30 uppercase">PLN</span>
               </div>
             </div>
-            <div className="p-5 bg-indigo-500/[0.05] rounded-[2rem] border border-indigo-500/20">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400/60 mb-2 whitespace-nowrap">
-                {t('card.perServing')}
-              </p>
-              <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-black text-indigo-400 italic">
-                  {costPerServing.toFixed(2)}
-                </p>
-                <span className="text-[10px] font-bold text-indigo-400/40">PLN</span>
+            
+            <div className="h-6 w-[1px] bg-white/5" />
+
+            <div className="space-y-0.5 text-right">
+              <span className="text-[7px] font-bold uppercase tracking-[0.3em] text-white/20 block">
+                MARGIN
+              </span>
+              <div className="flex items-baseline gap-0.5 justify-end">
+                <span className="text-sm font-black text-emerald-400 italic tracking-tighter">
+                  {recipe.margin || '75'}
+                </span>
+                <span className="text-[8px] font-bold text-emerald-400/30 uppercase">%</span>
               </div>
             </div>
           </div>
-
-          {/* AI Insights Indicator */}
-          {recipe.aiInsights && recipe.aiInsights.length > 0 && (
-            <div className="mt-6 flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 group-hover:border-indigo-500/30 transition-colors">
-              <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-indigo-400 animate-pulse" />
-              </div>
-              <p className="text-[11px] text-white/60 leading-tight line-clamp-1 italic font-medium">
-                {recipe.aiInsights[0]}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </Link>

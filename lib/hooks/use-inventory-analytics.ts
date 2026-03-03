@@ -39,15 +39,11 @@ export function useInventoryAnalytics() {
       const data = await fetchInventoryDashboard(accessToken);
       setDashboard(data);
       setLastFetched(now);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { status?: number; message?: string };
       // 🛡️ Если это 401, не затираем данные (ждем обновления токена через useAuthInit)
-      if (error?.status === 401) {
-        console.log('🛡️ [useInventoryAnalytics] 401 detected, waiting for token refresh...');
-        return;
-      }
-      
-      console.warn('[useInventoryAnalytics] Dashboard offline:', error?.message);
-      setDashboard(null);
+      if (err?.status === 401) {        return;
+      }      setDashboard(null);
     } finally {
       setLoading(false);
     }
@@ -58,9 +54,7 @@ export function useInventoryAnalytics() {
     try {
       const data = await fetchInventoryHealth(accessToken);
       setHealth(data);
-    } catch (error) {
-      console.error('[useInventoryAnalytics] Health error:', error);
-    }
+    } catch (error) {    }
   }, [accessToken, setHealth]);
 
   const loadAlerts = useCallback(async () => {
@@ -68,9 +62,7 @@ export function useInventoryAnalytics() {
     try {
       const data = await fetchInventoryAlerts(accessToken);
       setAlerts(data || []);
-    } catch (error) {
-       console.error('[useInventoryAnalytics] Alerts error:', error);
-    }
+    } catch (error) {    }
   }, [accessToken, setAlerts]);
 
   const loadLossReport = useCallback(async (days: number = 30) => {
@@ -78,9 +70,7 @@ export function useInventoryAnalytics() {
     try {
       const data = await fetchLossReport(days, accessToken);
       setLossReport(data);
-    } catch (error) {
-       console.error('[useInventoryAnalytics] Loss report error:', error);
-    }
+    } catch (error) {    }
   }, [accessToken, setLossReport]);
 
   const runCleanup = useCallback(async () => {
@@ -88,6 +78,7 @@ export function useInventoryAnalytics() {
     try {
       setIsProcessing(true);
       const res = await processExpirations(accessToken);
+      // После очистки обновляем всё, чтобы UI соответствовал базе
       await Promise.all([
         loadDashboard(true),
         loadHealth(),

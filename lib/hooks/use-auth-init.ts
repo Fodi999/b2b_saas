@@ -17,31 +17,27 @@ export function useAuthInit() {
     const storedAccessToken = localStorage.getItem('access_token');
     
     // Если есть accessToken в store ИЛИ в localStorage - ничего не делаем
-    if (accessToken) {
-      console.log('✅ [AUTH_INIT] Access token уже есть в Zustand store');
-      // Используем setTimeout или Promise для асинхронного обновления state, чтобы избежать warnings
+    if (accessToken) {      // Используем setTimeout или Promise для асинхронного обновления state, чтобы избежать warnings
       setTimeout(() => setIsInitialized(true), 0);
       return;
     }
     
-    if (storedAccessToken) {
-      console.log('🧪 [AUTH_INIT] Найден access_token в localStorage, восстанавливаем...');
-      // Попробуем получить данные пользователя с этим токеном
+    if (storedAccessToken) {      // Попробуем получить данные пользователя с этим токеном
       fetchMe(storedAccessToken)
-        .then((me) => {
-          console.log('✅ [AUTH_INIT] Токен из localStorage валиден, восстанавливаем сессию');
+        .then((me) => {          
+          // ВАЖНО: берем актульный accessToken из стора, на случай если fetchMe вызвал тихий рефреш
+          const latestAccessToken = useAuthStore.getState().accessToken || storedAccessToken;
           const storedRefreshToken = localStorage.getItem('refresh_token') || '';
+          
           setSession({
-            accessToken: storedAccessToken,
+            accessToken: latestAccessToken,
             refreshToken: storedRefreshToken,
             user: me.user,
             tenant: me.tenant,
           });
         })
-        .catch(() => {
-          console.log('[AUTH_INIT] Токен из localStorage невалиден, пробуем refresh...');
-          // Если access_token невалиден, пробуем refresh
-          tryRefreshToken();
+        .catch((err) => {
+          // Если apiFetch тихим рефрешем не спас ситуацию, пробуем последний шанс — принудительно через refresh token          tryRefreshToken();
         })
         .finally(() => {
           setIsInitialized(true);
@@ -55,37 +51,20 @@ export function useAuthInit() {
     function tryRefreshToken() {
       const storedRefreshToken = localStorage.getItem('refresh_token');
 
-      if (!storedRefreshToken) {
-        console.log('[AUTH_INIT] Refresh token не найден в localStorage');
-        setTimeout(() => setIsInitialized(true), 0);
+      if (!storedRefreshToken) {        setTimeout(() => setIsInitialized(true), 0);
         return;
       }
-
-      console.log('[AUTH_INIT] Найден refresh token, восстанавливаем сессию через BACKEND...');
-
       // Пытаемся обновить токен и восстановить сессию
       refreshToken(storedRefreshToken)
-        .then((res) => {
-          console.log('[AUTH_INIT] Access token обновлён с BACKEND');
-          
-          return fetchMe(res.access_token).then((me) => {
-            console.log('✅ [AUTH_INIT] Данные пользователя получены с BACKEND:', {
-              user: me.user.email,
-              tenant: me.tenant.name,
-            });
-            setSession({
+        .then((res) => {          
+          return fetchMe(res.access_token).then((me) => {            setSession({
               accessToken: res.access_token,
               refreshToken: storedRefreshToken,
               user: me.user,
               tenant: me.tenant,
-            });
-            console.log('✅ [AUTH_INIT] Сессия восстановлена!');
-          });
+            });          });
         })
-        .catch(() => {
-          console.error('❌ [AUTH_INIT] Не удалось восстановить сессию');
-          console.error('❌ [AUTH_INIT] Удаляем невалидный refresh token');
-          logout();
+        .catch(() => {          logout();
         })
         .finally(() => {
           setIsInitialized(true);

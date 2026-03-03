@@ -23,20 +23,8 @@ export default function ProductImage({
 }: ProductImageProps) {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  console.log('[ProductImage] Render:', { 
-    src, 
-    alt, 
-    hasImage: !!src, 
-    imageError,
-    isLoading,
-    srcType: typeof src 
-  });
-
   // Если нет URL или произошла ошибка - показываем fallback
-  if (!src || imageError) {
-    console.log('[ProductImage] Showing fallback for:', alt);
-    return (
+  if (!src || imageError) {    return (
       <div className={containerClassName}>
         {fallbackIcon}
       </div>
@@ -54,13 +42,9 @@ export default function ProductImage({
         src={src}
         alt={alt}
         className={className}
-        onLoad={() => {
-          console.log('✅ [ProductImage] Загружено:', alt);
-          setIsLoading(false);
+        onLoad={() => {          setIsLoading(false);
         }}
-        onError={() => {
-          console.log('❌ [ProductImage] Ошибка загрузки:', src);
-          setIsLoading(false);
+        onError={() => {          setIsLoading(false);
           setImageError(true);
         }}
       />

@@ -40,14 +40,10 @@ export default function RecipeAnalysisPage() {
   const fetchInsights = async () => {
     if (!accessToken) return;
     setIsLoading(true);
-    try {
-      console.log('[ANALYSIS_PAGE] Загрузка AI Insights...', { recipeId });
-      const response = await getRecipeInsights(recipeId, locale as any, accessToken);
+    try {      const response = await getRecipeInsights(recipeId, locale as any, accessToken);
       setInsights(response);
       setError(null);
-    } catch (err: any) {
-      console.error('[ANALYSIS_PAGE] Ошибка анализа:', err);
-      setError(err.message || 'Произошла ошибка при загрузке данных');
+    } catch (err: any) {      setError(err.message || 'Произошла ошибка при загрузке данных');
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +144,7 @@ export default function RecipeAnalysisPage() {
                   AI Анализ Рецепта
                 </h1>
                 <p className="mt-1 text-indigo-100 font-medium opacity-80">
-                  {dishType.charAt(0).toUpperCase() + dishType.slice(1)} • {insights.generated_in_ms}ms processing
+                  {dishType.charAt(0).toUpperCase() + dishType.slice(1)} • {insights.generation_time_ms}ms processing
                 </p>
               </div>
             </div>
@@ -161,9 +157,7 @@ export default function RecipeAnalysisPage() {
           {data.validation.errors.length > 0 && (
             <CriticalErrorsBlock
               errors={data.validation.errors}
-              onFixError={(errorCode) => {
-                console.log('🔧 Fix error:', errorCode);
-                // TODO: Redirect to edit mode
+              onFixError={(errorCode) => {                // TODO: Redirect to edit mode
                 router.push(`/${locale}/recipes/${recipeId}/edit`);
               }}
             />
@@ -173,9 +167,7 @@ export default function RecipeAnalysisPage() {
           {data.validation.warnings.length > 0 && (
             <WarningsBlock
               warnings={data.validation.warnings}
-              onAutoFix={(warningCode) => {
-                console.log('🔧 Auto-fix warning:', warningCode);
-                // TODO: Implement auto-fix logic
+              onAutoFix={(warningCode) => {                // TODO: Implement auto-fix logic
               }}
             />
           )}

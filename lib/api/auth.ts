@@ -1,41 +1,33 @@
 import { apiFetch } from './client';
+import {
+  AuthResponseSchema,
+  RefreshResponseSchema,
+  MeResponseSchema,
+  type AuthResponseDTO,
+  type RefreshResponseDTO,
+  type MeResponseDTO,
+} from '@/lib/schemas/dto';
 
-// Response types
-interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  user_id: string;
-  tenant_id: string;
-}
+// ============================================================================
+// Re-export types for consumers
+// ============================================================================
+export type { AuthResponseDTO, RefreshResponseDTO, MeResponseDTO };
 
-interface MeResponse {
-  user: {
-    id: string;
-    email: string;
-    display_name: string | null;
-    avatar_url: string | null;
-    language: 'pl' | 'en' | 'ru' | 'uk';
-    role: string;
-    tenant_id: string;
-  };
-  tenant: {
-    id: string;
-    name: string;
-  };
-}
+// ============================================================================
+// Avatar
+// ============================================================================
 
 interface AvatarUploadUrlResponse {
   upload_url: string;
   public_url: string;
 }
 
-interface RefreshResponse {
-  access_token: string;
-}
+// ============================================================================
+// API Functions
+// ============================================================================
 
 /**
- * Регистрация нового пользователя
+ * Register a new user.
  */
 export async function registerUser(data: {
   email: string;
@@ -43,15 +35,7 @@ export async function registerUser(data: {
   display_name: string;
   restaurant_name: string;
   language: 'pl' | 'en' | 'ru' | 'uk';
-}): Promise<AuthResponse> {
-  console.log('🔐 [AUTH] Регистрация на BACKEND:', {
-    email: data.email,
-    restaurant_name: data.restaurant_name,
-    owner_name: data.display_name,
-    backend: 'https://ministerial-yetta-fodi999-c58d8823.koyeb.app',
-  });
-  
-  // Backend ожидает owner_name вместо display_name
+}): Promise<AuthResponseDTO> {
   const payload = {
     email: data.email,
     password: data.password,
@@ -59,137 +43,92 @@ export async function registerUser(data: {
     restaurant_name: data.restaurant_name,
     language: data.language,
   };
-  
-  const result = await apiFetch<AuthResponse>('/api/auth/register', {
+
+  const raw = await apiFetch<unknown>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
-  return result;
+
+  return AuthResponseSchema.parse(raw);
 }
 
 /**
- * Логин существующего пользователя
+ * Login an existing user.
  */
 export async function loginUser(data: {
   email: string;
   password: string;
-}): Promise<AuthResponse> {
-  console.log('🔐 [AUTH] Логин через BACKEND:', {
-    email: data.email,
-    backend: 'https://ministerial-yetta-fodi999-c58d8823.koyeb.app',
-  });
-  
-  const result = await apiFetch<AuthResponse>('/api/auth/login', {
+}): Promise<AuthResponseDTO> {
+  const raw = await apiFetch<unknown>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(data),
   });
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
-  return result;
+
+  return AuthResponseSchema.parse(raw);
 }
 
 /**
- * Обновление access token
+ * Refresh access token.
  */
-export async function refreshToken(refreshToken: string): Promise<RefreshResponse> {
-  console.log('[AUTH] Обновление токена через BACKEND');
-  
-  const result = await apiFetch<RefreshResponse>('/api/auth/refresh', {
+export async function refreshToken(refresh: string): Promise<RefreshResponseDTO> {
+  const raw = await apiFetch<unknown>('/api/auth/refresh', {
     method: 'POST',
-    body: JSON.stringify({ refresh_token: refreshToken }),
+    body: JSON.stringify({ refresh_token: refresh }),
   });
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
-  return result;
+
+  return RefreshResponseSchema.parse(raw);
 }
 
 /**
- * Получение данных текущего пользователя
+ * Get current user profile.
  */
-export async function fetchMe(accessToken: string): Promise<MeResponse> {
-  console.log('👤 [AUTH] Получение данных пользователя с BACKEND');
-  
-  const result = await apiFetch<MeResponse>('/api/me', {
-    method: 'GET',
-  }, accessToken);
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
-  return result;
+export async function fetchMe(accessToken: string): Promise<MeResponseDTO> {
+  const raw = await apiFetch<unknown>('/api/me', {}, accessToken);
+  return MeResponseSchema.parse(raw);
 }
 
 /**
- * Обновление языка пользователя
+ * Update user language.
  */
 export async function updateUserLanguage(
   language: 'pl' | 'en' | 'ru' | 'uk',
   accessToken: string
-): Promise<MeResponse> {
-  console.log('🌐 [AUTH] Обновление языка пользователя:', language);
-  
-  const result = await apiFetch<MeResponse>('/api/me', {
+): Promise<MeResponseDTO> {
+  const raw = await apiFetch<unknown>('/api/me', {
     method: 'PATCH',
     body: JSON.stringify({ language }),
   }, accessToken);
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
-  return result;
+
+  return MeResponseSchema.parse(raw);
 }
 
 /**
- * Получение URL для загрузки аватарки в хранилище R2
+ * Get presigned avatar upload URL.
  */
 export async function getAvatarUploadUrl(
   accessToken: string,
   contentType: string = 'image/jpeg'
 ): Promise<AvatarUploadUrlResponse> {
-  console.log('📎 [AUTH] Запрос URL для загрузки аватара:', contentType);
-  
   const result = await apiFetch<AvatarUploadUrlResponse>('/api/profile/avatar/upload-url', {
     method: 'POST',
     body: JSON.stringify({ content_type: contentType }),
   }, accessToken);
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
+
+  if (!result) throw new Error('Empty response from server');
   return result;
 }
 
 /**
- * Обновление ссылки на аватар в профиле пользователя
+ * Update avatar URL in profile.
  */
 export async function updateAvatar(
   publicUrl: string,
   accessToken: string
-): Promise<MeResponse> {
-  console.log('🖼️ [AUTH] Сохранение новой аватарки в БД:', publicUrl);
-  
-  const result = await apiFetch<MeResponse>('/api/profile/avatar', {
+): Promise<MeResponseDTO> {
+  const raw = await apiFetch<unknown>('/api/profile/avatar', {
     method: 'PUT',
     body: JSON.stringify({ avatar_url: publicUrl }),
   }, accessToken);
-  
-  if (!result) {
-    throw new Error('Empty response from server');
-  }
-  
-  return result;
+
+  return MeResponseSchema.parse(raw);
 }

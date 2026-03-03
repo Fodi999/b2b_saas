@@ -88,9 +88,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
       await reloadInventory();
       if (onSuccess) onSuccess();
       handleClose();
-    } catch (error) {
-      console.error('❌ [ADD] Ошибка добавления продукта:', error);
-    } finally {
+    } catch (error) {    } finally {
       setIsSubmitting(false);
     }
   };

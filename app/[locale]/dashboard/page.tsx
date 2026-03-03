@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -13,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   inventory: Package,
   recipes: BookOpen,
   dishes: Utensils,

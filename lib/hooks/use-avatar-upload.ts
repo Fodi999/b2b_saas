@@ -19,9 +19,6 @@ export function useAvatarUpload() {
     try {
       // 1. Получаем URL для загрузки (signed URL для R2)
       const { upload_url, public_url } = await getAvatarUploadUrl(accessToken, file.type);
-      
-      console.log('📤 [AVATAR] Начинаем загрузку файла весом:', file.size);
-
       // 2. Загружаем файл напрямую в хранилище (PUT запрос)
       const uploadResponse = await fetch(upload_url, {
         method: 'PUT',
@@ -32,17 +29,8 @@ export function useAvatarUpload() {
       });
 
       if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error('❌ [AVATAR] R2 Upload Error:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          body: errorText
-        });
-        throw new Error(`Failed to upload to storage: ${uploadResponse.statusText}`);
+        const errorText = await uploadResponse.text();        throw new Error(`Failed to upload to storage: ${uploadResponse.statusText}`);
       }
-
-      console.log('✅ [AVATAR] Файл успешно загружен в облако');
-
       // 3. Сохраняем public_url в профиль пользователя через наш API
       const response = await updateAvatar(public_url, accessToken);
       
@@ -50,14 +38,13 @@ export function useAvatarUpload() {
       updateUser({ avatar_url: response.user.avatar_url });
       
       return response.user.avatar_url;
-    } catch (err: any) {
-      console.error('❌ [AVATAR] Ошибка при загрузке:', err);
-      
+    } catch (err: unknown) {
+      const error = err as Error;      
       // Специальная обработка для ошибок сети/CORS
-      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
         setError('CORS Error: Please check R2 Bucket CORS settings to allow uploads from your domain.');
       } else {
-        setError(err.message || 'Error uploading avatar');
+        setError(error.message || 'Error uploading avatar');
       }
       return null;
     } finally {

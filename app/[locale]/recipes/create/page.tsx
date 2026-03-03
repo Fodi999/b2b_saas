@@ -51,7 +51,88 @@ interface DraftIngredient {
   unit: string // ✅ Теперь unit хранится в draft
 }
 
-type ViewMode = 'edit' | 'preview' | 'analyzing' | 'insights'
+type ViewMode = 'edit' | 'preview' | 'analyzing' | 'insights' | 'production'
+
+function StepIndicator({ mode }: { mode: ViewMode }) {
+  const t = useTranslations('recipes.create.steps')
+  
+  const STEPS = [
+    { id: 'draft', label: t('step1'), icon: Plus },
+    { id: 'ai_review', label: t('step2'), icon: Sparkles },
+    { id: 'approved', label: t('step3'), icon: Check },
+    { id: 'production', label: t('step4'), icon: Target },
+  ] as const
+
+  const getActiveIdx = () => {
+    if (mode === 'edit') return 0;
+    if (mode === 'preview' || mode === 'analyzing') return 1;
+    if (mode === 'insights') return 2;
+    if (mode === 'production') return 3;
+    return 0;
+  };
+
+  const activeIdx = getActiveIdx();
+
+  return (
+    <div className="px-4 lg:px-8 mt-4 mb-4">
+      <div className="relative bg-black/40 backdrop-blur-3xl border border-white/5 rounded-2xl h-20 flex items-center shadow-xl">
+         {/* Continuous thin progress track */}
+         <div className="absolute left-[10%] right-[10%] h-[1px] bg-white/10 z-0" />
+         
+         {/* Active progress fill */}
+         <div 
+           className="absolute left-[10%] h-[1px] bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] z-0 transition-all duration-1000 ease-in-out" 
+           style={{ 
+             width: `${(activeIdx / (STEPS.length - 1)) * 80}%` 
+           }}
+         />
+
+         <div className="relative z-10 w-full flex justify-between px-[10%]">
+           {STEPS.map((step, idx) => {
+             const isDone = idx < activeIdx;
+             const isActive = idx === activeIdx;
+
+             return (
+               <div key={step.id} className="flex flex-col items-center relative gap-2">
+                 {/* Icon / Marker on the line */}
+                 <div className={cn(
+                   "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-500 border backdrop-blur-xl z-10",
+                   isActive 
+                    ? "bg-indigo-600 border-indigo-400 scale-110 shadow-[0_0_15px_rgba(99,102,241,0.4)]" 
+                    : isDone
+                      ? "bg-emerald-500/20 border-emerald-500/40"
+                      : "bg-black border-zinc-800"
+                 )}>
+                   {isDone ? (
+                     <Check className="h-3.5 w-3.5 text-emerald-400" />
+                   ) : (
+                     <step.icon className={cn(
+                       "h-3.5 w-3.5",
+                       isActive ? "text-white" : "text-zinc-600"
+                     )} />
+                   )}
+                 </div>
+
+                 {/* Minimalist Label */}
+                 <span className={cn(
+                   "absolute -top-6 text-[7px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-colors duration-500",
+                   isActive ? "text-indigo-400" : isDone ? "text-zinc-400" : "text-zinc-600"
+                 )}>
+                   {step.label}
+                 </span>
+                 
+                 {/* Active pulse */}
+                 {isActive && (
+                   <div className="absolute top-4 h-1 w-1 rounded-full bg-indigo-400 animate-ping" />
+                 )}
+               </div>
+             );
+           })}
+         </div>
+      </div>
+    </div>
+  )
+}
 
 interface PreviewRecipe {
   title: string
@@ -276,8 +357,10 @@ export default function CreateRecipePage() {
       validIngredients.forEach(ing => {
         const inventoryItem = inventoryItems.find((item: InventoryItem) => item.id === ing.inventoryItemId)
         if (inventoryItem) {
-          if (inventoryItem.status === 'expiring') {
-            warnings.push(`${inventoryItem.product_name} истекает через несколько дней`)
+          if (inventoryItem.status === 'warning' || inventoryItem.status === 'critical') {
+            warnings.push(`${inventoryItem.product_name} истекает в ближайшее время`)
+          } else if (inventoryItem.status === 'expired') {
+            warnings.push(`${inventoryItem.product_name} уже просрочен!`)
           }
           const needed = parseFloat(ing.rawAmount)
           if (inventoryItem.quantity < needed) {
@@ -362,6 +445,11 @@ export default function CreateRecipePage() {
           instructions: instructions,
           servings: recipeServings,
           ingredients: recipeIngredients,
+          status: 'ai_review', // 🤖 AIReview status
+          language: language, // 🌐 Required by backend DTO
+          total_time: 30, // Default for draft
+          steps: [], // Empty steps for initial analysis
+          image_url: imagePreview // ✅ Pass the image (base64 for now)
         })
       } else {
         const draftRecipe = await createRecipeAPI({
@@ -370,7 +458,11 @@ export default function CreateRecipePage() {
           language: language,
           servings: recipeServings,
           ingredients: recipeIngredients,
-        })
+          status: 'ai_review', // 🤖 Start with AIReview since we're analyzing
+          total_time: 30,
+          steps: [],
+          image_url: imagePreview // ✅ Pass the image
+        } as any)
         if (draftRecipe) {
           recipeId = draftRecipe.id
           setDraftRecipeId(recipeId)
@@ -395,10 +487,43 @@ export default function CreateRecipePage() {
     
     try {
       if (draftRecipeId) {
-        // Publish the draft and update the name
+        // Build V2 compliant ingredients array
+        const recipeIngredients: RecipeIngredientDTO[] = ingredients
+          .filter(ing => ing.catalogIngredientId && ing.rawAmount)
+          .map(ing => {
+            let quantity = parseFloat(ing.rawAmount) || 0
+            let unit = 'kilogram'
+            
+            if (ing.unit === 'g') {
+              quantity = quantity / 1000
+              unit = 'kilogram'
+            } else if (ing.unit === 'ml') {
+              quantity = quantity / 1000
+              unit = 'liter'
+            } else if (ing.unit === 'liter') {
+              unit = 'liter'
+            } else if (ing.unit === 'piece' || ing.unit === 'pcs') {
+              unit = 'piece'
+            }
+            
+            return {
+              catalog_ingredient_id: ing.catalogIngredientId!,
+              quantity,
+              unit,
+            }
+          })
+
+        // Publish the draft and update the name with STRICT fields
         await updateRecipeAPI(draftRecipeId, {
           name: recipeName,
-          status: 'published'
+          status: 'production',
+          instructions: instructions, // Mapped to description in API
+          servings: recipeServings,
+          ingredients: recipeIngredients,
+          language: language, // 🌐 Required by backend DTO
+          total_time: 30, // Default estimate if not provided
+          steps: insights?.insights.steps || [], // Send AI steps if available
+          image_url: imagePreview // ✅ Sync image state
         })
         router.push(`/${locale}/recipes`)
       } else {
@@ -433,7 +558,11 @@ export default function CreateRecipePage() {
           language: language,
           servings: recipeServings,
           ingredients: recipeIngredients,
-        })
+          status: 'production', // 🚀 Mark as production ready
+          total_time: 30, // Default for v2
+          steps: [], // Empty steps if create
+          image_url: imagePreview // ✅ Pass the image
+        } as any)
         
         if (finalRecipe) {
           router.push(`/${locale}/recipes`)
@@ -455,7 +584,8 @@ export default function CreateRecipePage() {
 
   if (mode === 'analyzing') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] space-y-12">
+        <StepIndicator mode="analyzing" />
         <div className="relative">
           <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full animate-pulse" />
           <div className="relative bg-black/40 backdrop-blur-3xl border border-white/10 p-12 rounded-[2.5rem] flex flex-col items-center space-y-6">
@@ -498,6 +628,8 @@ export default function CreateRecipePage() {
 
     return (
       <div className="max-w-[1440px] mx-auto pb-20 space-y-12">
+        <StepIndicator mode="insights" />
+        
         {/* Header Navigation */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4 lg:px-8">
           <div className="space-y-1">
@@ -519,11 +651,28 @@ export default function CreateRecipePage() {
               {t('actions.back')}
             </Button>
             <Button 
-              onClick={handleSaveAfterAnalysis}
-              className="bg-emerald-500 hover:bg-emerald-600 text-black rounded-2xl h-12 px-8 font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.3)] border-none"
+              variant="outline"
+              onClick={async () => {
+                if (draftRecipeId) {
+                  await updateRecipeAPI(draftRecipeId, { 
+                    status: 'approved', 
+                    language,
+                    image_url: imagePreview // ✅ Preserve image on approval
+                  });
+                  router.push(`/${locale}/recipes`);
+                }
+              }}
+              className="bg-black/40 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 rounded-2xl h-12 px-6 font-black uppercase tracking-widest transition-all"
             >
-              {t('actions.save')}
-              <Check className="ml-2 h-4 w-4" />
+              <Check className="mr-2 h-4 w-4" />
+              {t('status.approved')}
+            </Button>
+            <Button 
+              onClick={handleSaveAfterAnalysis}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl h-12 px-8 font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(99,102,241,0.3)] border-none"
+            >
+              {t('status.production')}
+              <Target className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -583,6 +732,8 @@ export default function CreateRecipePage() {
 
   return (
     <div className="max-w-[1440px] mx-auto pb-20 space-y-12">
+      <StepIndicator mode={mode} />
+
       {/* Header section with RS 2026 aesthetics */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4 lg:px-8">
         <div className="space-y-1">
@@ -943,7 +1094,7 @@ export default function CreateRecipePage() {
                   </div>
                   <div className="text-right">
                     <div className="text-4xl font-black italic text-emerald-400 tracking-tighter">
-                      ${previewRecipe?.totalCost.toFixed(2)}
+                      {previewRecipe?.totalCost.toFixed(2)} <span className="text-[10px] font-bold text-zinc-600 not-italic">PLN</span>
                     </div>
                     <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">
                       TOTAL ESTIMATE
@@ -961,7 +1112,9 @@ export default function CreateRecipePage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-zinc-400 font-bold group-hover:text-emerald-400 transition-colors">${ing.cost.toFixed(2)}</div>
+                        <div className="text-zinc-400 font-bold group-hover:text-emerald-400 transition-colors">
+                          {ing.cost.toFixed(2)} <span className="text-[10px] font-bold text-zinc-600 not-italic uppercase tracking-widest">PLN</span>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -972,7 +1125,9 @@ export default function CreateRecipePage() {
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-zinc-500 font-black uppercase tracking-widest text-[10px]">{t('sections.preview.cost_per_serving')}</span>
                   </div>
-                  <span className="text-2xl font-black italic text-emerald-400">${previewRecipe?.costPerServing.toFixed(2)}</span>
+                  <span className="text-2xl font-black italic text-emerald-400">
+                    {previewRecipe?.costPerServing.toFixed(2)} <span className="text-[10px] font-bold text-zinc-600 not-italic">PLN</span>
+                  </span>
                 </div>
               </div>
 

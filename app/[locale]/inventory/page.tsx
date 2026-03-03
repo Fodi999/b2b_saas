@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useInventoryStore } from '@/lib/stores/inventory-store';
 import { useInventory } from '@/lib/hooks/use-inventory';
@@ -10,6 +10,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import ProductImage from '@/components/ui/product-image';
 import { 
+  ChevronDown,
+  ChevronRight,
   ArrowLeft, 
   Plus, 
   Package, 
@@ -74,6 +76,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useTranslations } from 'next-intl';
+import { InventoryProduct } from '@/lib/api/inventory';
+import { formatPrice } from '@/lib/utils/format';
+
+interface GroupedInventoryProduct {
+  productId: string;
+  productName: string;
+  category: string;
+  baseUnit: 'g' | 'ml' | 'pcs';
+  imageUrl?: string | null;
+  batches: InventoryProduct[];
+  totalQuantity: number;
+  avgPrice: number;
+  status: string;
+  earliestExpiry?: string;
+}
 
 export default function InventoryPage() {
   const { user, accessToken } = useAuthStore();
@@ -96,6 +113,7 @@ export default function InventoryPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [productToDelete, setProductToDelete] = useState<{id: string, name: string} | null>(null);
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
   // Загружаем склад с backend
   const { reloadInventory } = useInventory();
@@ -136,31 +154,47 @@ export default function InventoryPage() {
       await deleteInventoryProduct(productToDelete.id, accessToken);
       await refreshAllData();
       setProductToDelete(null);
-    } catch (error) {
-      console.error('Ошибка удаления продукта:', error);
-    } finally {
+    } catch (error) {    } finally {
       setDeletingId(null);
     }
   };
 
+  const toggleProductExpansion = (productId: string) => {
+    setExpandedProducts(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
   const getStatusBadge = (status: string) => {    
     switch (status) {
-      case 'in-stock':
+      case 'safe':
         return (
-          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20 gap-1.5 font-bold uppercase text-[10px]">
-            <CheckCircle2 className="h-3 w-3" /> {t('status.inStock')}
+          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 gap-1.5 font-bold uppercase text-[10px]">
+            <CheckCircle2 className="h-3 w-3" /> {t('status.safe')}
           </Badge>
         );
       case 'low':
         return (
-          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20 gap-1.5 font-bold uppercase text-[10px]">
+          <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 gap-1.5 font-bold uppercase text-[10px]">
             <AlertCircle className="h-3 w-3" /> {t('status.low')}
           </Badge>
         );
-      case 'expiring':
+      case 'warning':
         return (
-          <Badge variant="outline" className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 border-orange-500/20 gap-1.5 font-bold uppercase text-[10px]">
-            <Clock className="h-3 w-3" /> {t('status.expiring')}
+          <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/20 gap-1.5 font-bold uppercase text-[10px]">
+            <Clock className="h-3 w-3" /> {t('status.warning')}
+          </Badge>
+        );
+      case 'critical':
+        return (
+          <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20 gap-1.5 font-bold uppercase text-[10px]">
+            <AlertTriangle className="h-3 w-3" /> {t('status.critical')}
           </Badge>
         );
       case 'expired':
@@ -262,24 +296,22 @@ export default function InventoryPage() {
     return days;
   };
 
-  const getHealthColor = (status: string) => {
-    switch (status) {
-      case 'Excellent': return 'text-emerald-500';
-      case 'Good': return 'text-indigo-500';
-      case 'Warning': return 'text-amber-500';
-      case 'Critical': return 'text-rose-500';
-      default: return 'text-slate-500';
-    }
+  const getHealthColor = (score: number) => {
+    if (score >= 80) return 'text-emerald-500';
+    if (score >= 60) return 'text-amber-500';
+    return 'text-rose-500';
   };
 
-  const getHealthBg = (status: string) => {
-    switch (status) {
-      case 'Excellent': return 'bg-emerald-500/10 border-emerald-500/20';
-      case 'Good': return 'bg-indigo-500/10 border-indigo-500/20';
-      case 'Warning': return 'bg-amber-500/10 border-amber-500/20';
-      case 'Critical': return 'bg-rose-500/10 border-rose-500/20';
-      default: return 'bg-slate-500/10 border-slate-500/20';
-    }
+  const getHealthBg = (score: number) => {
+    if (score >= 80) return 'bg-emerald-500/10 border-emerald-500/20';
+    if (score >= 60) return 'bg-amber-500/10 border-amber-500/20';
+    return 'bg-rose-500/10 border-rose-500/20';
+  };
+
+  const getHealthStatus = (score: number) => {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Warning';
+    return 'Critical';
   };
 
   // Получаем уникальные категории и группируем продукты
@@ -311,15 +343,62 @@ export default function InventoryPage() {
     );
   }, [items, translateCategory, locale]);
 
-  // Фильтруем продукты по выбранной категории
-  const filteredItems = useMemo(() => {
-    if (activeTab === 'all') {
-      return items;
+  // Фильтруем продукты по выбранной категории и ГРУППИРУЕМ их по catalog_ingredient_id
+  const groupedItems = useMemo(() => {
+    let itemsToProcess = items;
+    if (activeTab !== 'all') {
+      itemsToProcess = items.filter(item => item.category === activeTab);
     }
-    return items.filter(item => item.category === activeTab);
+
+    const groups = new Map<string, GroupedInventoryProduct>();
+
+    itemsToProcess.forEach(item => {
+      // Ключ для группировки - ID ингредиента из каталога (чтобы объединить молоко от разных дат)
+      // Если его нет (хотя должен быть в V3), используем имя.
+      const key = item.catalog_ingredient_id || item.product_name;
+      const existing = groups.get(key);
+
+      if (existing) {
+        existing.batches.push(item);
+        existing.totalQuantity += item.quantity;
+        // Расчитываем среднюю цену
+        const totalValue = (existing.avgPrice * (existing.totalQuantity - item.quantity)) + (item.price || 0) * item.quantity;
+        existing.avgPrice = totalValue / existing.totalQuantity;
+        
+        // Самый критический статус
+        const statusPriority = { 'expired': 5, 'critical': 4, 'warning': 3, 'low': 2, 'safe': 1 };
+        const currentPrio = statusPriority[existing.status as keyof typeof statusPriority] || 0;
+        const newPrio = statusPriority[item.status as keyof typeof statusPriority] || 0;
+        if (newPrio > currentPrio) {
+          existing.status = item.status;
+        }
+
+        // Самая ранняя дата просрочки
+        if (item.expiration_date) {
+          if (!existing.earliestExpiry || item.expiration_date < existing.earliestExpiry) {
+            existing.earliestExpiry = item.expiration_date;
+          }
+        }
+      } else {
+        groups.set(key, {
+          productId: key,
+          productName: item.product_name,
+          category: item.category,
+          baseUnit: item.base_unit,
+          imageUrl: item.image_url,
+          batches: [item],
+          totalQuantity: item.quantity,
+          avgPrice: item.price || 0,
+          status: item.status,
+          earliestExpiry: item.expiration_date
+        });
+      }
+    });
+
+    return Array.from(groups.values()).sort((a, b) => a.productName.localeCompare(b.productName));
   }, [items, activeTab]);
 
-  const expiringCount = items.filter(item => item.status === 'expiring' || item.status === 'expired').length;
+  const expiringCount = items.filter(item => item.status === 'critical' || item.status === 'expired').length;
   const lowStockCount = items.filter(item => item.status === 'low').length;
   const hasAlerts = expiringCount > 0 || lowStockCount > 0;
 
@@ -426,7 +505,7 @@ export default function InventoryPage() {
               <CardContent className="p-4 sm:p-8">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                   {/* 🔥 V3: Optimized Circle for 75% Scale / Mini screens */}
-                  <div className={`h-16 w-16 sm:h-24 sm:w-24 rounded-full border-[3px] sm:border-8 flex flex-col items-center justify-center transition-all duration-1000 flex-shrink-0 ${getHealthBg(health?.status || 'Good').split(' ')[1]} ${getHealthColor(health?.status || 'Good')}`}>
+                  <div className={`h-16 w-16 sm:h-24 sm:w-24 rounded-full border-[3px] sm:border-8 flex flex-col items-center justify-center transition-all duration-1000 flex-shrink-0 ${getHealthBg(health?.health_score ?? 0).split(' ')[1]} ${getHealthColor(health?.health_score ?? 0)}`}>
                     <span className="text-xl sm:text-3xl font-black leading-none">{health?.health_score ?? '--'}</span>
                     <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-widest mt-0.5">%</span>
                   </div>
@@ -435,8 +514,8 @@ export default function InventoryPage() {
                       <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">
                         {t('analytics.health.title')}
                       </h3>
-                      <Badge variant="outline" className={`font-black uppercase text-[8px] sm:text-[10px] py-0 h-5 ${getHealthBg(health?.status || 'Good')}`}>
-                        {health?.status ? t(`analytics.health.${health.status.toLowerCase()}`) : '--'}
+                      <Badge variant="outline" className={`font-black uppercase text-[8px] sm:text-[10px] py-0 h-5 ${getHealthBg(health?.health_score ?? 0)}`}>
+                        {t(`analytics.health.${getHealthStatus(health?.health_score ?? 0).toLowerCase()}`)}
                       </Badge>
                     </div>
                     <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">
@@ -478,7 +557,7 @@ export default function InventoryPage() {
                   </div>
                   <div className="text-right">
                     <div className={`text-2xl sm:text-4xl font-black italic tracking-tighter ${(lossReport?.waste_percentage ?? 0) > 5 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                      {lossReport?.waste_percentage ?? '0.0'}%
+                      {(lossReport?.waste_percentage ?? 0).toFixed(1)}%
                     </div>
                     <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">{t('analytics.waste.wasteKpi')}</p>
                   </div>
@@ -491,7 +570,7 @@ export default function InventoryPage() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-500">{t('analytics.waste.totalLoss')}</p>
-                      <p className="text-base sm:text-lg font-black">{( (lossReport?.total_loss_cents ?? 0) / 100).toFixed(2)} PLN</p>
+                      <p className="text-base sm:text-lg font-black">{formatPrice((lossReport?.total_loss_cents ?? 0) / 100, locale)}</p>
                     </div>
                   </div>
                   <Button
@@ -583,70 +662,156 @@ export default function InventoryPage() {
                             </TableCell>
                           </TableRow>
                         ) : (
-                          filteredItems.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="pl-6">
-                                <ProductImage
-                                  src={item.image_url}
-                                  alt=""
-                                  containerClassName="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl border bg-muted flex items-center justify-center overflow-hidden shadow-sm"
-                                />
-                              </TableCell>
-                              <TableCell className="font-bold text-slate-900 dark:text-slate-100 text-[10px] sm:text-sm">
-                                {item.product_name}
-                              </TableCell>
-                              <TableCell className="hidden sm:table-cell">
-                                <div className="flex items-center gap-2">
-                                  {getCategoryIcon(item.category || 'Other')}
-                                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{translateCategory(item.category || 'Other')}</span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="font-black text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
-                                {formatQuantity(item.quantity, item.base_unit)}
-                              </TableCell>
-                              <TableCell className="font-bold text-slate-500 text-[10px] sm:text-sm">
-                                {item.price ? `${item.price.toFixed(2)} PLN` : '-'}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{formatDate(item.expiration_date, locale)}</span>
-                                  {(() => {
-                                    const days = getDaysRemaining(item.expiration_date);
-                                    if (days === null) return null;
-                                    return (
-                                      <span className={`text-[9px] font-black uppercase tracking-tight ${
-                                        days < 3 ? 'text-red-500' : 'text-slate-400'
-                                      }`}>
-                                      {days <= 0 
-                                        ? t('expiry.expired') 
-                                        : t('expiry.daysLeft', { days })}
+                          groupedItems.map((group) => (
+                            <Fragment key={group.productId}>
+                              {/* Основная строка продукта (Группировка) */}
+                              <TableRow 
+                                className={`group/row transition-colors cursor-pointer ${
+                                  expandedProducts.has(group.productId) ? 'bg-slate-50/80 dark:bg-slate-900/40' : 'hover:bg-slate-50/50 dark:hover:bg-slate-900/30'
+                                }`}
+                                onClick={() => toggleProductExpansion(group.productId)}
+                              >
+                                <TableCell className="pl-6">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex h-5 w-5 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 group-hover/row:text-indigo-500 transition-colors">
+                                      {expandedProducts.has(group.productId) ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                    </div>
+                                    <ProductImage
+                                      src={group.imageUrl}
+                                      alt=""
+                                      containerClassName="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl border bg-muted flex items-center justify-center overflow-hidden shadow-sm"
+                                    />
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="font-black text-slate-900 dark:text-slate-100 text-[11px] sm:text-[14px] uppercase tracking-tight leading-none">
+                                      {group.productName}
                                     </span>
-                                    );
-                                  })()}
-                                </div>
-                              </TableCell>
-                              <TableCell className="hidden lg:table-cell">
-                                {getStatusBadge(item.status)}
-                              </TableCell>
-                              <TableCell className="text-right pr-6">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                                      <MoreHorizontal className="h-4 w-4 text-slate-400" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem 
-                                      className="text-destructive focus:text-destructive"
-                                      onClick={() => handleDeleteClick(item.id, item.product_name)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      {t('delete.button')}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
+                                    {group.batches.length > 1 && (
+                                      <div className="flex items-center gap-1.5 mt-0.5">
+                                        <Badge variant="outline" className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800 text-[8px] font-black uppercase py-0 px-1.5 h-4">
+                                          {group.batches.length} {t('table.batchesCount', { count: group.batches.length })}
+                                        </Badge>
+                                      </div>
+                                    )}
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                      {translateCategory(group.category || 'Other')}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  <div className="flex items-center gap-2 opacity-50">
+                                    {getCategoryIcon(group.category || 'Other')}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="font-black text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
+                                  {formatQuantity(group.totalQuantity, group.baseUnit)}
+                                </TableCell>
+                                <TableCell className="font-bold text-slate-500 text-[10px] sm:text-sm">
+                                  {group.batches.length > 1 ? t('table.avgPrice') : ''} {group.avgPrice ? formatPrice(group.avgPrice, locale) : '-'}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                      {group.batches.length > 1 ? t('table.earliestExpiry') : formatDate(group.earliestExpiry, locale)}
+                                    </span>
+                                    {(() => {
+                                      const days = getDaysRemaining(group.earliestExpiry);
+                                      if (days === null) return null;
+                                      return (
+                                        <span className={`text-[9px] font-black uppercase tracking-tight ${
+                                          days < 3 ? 'text-red-500' : 'text-slate-400'
+                                        }`}>
+                                          {days <= 0 ? t('expiry.expired') : t('expiry.daysLeft', { days })}
+                                        </span>
+                                      );
+                                    })()}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell">
+                                  {getStatusBadge(group.status)}
+                                </TableCell>
+                                <TableCell className="text-right pr-6">
+                                  {group.batches.length === 1 && (
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem 
+                                          className="text-destructive focus:text-destructive"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteClick(group.batches[0].id, group.batches[0].product_name);
+                                          }}
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          {t('delete.button')}
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+
+                              {/* Дополнительные строки (Партии) при раскрытии */}
+                              {expandedProducts.has(group.productId) && group.batches.length > 1 && group.batches.map((batch) => (
+                                <TableRow key={batch.id} className="bg-slate-50/30 dark:bg-slate-900/20 border-l-2 border-l-indigo-500/50">
+                                  <TableCell className="pl-14">
+                                     <div className="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700 mx-auto" />
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                     <div className="flex items-center gap-2">
+                                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+                                        <span className="text-[10px] sm:text-xs font-medium text-slate-500">
+                                          {t('table.batchReceived')} {formatDate(batch.received_at, locale)}
+                                        </span>
+                                     </div>
+                                  </TableCell>
+                                  <TableCell className="hidden sm:table-cell" />
+                                  <TableCell className="font-bold text-slate-600 text-[11px]">
+                                    {formatQuantity(batch.quantity, batch.base_unit)}
+                                  </TableCell>
+                                  <TableCell className="font-medium text-slate-500 text-[10px]">
+                                    {batch.price ? formatPrice(batch.price, locale) : '-'}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-col">
+                                      <span className="text-[10px] font-bold text-slate-600">{formatDate(batch.expiration_date, locale)}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="hidden lg:table-cell">
+                                    {getStatusBadge(batch.status)}
+                                  </TableCell>
+                                  <TableCell className="text-right pr-6">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md">
+                                          <MoreHorizontal className="h-3 w-3 text-slate-400" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem 
+                                          className="text-destructive focus:text-destructive"
+                                          onClick={() => handleDeleteClick(batch.id, batch.product_name)}
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          {t('delete.button')}
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </Fragment>
                           ))
                         )}
                       </TableBody>
@@ -656,6 +821,49 @@ export default function InventoryPage() {
               </Card>
             </TabsContent>
           </Tabs>
+
+          {/* 🔥 V3: Loss Analytics & Write-offs Table */}
+          {lossReport && lossReport.items && lossReport.items.length > 0 && (
+            <div className="mt-12 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                 <TrendingDown className="h-5 w-5 text-rose-500" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  {t('analytics.waste.lossTable.title')}
+                </h2>
+              </div>
+              
+              <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
+                <CardContent className="p-0">
+                 <Table>
+                    <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+                      <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                        <TableHead className="pl-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('analytics.waste.lossTable.ingredient')}</TableHead>
+                        <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('analytics.waste.lossTable.quantity')}</TableHead>
+                        <TableHead className="text-right pr-6 text-[10px] font-black uppercase tracking-widest text-slate-400">{t('analytics.waste.lossTable.value')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {lossReport.items.map((item, idx) => (
+                        <TableRow key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 border-slate-50 dark:border-slate-800">
+                           <TableCell className="pl-6 font-bold text-slate-700 dark:text-slate-300 py-3">
+                              {item.ingredient_name}
+                           </TableCell>
+                           <TableCell className="text-rose-500 font-black">
+                              −{item.lost_quantity}
+                           </TableCell>
+                           <TableCell className="text-right pr-6 font-black text-slate-900 dark:text-white">
+                              {formatPrice(item.loss_value_cents / 100, locale)}
+                           </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                 </Table>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Delete Confirmation Dialog */}
       <Dialog open={!!productToDelete} onOpenChange={(open: boolean) => !open && setProductToDelete(null)}>

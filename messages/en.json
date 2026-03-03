@@ -23,7 +23,8 @@
       "forgot": "Forgot password?",
       "submit": "Sign in",
       "noAccount": "Don't have an account?",
-      "signUp": "Sign up"
+      "signUp": "Sign up",
+      "coreVersion": "Neural Core v2.4"
     },
     "register": {
       "title": "Create an account",
@@ -236,6 +237,9 @@
       "title": "AI Assistant",
       "description": "AI analyzed your data and found where you're losing money"
     },
+    "refresh": "Refresh",
+    "loading": "Analyzing your restaurant data...",
+    "errorTitle": "Failed to load data",
     "step1": {
       "title": "Step 1: Detected problems",
       "description": "AI analyzed the data and detected the following problems"
@@ -248,37 +252,51 @@
       "title": "Step 3: What to do next",
       "description": "Next steps for optimization"
     },
+    "allClear": {
+      "title": "No issues found",
+      "description": "Your restaurant is running efficiently. All dishes are profitable, inventory is healthy, menu is balanced."
+    },
     "issues": {
       "margin": {
         "title": "Negative margin detected",
         "description": "Dish \"Carbonara\" is sold with −8% margin. Cost is higher than selling price.",
-        "metric": "−8% margin"
+        "descriptionReal": "Dish \"{name}\" has a {margin} margin. Cost exceeds selling price.",
+        "metric": "−8% margin",
+        "metricSuffix": "margin"
       },
       "expiry": {
         "title": "Ingredients expiring soon",
         "description": "3 ingredients (cream, bacon, parmesan) will expire in 48 hours.",
-        "metric": "3 products"
+        "descriptionReal": "{count} {count, plural, one {ingredient} other {ingredients}} expiring soon: {names}.",
+        "metric": "3 products",
+        "metricReal": "{count} {count, plural, one {product} other {products}"
       },
       "menu": {
         "title": "Weak menu positions",
         "description": "2 dishes in \"Low profit / High sales\" category according to BCG matrix.",
-        "metric": "2 dishes"
+        "descriptionReal": "{count} {count, plural, one {dish} other {dishes}} in weak BCG categories (Dogs/Plowhorses).",
+        "metric": "2 dishes",
+        "metricReal": "{count} {count, plural, one {dish} other {dishes}"
       }
     },
     "recommendation": {
       "title": "Raise Carbonara price or temporarily remove from menu",
+      "titleReal": "Raise price for {name} or revise recipe",
       "description": "Dish is popular (12 orders/day) but unprofitable. We recommend raising price by 15% or replacing recipe with cheaper one.",
-      "action": "Go to dish editing",
-      "expectedImpact": "+2400 PLN/month"
+      "descriptionReal": "Dish \"{name}\" has a {margin} margin. We recommend raising price by 15% or revising the recipe to reduce cost.",
+      "action": "Go to dishes",
+      "expectedImpact": "+2400/month"
     },
     "nextActions": {
       "checkDishes": {
-        "title": "Check remaining dishes",
-        "description": "Run full menu analysis to find hidden margin problems."
+        "title": "Menu Analysis",
+        "description": "Run full menu analysis to find hidden margin problems.",
+        "descriptionReal": "Menu Engineering shows revenue growth potential of {potential}. Open BCG matrix."
       },
       "useExpiring": {
         "title": "Use expiring products",
-        "description": "See suggested recipes for cream, bacon and parmesan."
+        "description": "See suggested recipes for expiring ingredients.",
+        "descriptionReal": "Use urgently: {names}. Open inventory to manage stock."
       }
     },
     "demo": {
@@ -318,7 +336,13 @@
         "period": "Last 30 days",
         "cleanup": "Clear Expired",
         "cleanupSuccess": "Processed {count} expired batches",
-        "cleanButton": "Run FIFO Cleanup"
+        "cleanButton": "Run FIFO Cleanup",
+        "lossTable": {
+          "title": "Write-offs Log",
+          "ingredient": "Product",
+          "quantity": "Quantity",
+          "value": "Value"
+        }
       }
     },
     "actions": {
@@ -327,9 +351,10 @@
       "create": "Create Product"
     },
     "status": {
-      "inStock": "In Stock",
+      "safe": "Safe",
       "low": "Low",
-      "expiring": "Expiring",
+      "warning": "Warning",
+      "critical": "Critical",
       "expired": "Expired"
     },
     "empty": {
@@ -342,7 +367,11 @@
       "name": "Name",
       "category": "Category",
       "quantity": "Quantity",
-      "price": "Avg Price",
+      "price": "Price",
+      "avgPrice": "Avg:",
+      "batchesCount": "{count, plural, one {batch} other {batches}}",
+      "batchReceived": "Received:",
+      "earliestExpiry": "Soonest:",
       "expiry": "Expiry Date",
       "status": "Status",
       "actions": "Actions"
@@ -373,6 +402,10 @@
     "search": {
       "placeholder": "Start typing product name...",
       "notFound": "Nothing found.",
+      "results": {
+        "notFoundTitle": "No results found",
+        "notFoundDesc": "Try a different name or use AI Smart Add in the menu above"
+      },
       "units": {
         "kg": "kg",
         "l": "l",
@@ -410,7 +443,11 @@
     "status": {
       "fullStock": "All ingredients in stock",
       "warnings": "{count} warning",
-      "warningsPlural": "{count} warnings"
+      "warningsPlural": "{count} warnings",
+      "draft": "Draft",
+      "ai_review": "AI Review",
+      "approved": "Approved",
+      "production": "Production Ready"
     },
     "card": {
       "servings": "{count} servings",
@@ -466,10 +503,10 @@
     },
     "create": {
       "steps": {
-        "step1": "STP 01 / EDIT",
-        "step2": "STP 02 / PREVIEW",
-        "step3": "STP 03 / ANALYZING",
-        "step4": "STP 04 / INSIGHTS"
+        "step1": "Draft",
+        "step2": "AI Review",
+        "step3": "Approved",
+        "step4": "Production Ready"
       },
       "actions": {
         "back": "Back",
@@ -592,7 +629,8 @@
       "subtitle": "Deep analytics and profit forecasting"
     },
     "actions": {
-      "export": "Export Data"
+      "export": "Export Data",
+      "refresh": "Refresh"
     },
     "periods": {
       "today": "Today",
@@ -606,9 +644,12 @@
       "inventory": "Inventory",
       "ai": "AI Analysis"
     },
+    "loading": "Loading...",
     "aiSummary": {
       "badge": "AI Summary",
       "title": "Menu optimized by {percent}%",
+      "titleDefault": "Analyzing menu performance...",
+      "loading": "Loading analytics...",
       "profit": "Profit",
       "losses": "Losses",
       "growth": "Growth"
@@ -622,6 +663,7 @@
     "profitAnalysis": {
       "title": "Dish Profitability Analysis",
       "subtitle": "Sales and margin for the period",
+      "empty": "No dishes match the filter",
       "filters": {
         "all": "All",
         "star": "Star",
@@ -630,17 +672,35 @@
       },
       "card": {
         "margin": "Margin",
-        "fc": "FC"
+        "fc": "FC",
+        "price": "Price"
       }
     },
     "inventoryRisks": {
       "title": "INVENTORY RISKS",
-      "expiring": "Expiring in 7 days"
+      "expiring": "Expiring in 7 days",
+      "items": "items",
+      "allGood": "Inventory is OK",
+      "manage": "Manage Inventory"
+    },
+    "wasteKpi": {
+      "title": "WASTE & LOSSES",
+      "totalLoss": "Total Loss",
+      "wastePct": "Waste %"
     },
     "aiPlan": {
       "title": "AI Action Plan",
       "apply": "Apply",
-      "effect": "Effect"
+      "effect": "Effect",
+      "allOptimal": "Everything is optimal!",
+      "raisePriceFor": "Raise price for {name}",
+      "optimizeWaste": "Reduce waste (current: {pct}%)",
+      "save": "Save {amount} PLN",
+      "reviewDogs": "Review {count} unprofitable dish(es)",
+      "menuImpact": "Improve menu efficiency",
+      "useExpiring": "Use {name} in recipes",
+      "preventLoss": "Prevent write-off losses",
+      "perMonth": "month"
     }
   },
   "menuEngineering": {
@@ -672,7 +732,23 @@
     "recommendations": {
       "title": "AI Recommendations",
       "priceIncrease": "Increase price for problem items",
-      "markup": "Recommended markup"
-    }
+      "markup": "Recommended markup",
+      "optimizeDishes": "Optimize dish composition",
+      "ingredientSubstitution": "Replace expensive ingredients with more affordable alternatives without sacrificing quality",
+      "reducePortions": "Reduce portion sizes",
+      "recommendedReduction": "Recommended reduction"
+    },
+    "dish": {
+      "aiStrategy": "AI Strategy",
+      "strategyLeader": "Menu leader. Keep the recipe and promote it actively.",
+      "strategyCritical": "Critically low margin. Raise the price or remove from menu.",
+      "strategyOptimize": "Consider ingredient rotation or price adjustment.",
+      "marginality": "Margin",
+      "costPrice": "Cost price",
+      "edit": "Edit",
+      "close": "Close"
+    },
+    "empty": "No dishes to display. Add dishes in the Dishes section.",
+    "loading": "Loading data..."
   }
 }

@@ -1,82 +1,70 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from 'zustand';
+import {
+  getDishes,
+  createDish as createDishAPI,
+  deleteDish as deleteDishAPI,
+  recalculateAllDishes as recalcAPI,
+  type DishDTO,
+  type CreateDishPayload,
+} from '@/lib/api/dishes';
+import type { Paginated } from '@/lib/schemas/dto';
+import { ApiError } from '@/lib/api/client';
 
-export interface DishComponent {
-  recipeId: string
-  recipeName: string
-  quantity: number // количество порций (обычно 1)
-  cost: number // рассчитывается из рецепта (цена 1 порции)
-}
-
-export interface Dish {
-  id: string
-  name: string
-  description?: string
-  components: DishComponent[]
-  salePrice: number // цена продажи (PLN)
-  totalCost: number // Σ себестоимости всех компонентов
-  margin: number // salePrice - totalCost
-  marginPercent: number // (margin / salePrice) * 100
-  foodCostPercent: number // (totalCost / salePrice) * 100
-  status: 'profit' | 'warning' | 'loss' // profit: >25%, warning: 15-25%, loss: <15%
-  imageUrl?: string
-  aiRecommendedPrice?: number
-  aiInsights: string[]
-  warnings: string[] // проблемы из рецептов
-  createdAt: string
-  updatedAt: string
-}
+// Re-export for backward compatibility
+export type { DishDTO as Dish };
 
 interface DishesState {
-  dishes: Dish[]
-  addDish: (dish: Omit<Dish, 'id' | 'createdAt' | 'updatedAt'>) => Dish
-  updateDish: (id: string, dish: Partial<Dish>) => void
-  deleteDish: (id: string) => void
-  getDish: (id: string) => Dish | undefined
+  dishes: DishDTO[];
+  total: number;
+  loading: boolean;
+  error: string | null;
+
+  fetchDishes: (accessToken: string) => Promise<void>;
+  addDish: (payload: CreateDishPayload, accessToken: string) => Promise<DishDTO>;
+  removeDish: (id: string, accessToken: string) => Promise<void>;
+  recalculateAll: (accessToken: string) => Promise<void>;
+  getDish: (id: string) => DishDTO | undefined;
+  clear: () => void;
 }
 
-export const useDishesStore = create<DishesState>()(
-  persist(
-    (set, get) => ({
-      dishes: [],
-      
-      addDish: (dishData) => {
-        const newDish: Dish = {
-          ...dishData,
-          id: `dish-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        
-        set((state) => ({
-          dishes: [newDish, ...state.dishes],
-        }))
-        
-        return newDish
-      },
-      
-      updateDish: (id, updates) => {
-        set((state) => ({
-          dishes: state.dishes.map((dish) =>
-            dish.id === id
-              ? { ...dish, ...updates, updatedAt: new Date().toISOString() }
-              : dish
-          ),
-        }))
-      },
-      
-      deleteDish: (id) => {
-        set((state) => ({
-          dishes: state.dishes.filter((dish) => dish.id !== id),
-        }))
-      },
-      
-      getDish: (id) => {
-        return get().dishes.find((dish) => dish.id === id)
-      },
-    }),
-    {
-      name: 'dishes-storage',
+export const useDishesStore = create<DishesState>((set, get) => ({
+  dishes: [],
+  total: 0,
+  loading: false,
+  error: null,
+
+  fetchDishes: async (accessToken) => {
+    set({ loading: true, error: null });
+    try {
+      const data: Paginated<DishDTO> = await getDishes(accessToken);
+      set({ dishes: data.items, total: data.total, loading: false });
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Failed to fetch dishes';
+      set({ error: msg, loading: false });
     }
-  )
-)
+  },
+
+  addDish: async (payload, accessToken) => {
+    const dish = await createDishAPI(payload, accessToken);
+    set((s) => ({ dishes: [dish, ...s.dishes], total: s.total + 1 }));
+    return dish;
+  },
+
+  removeDish: async (id, accessToken) => {
+    await deleteDishAPI(id, accessToken);
+    set((s) => ({
+      dishes: s.dishes.filter((d) => d.id !== id),
+      total: Math.max(0, s.total - 1),
+    }));
+  },
+
+  recalculateAll: async (accessToken) => {
+    await recalcAPI(accessToken);
+    // Re-fetch to get updated costs
+    await get().fetchDishes(accessToken);
+  },
+
+  getDish: (id) => get().dishes.find((d) => d.id === id),
+
+  clear: () => set({ dishes: [], total: 0, error: null }),
+}));

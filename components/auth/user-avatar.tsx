@@ -27,9 +27,7 @@ export function UserAvatar({ className, size = 'md', editable = false }: UserAva
 
   const handleClick = (e: React.MouseEvent) => {
     if (editable && !isUploading) {
-      e.stopPropagation();
-      console.log('📸 [AVATAR] Click detected, opening hidden input');
-      fileInputRef.current?.click();
+      e.stopPropagation();      fileInputRef.current?.click();
     }
   };
 

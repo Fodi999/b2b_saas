@@ -15,50 +15,30 @@ export function useInventory() {
 
   // Функция для перезагрузки инвентаря (используется после добавления/обновления)
   const reloadInventory = useCallback(async () => {
-    if (!accessToken) {
-      console.warn('[reloadInventory] Нет access token');
-      return;
-    }
-
-    console.log('[reloadInventory] Перезагрузка склада с BACKEND...');
-    setLoading(true);
+    if (!accessToken) {      return;
+    }    setLoading(true);
 
     try {
       const items = await fetchInventory(accessToken);
-      console.log('[reloadInventory] Склад перезагружен:', {
-        count: items.length,
-        items: items.map((i) => ({ name: i.product_name, status: i.status })),
-      });
       setItems(items);
-    } catch (error) {
-      console.error('[reloadInventory] Ошибка перезагрузки:', error);
-      throw error; // Пробрасываем дальше
+    } catch (error) {      throw error; // Пробрасываем дальше
     } finally {
       setLoading(false);
     }
   }, [accessToken, setItems, setLoading]);
 
   useEffect(() => {
-    if (!accessToken) {
-      console.log('[useInventory] Нет access token, очищаем склад');
-      clear();
+    if (!accessToken) {      clear();
       return;
     }
 
-    console.log('[useInventory] Загрузка склада с BACKEND (Query DTO)...');
     setLoading(true);
 
     fetchInventory(accessToken)
       .then((items) => {
-        console.log('[useInventory] Склад загружен С BACKEND:', {
-          count: items.length,
-          items: items.map((i) => ({ name: i.product_name, status: i.status })),
-        });
         setItems(items);
       })
-      .catch((error) => {
-        console.error('[useInventory] Ошибка загрузки склада:', error);
-        // Очищаем при ошибке
+      .catch((error) => {        // Очищаем при ошибке
         clear();
       })
       .finally(() => {
