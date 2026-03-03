@@ -40,10 +40,13 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // Allow embedding from dima-fomin.pl (replaces blanket DENY)
+          { key: 'X-Frame-Options',          value: 'ALLOW-FROM https://dima-fomin.pl' },
+          { key: 'Content-Security-Policy',  value: "frame-ancestors 'self' https://dima-fomin.pl" },
+          // Other security headers — unchanged
+          { key: 'X-Content-Type-Options',   value: 'nosniff' },
+          { key: 'Referrer-Policy',          value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy',       value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
     ];
